@@ -1,0 +1,189 @@
+/* Reihenweise Süßes – Laden auf der Levelkarte (Mystische Zuckernacht) */
+
+.map-side {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.map-side .btn {
+  min-width: 0;
+  padding: 0.45em 1.1em;
+  font-size: 1rem;
+}
+
+.stick-balance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  margin: 0;
+  padding: 0.35em 0.9em;
+  border: 1px solid var(--gold-line);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.stick-icon {
+  width: 1.2em;
+  height: 1.2em;
+  flex: none;
+  filter: drop-shadow(0 0 4px rgba(255, 77, 122, 0.6));
+}
+
+.dialog--shop {
+  width: min(92vw, 34rem);
+}
+
+.shop-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  color: var(--text-dim);
+}
+
+.shop-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.shop-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--gold-line);
+  border-radius: var(--radius);
+  background: linear-gradient(160deg, rgba(139, 90, 255, 0.22), rgba(20, 12, 46, 0.55));
+}
+
+.shop-item-text {
+  text-align: left;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.shop-item-name {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: 1.15rem;
+  color: var(--gold);
+}
+
+.shop-item-desc {
+  margin: 0.2rem 0 0;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.shop-item-stock {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.shop-item-buy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem 0.75rem;
+}
+
+.shop-reason {
+  flex-basis: 100%;
+  text-align: right;
+}
+
+.shop-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.shop-item-buy .btn {
+  min-width: 5.5rem;
+  padding: 0.4em 1em;
+  font-size: 1rem;
+}
+
+.shop-item-buy .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+  box-shadow: none;
+}
+
+.shop-reason {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* Joker im Level */
+.joker-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.joker-btn {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.45em 1.1em;
+  font-size: 1rem;
+}
+
+.joker-icon {
+  width: 1.3em;
+  height: 1.3em;
+  flex: none;
+}
+
+.joker-stock {
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.joker-btn.is-active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-line), 0 0 14px rgba(255, 215, 120, 0.5);
+}
+
+.bv-board.is-picking,
+.bv-board.is-picking * {
+  cursor: crosshair;
+}
+
+.result-reward {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  color: var(--gold);
+}
+
+.hud-sticks .stick-balance {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 1.4rem;
+}

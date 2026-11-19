@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Reihenweise Süßes - Tests</title>
+</head>
+<body>
+<h1>Tests</h1>
+<script src="runner.js"></script>
+<!-- logic, data, save -->
+<script src="../js/logic/rng.js"></script>
+<script src="../js/logic/board.js"></script>
+<script src="../js/logic/specials.js"></script>
+<script src="../js/logic/obstacles.js"></script>
+<script src="../js/logic/engine.js"></script>
+<script src="../js/logic/goals.js"></script>
+<script src="../js/logic/session.js"></script>
+<script src="../js/logic/shop.js"></script>
+<script src="../js/save.js"></script>
+<script src="../js/data/levels.js"></script>
+<script src="../js/data/story.js"></script>
+<!-- tests -->
+<script src="rng.test.js"></script>
+<script src="board.test.js"></script>
+<script src="engine.test.js"></script>
+<script src="specials.test.js"></script>
+<script src="obstacles.test.js"></script>
+<script src="session.test.js"></script>
+<script src="shop.test.js"></script>
+<script src="save.test.js"></script>
+<script src="levels.test.js"></script>
+<script>
+(function (RS) { RS.test('runner works', function () { RS.assert.equal(1, 1); }); })(window.RS);
+</script>
+</body>
+</html>

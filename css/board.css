@@ -1,0 +1,261 @@
+/* Reihenweise Süßes – Spielfeld (Kacheln, Bonbons, Spezial-Bonbons, Hindernisse, Effekte) */
+
+/* Quadratisches Feld: so breit wie der Platz es erlaubt, aber nie höher als das Fenster
+   minus --bv-reserve (Platz für Anzeigen darüber/darunter, vom Bildschirm setzbar). */
+.bv-board {
+  --bv-reserve: 9rem;
+  position: relative;
+  width: min(100%, 40rem, calc(100vh - var(--bv-reserve)));
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  border-radius: 22px;
+  background: radial-gradient(circle at 50% 30%, rgba(80, 52, 160, 0.35), rgba(20, 12, 46, 0.25));
+  box-shadow: 0 0 40px rgba(140, 90, 255, 0.25);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.bv-board.is-busy {
+  cursor: default;
+}
+
+.bv-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Bonbons fallen von oben herein: oben abschneiden */
+.bv-pieces {
+  overflow: hidden;
+  border-radius: 22px;
+}
+
+/* Jedes Element ist genau eine Zelle groß; Position kommt per transform */
+.bv-cell {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / var(--bv-cols, 8));
+  height: calc(100% / var(--bv-rows, 8));
+  will-change: transform;
+}
+
+/* ---------- Kacheln (Leerzellen bekommen keine) ---------- */
+
+.bv-tile::before {
+  content: "";
+  position: absolute;
+  inset: 3%;
+  border-radius: 18%;
+  background: rgba(59, 42, 110, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 140, 0.12), inset 0 -3px 6px rgba(0, 0, 0, 0.25);
+}
+
+.bv-tile--alt::before {
+  background: rgba(44, 30, 90, 0.6);
+}
+
+/* ---------- Zuckerglasur (unter dem Bonbon) ---------- */
+
+.bv-glaze {
+  opacity: 0;
+}
+
+.bv-glaze::before {
+  content: "";
+  position: absolute;
+  inset: 3%;
+  border-radius: 18%;
+}
+
+.bv-glaze[data-strength="1"],
+.bv-glaze[data-strength="2"] {
+  opacity: 1;
+}
+
+/* Stufe 1: dünner, durchscheinender Zuckerguss */
+.bv-glaze[data-strength="1"]::before {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 45%),
+    linear-gradient(160deg, rgba(255, 236, 248, 0.55), rgba(214, 196, 255, 0.4));
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.55);
+}
+
+/* Stufe 2: dicke, fast deckende Glasur mit Zuckerstreifen und kräftigem Rand */
+.bv-glaze[data-strength="2"]::before {
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.45) 0 6%, rgba(255, 255, 255, 0) 6% 14%),
+    radial-gradient(circle at 30% 25%, #ffffff, rgba(255, 255, 255, 0) 50%),
+    linear-gradient(160deg, rgba(255, 228, 244, 0.92), rgba(196, 170, 255, 0.85));
+  box-shadow: inset 0 0 0 4px #ffffff, 0 0 10px rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- Bonbons ---------- */
+
+.bv-body {
+  position: absolute;
+  inset: 9%;
+}
+
+.bv-piece .candy {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Leuchten hinter dem Bonbon (für Treffer, Auswahl, Tipp); nur opacity wird animiert */
+.bv-glow {
+  position: absolute;
+  inset: -22%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 246, 220, 0.95) 0%, rgba(255, 215, 140, 0.55) 35%, rgba(255, 215, 140, 0) 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bv-piece.is-selected .bv-body {
+  transform: scale(1.12);
+}
+
+.bv-piece.is-selected .bv-glow {
+  opacity: 0.85;
+}
+
+/* Tipp: beide Bonbons pulsieren sanft */
+.bv-piece.is-hint .bv-body {
+  animation: bv-hint 1.2s ease-in-out infinite;
+}
+
+.bv-piece.is-hint .bv-glow {
+  opacity: 0.6;
+  animation: bv-hint-glow 1.2s ease-in-out infinite;
+}
+
+@keyframes bv-hint {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes bv-hint-glow {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.85; }
+}
+
+/* ---------- Spezial-Bonbons ---------- */
+
+.bv-mark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Streifen: drei kräftige weiße Bänder quer über das Bonbon */
+.bv-piece[data-special="stripeH"] .bv-mark,
+.bv-piece[data-special="stripeV"] .bv-mark {
+  inset: 12%;
+  border-radius: 30%;
+  opacity: 0.9;
+}
+
+.bv-piece[data-special="stripeH"] .bv-mark {
+  background: repeating-linear-gradient(0deg,
+    rgba(255, 255, 255, 0) 0 14%, rgba(255, 255, 255, 0.95) 14% 26%, rgba(255, 255, 255, 0) 26% 36%);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+.bv-piece[data-special="stripeV"] .bv-mark {
+  background: repeating-linear-gradient(90deg,
+    rgba(255, 255, 255, 0) 0 14%, rgba(255, 255, 255, 0.95) 14% 26%, rgba(255, 255, 255, 0) 26% 36%);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+/* Bombe: goldener Ring mit Leuchten und Funkenstern in der Mitte */
+.bv-piece[data-special="bomb"] .bv-mark {
+  inset: -8%;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 10px var(--gold-strong), inset 0 0 10px rgba(255, 215, 140, 0.8);
+}
+
+.bv-piece[data-special="bomb"] .bv-mark::after {
+  content: "";
+  position: absolute;
+  top: 30%;
+  left: 30%;
+  width: 40%;
+  height: 40%;
+  background: #fff6dc;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  filter: drop-shadow(0 0 3px #ffe9b8);
+}
+
+/* Farbball: Regenbogenkugel mit Zuckerstreuseln (hat keine Farbe) */
+.bv-piece[data-special="colorball"] .candy {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 32%),
+    radial-gradient(circle at 50% 50%, rgba(20, 12, 46, 0) 45%, rgba(20, 12, 46, 0.45) 100%),
+    conic-gradient(var(--candy-0), var(--candy-5), var(--candy-1), var(--candy-2), var(--candy-3), var(--candy-4), var(--candy-0));
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.7);
+}
+
+.bv-piece[data-special="colorball"] .bv-mark {
+  inset: 8%;
+  border-radius: 50%;
+  background-image:
+    radial-gradient(circle at 25% 60%, #fff 0 5%, transparent 6%),
+    radial-gradient(circle at 70% 30%, #fff 0 4%, transparent 5%),
+    radial-gradient(circle at 60% 75%, #fff 0 5%, transparent 6%),
+    radial-gradient(circle at 40% 25%, #fff 0 3%, transparent 4%),
+    radial-gradient(circle at 80% 60%, #fff 0 4%, transparent 5%);
+  animation: bv-spin 6s linear infinite;
+}
+
+@keyframes bv-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---------- Lakritzgitter (über dem Bonbon) ---------- */
+
+.bv-lock {
+  opacity: 0;
+}
+
+.bv-lock[data-on="1"] {
+  opacity: 1;
+}
+
+.bv-lock::before {
+  content: "";
+  position: absolute;
+  inset: 6%;
+  border-radius: 16%;
+  border: 3px solid #1a0f14;
+  background:
+    linear-gradient(45deg, transparent 43%, #2a1820 43% 57%, transparent 57%),
+    linear-gradient(-45deg, transparent 43%, #2a1820 43% 57%, transparent 57%);
+  background-size: 50% 50%;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.2), 0 2px 6px rgba(0, 0, 0, 0.6);
+  opacity: 0.92;
+}
+
+/* ---------- Effekte ---------- */
+
+.bv-effects {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Reduzierte Bewegung: der Tipp bleibt sichtbar, nur ohne Pulsieren */
+@media (prefers-reduced-motion: reduce) {
+  .bv-piece.is-hint .bv-glow {
+    opacity: 0.7;
+  }
+}
