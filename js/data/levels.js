@@ -20,7 +20,7 @@
     level(3, 5, 18, [{ type: 'collect', color: 0, target: 25 }], ALL),
     level(4, 6, 22, [{ type: 'collect', color: 3, target: 20 }, { type: 'collect', color: 1, target: 20 }], [
       '..xxxx..', '..xxxx..', 'xxxxxxxx', 'xxxxxxxx', 'xxxxxxxx', 'xxxxxxxx', '..xxxx..', '..xxxx..']),
-    level(5, 6, 24, [{ type: 'score', target: 8000 }, { type: 'collect', color: 2, target: 25 }], ALL),
+    level(5, 6, 24, [{ type: 'score', target: 6000 }, { type: 'collect', color: 2, target: 25 }], ALL),
     level(6, 6, 18, [{ type: 'glaze' }], [
       'xxxxxxxx', 'xxxxxxxx', 'xxxxxxxx', '11111111', '11111111', 'xxxxxxxx', 'xxxxxxxx', 'xxxxxxxx']),
     level(7, 6, 22, [{ type: 'glaze' }], [

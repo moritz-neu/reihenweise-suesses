@@ -2,6 +2,11 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
+## [3.0.1] – 2026-11-21
+
+### Geändert
+- Level 5 ist leichter: Das Punkteziel sinkt von 8000 auf 6000 Punkte.
+
 ## [3.0.0] – 2026-11-20
 
 ### Neu
