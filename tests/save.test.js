@@ -19,8 +19,9 @@
   RS.test('save: load returns fresh when empty', function () {
     RS.assert.deepEqual(RS.Save.load(fakeStorage()), RS.Save.fresh());
     RS.assert.deepEqual(RS.Save.fresh(),
-      { version: 2, unlocked: 1, stars: {}, endlessHighscore: 0, prologueSeen: false, finaleSeen: false,
-        sticks: 0, jokers: { moves: 1, hammer: 1 }, shopSeen: false });
+      { version: 3, unlocked: 1, stars: {}, endlessHighscore: 0, prologueSeen: false, finaleSeen: false,
+        sticks: 0, jokers: { moves: 1, hammer: 1 }, shopSeen: false,
+        gateOpenSeen: false, world2IntroSeen: false, grandFinaleSeen: false });
   });
 
   RS.test('save: load returns fresh on corrupt JSON', function () {
@@ -31,14 +32,14 @@
 
   RS.test('save: load returns fresh on unknown version', function () {
     var s = fakeStorage();
-    var d = RS.Save.fresh(); d.version = 3; d.unlocked = 5;
+    var d = RS.Save.fresh(); d.version = 4; d.unlocked = 5;
     putRaw(s, d);
     RS.assert.deepEqual(RS.Save.load(s), RS.Save.fresh());
   });
 
   RS.test('save: load returns fresh on wrong types', function () {
     var bad = [
-      { unlocked: 11 }, { unlocked: 0 }, { unlocked: '3' }, { unlocked: 2.5 },
+      { unlocked: 21 }, { unlocked: 0 }, { unlocked: '3' }, { unlocked: 2.5 },
       { stars: null }, { stars: { 1: 4 } }, { stars: { 1: 'x' } }, { stars: [] },
       { endlessHighscore: -1 }, { endlessHighscore: 'x' },
       { prologueSeen: 1 }, { finaleSeen: 'yes' }
@@ -98,12 +99,16 @@
     RS.assert.equal(d.unlocked, 5, 'never lowers');
   });
 
-  RS.test('save: recordLevel never unlocks beyond 10', function () {
+  RS.test('save: unlocking stops at 20', function () {
     var d = RS.Save.fresh();
     RS.Save.recordLevel(d, 10, 3);
-    RS.assert.equal(d.unlocked, 10);
+    RS.assert.equal(d.unlocked, 11);
+    RS.Save.recordLevel(d, 19, 1);
+    RS.assert.equal(d.unlocked, 20);
+    RS.Save.recordLevel(d, 20, 3);
+    RS.assert.equal(d.unlocked, 20);
     RS.Save.recordLevel(d, 9, 1);
-    RS.assert.equal(d.unlocked, 10);
+    RS.assert.equal(d.unlocked, 20);
   });
 
   RS.test('save: recordLevel with 0 stars unlocks nothing', function () {
@@ -148,7 +153,8 @@
     var v1 = { version: 1, unlocked: 6, stars: { 1: 3, 2: 1 }, endlessHighscore: 4200, prologueSeen: true, finaleSeen: false };
     putRaw(s, v1);
     var expected = JSON.parse(JSON.stringify(v1));
-    expected.sticks = 0; expected.jokers = { moves: 1, hammer: 1 }; expected.shopSeen = false; expected.version = 2;
+    expected.sticks = 0; expected.jokers = { moves: 1, hammer: 1 }; expected.shopSeen = false; expected.version = 3;
+    expected.gateOpenSeen = false; expected.world2IntroSeen = false; expected.grandFinaleSeen = false;
     var d = RS.Save.load(s);
     RS.assert.deepEqual(d, expected);
     d.jokers.moves = 0;
@@ -205,6 +211,57 @@
     RS.assert.equal(d.sticks, 1e9);
     RS.Save.store(d, s);
     RS.assert.equal(RS.Save.load(s).sticks, 1e9);
+  });
+
+  RS.test('save: invalid v3 rejected (unlocked 21, flags not boolean)', function () {
+    var bad = [
+      { unlocked: 21 }, { gateOpenSeen: 1 }, { world2IntroSeen: 'x' }, { grandFinaleSeen: null },
+      { gateOpenSeen: undefined }
+    ];
+    bad.forEach(function (patch) {
+      var d = RS.Save.fresh();
+      Object.keys(patch).forEach(function (k) { d[k] = patch[k]; });
+      var s = fakeStorage();
+      putRaw(s, d);
+      RS.assert.deepEqual(RS.Save.load(s), RS.Save.fresh(), JSON.stringify(patch));
+    });
+  });
+
+  RS.test('save: v2 with level 10 won migrates to v3, unlocked 11, keeps sticks/jokers/stars/flags', function () {
+    var s = fakeStorage();
+    var v2 = { version: 2, unlocked: 10, stars: { 1: 3, 9: 2, 10: 1 }, endlessHighscore: 777, prologueSeen: true, finaleSeen: true,
+      sticks: 42, jokers: { moves: 3, hammer: 0 }, shopSeen: true };
+    putRaw(s, v2);
+    var expected = JSON.parse(JSON.stringify(v2));
+    expected.version = 3; expected.unlocked = 11;
+    expected.gateOpenSeen = false; expected.world2IntroSeen = false; expected.grandFinaleSeen = false;
+    RS.assert.deepEqual(RS.Save.load(s), expected);
+    var s2 = fakeStorage();
+    v2.stars = { 1: 3 }; v2.unlocked = 10;
+    putRaw(s2, v2);
+    RS.assert.equal(RS.Save.load(s2).unlocked, 10, 'no win on 10, stays');
+  });
+
+  RS.test('save: v1 migrates to v3', function () {
+    var s = fakeStorage();
+    putRaw(s, { version: 1, unlocked: 10, stars: { 10: 2 }, endlessHighscore: 5, prologueSeen: true, finaleSeen: true });
+    var d = RS.Save.load(s);
+    RS.assert.equal(d.version, 3);
+    RS.assert.equal(d.unlocked, 11);
+    RS.assert.equal(d.sticks, 0);
+    RS.assert.deepEqual(d.jokers, { moves: 1, hammer: 1 });
+    RS.assert.equal(d.gateOpenSeen, false);
+    RS.assert.equal(d.world2IntroSeen, false);
+    RS.assert.equal(d.grandFinaleSeen, false);
+  });
+
+  RS.test('save: isGateOpen', function () {
+    var d = RS.Save.fresh();
+    RS.assert.equal(RS.Save.isGateOpen(d), false);
+    d.stars[10] = 0;
+    RS.assert.equal(RS.Save.isGateOpen(d), false);
+    d.stars[10] = 1;
+    RS.assert.equal(RS.Save.isGateOpen(d), true);
   });
 
 })(window.RS = window.RS || {});

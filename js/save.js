@@ -2,12 +2,14 @@
   'use strict';
 
   var KEY = 'reihenweise-suesses/v1';
-  var MAX_LEVEL = 10;
+  var MAX_LEVEL = 20;
+  var GATE_LEVEL = 10;
 
   function fresh() {
     return {
-      version: 2, unlocked: 1, stars: {}, endlessHighscore: 0, prologueSeen: false, finaleSeen: false,
-      sticks: 0, jokers: { moves: RS.Shop.START_STOCK, hammer: RS.Shop.START_STOCK }, shopSeen: false
+      version: 3, unlocked: 1, stars: {}, endlessHighscore: 0, prologueSeen: false, finaleSeen: false,
+      sticks: 0, jokers: { moves: RS.Shop.START_STOCK, hammer: RS.Shop.START_STOCK }, shopSeen: false,
+      gateOpenSeen: false, world2IntroSeen: false, grandFinaleSeen: false
     };
   }
 
@@ -40,12 +42,32 @@
     return typeof d.shopSeen === 'boolean';
   }
 
-  // Ein gültiger Stand der Version 1 behält alles und bekommt die neuen Felder.
-  function migrate(d) {
+  function validV3(d) {
+    if (!validV2(d)) { return false; }
+    return typeof d.gateOpenSeen === 'boolean' && typeof d.world2IntroSeen === 'boolean' &&
+      typeof d.grandFinaleSeen === 'boolean';
+  }
+
+  function isGateOpen(data) {
+    return (data.stars[GATE_LEVEL] || 0) >= 1;
+  }
+
+  // Ein gültiger Stand der Version 1 behält alles und bekommt die Felder der Version 2.
+  function migrateV1(d) {
     d.version = 2;
     d.sticks = 0;
     d.jokers = { moves: RS.Shop.START_STOCK, hammer: RS.Shop.START_STOCK };
     d.shopSeen = false;
+    return d;
+  }
+
+  // Ein gültiger Stand der Version 2 behält alles; wer Level 10 gewonnen hat, steht in Welt 2.
+  function migrateV2(d) {
+    d.version = 3;
+    d.gateOpenSeen = false;
+    d.world2IntroSeen = false;
+    d.grandFinaleSeen = false;
+    if (isGateOpen(d)) { d.unlocked = Math.max(d.unlocked, GATE_LEVEL + 1); }
     return d;
   }
 
@@ -57,8 +79,9 @@
       if (raw === null || raw === undefined) { return fresh(); }
       var d = JSON.parse(raw);
       if (!isObject(d)) { return fresh(); }
-      if (d.version === 1 && validBase(d)) { return migrate(d); }
-      if (d.version === 2 && validV2(d)) { return d; }
+      if (d.version === 1 && validBase(d)) { return migrateV2(migrateV1(d)); }
+      if (d.version === 2 && validV2(d)) { return migrateV2(d); }
+      if (d.version === 3 && validV3(d)) { return d; }
       return fresh();
     } catch (e) {
       return fresh();
@@ -117,6 +140,7 @@
     fresh: fresh,
     load: load,
     store: store,
+    isGateOpen: isGateOpen,
     recordLevel: recordLevel,
     recordWin: recordWin,
     recordEndless: recordEndless,

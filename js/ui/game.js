@@ -19,6 +19,8 @@
     if (g.type === 'score') { return formatNumber(g.target) + ' Punkte'; }
     if (g.type === 'collect') { return g.target + '× ' + COLOR_NAMES[g.color]; }
     if (g.type === 'glaze') { return 'alle Glasur lösen'; }
+    if (g.type === 'choco') { return 'alle Schokolade entfernen'; }
+    if (g.type === 'boss') { return 'Boss besiegen'; }
     return '';
   }
 
@@ -29,6 +31,8 @@
       return candy;
     }
     if (g.type === 'glaze') { return el('span', 'hud-glaze-icon'); }
+    if (g.type === 'choco') { return el('span', 'hud-choco-icon'); }
+    if (g.type === 'boss') { return el('span', 'hud-boss-icon', '⚔'); }
     return el('span', 'hud-score-icon', '★');
   }
 
@@ -78,6 +82,7 @@
   //     während der Animation geht; z. B. zum Speichern eines Siegs)
   //   onFinished(events): nach dem Abspielen eines Zugs (nie nach teardown)
   //   footer?: Node, wird nach dem Spielfeld angehängt
+  //   top?: Node, steht in einer Spalte direkt über dem Spielfeld (Boss-Leiste)
   // }
   // Danach startet der Tipp neu, solange die Sitzung läuft, sonst stoppt er.
   // Rückgabe { view, hint, section, playEvents(events), isDead(), teardown() }. teardown entfernt alle
@@ -97,7 +102,7 @@
         text: opts.back.confirmText,
         buttons: [
           { label: opts.back.stayLabel, className: 'btn--ghost' },
-          { label: opts.back.leaveLabel, onClick: function () { RS.UI.show(opts.back.target); } }
+          { label: opts.back.leaveLabel, onClick: function () { RS.UI.show(opts.back.target, opts.back.params); } }
         ],
         onCancel: function () {}
       });
@@ -110,7 +115,14 @@
     var layout = el('div', 'game-layout');
     layout.appendChild(opts.hud);
     var holder = el('div', 'game-board');
-    layout.appendChild(holder);
+    if (opts.top) {
+      var main = el('div', 'game-main');
+      main.appendChild(opts.top);
+      main.appendChild(holder);
+      layout.appendChild(main);
+    } else {
+      layout.appendChild(holder);
+    }
     section.appendChild(layout);
     if (opts.footer) { section.appendChild(opts.footer); }
     root.appendChild(section);
@@ -340,15 +352,17 @@
       body: resultBody(lines, story.win || ''),
       buttons: [{ label: 'Zur Karte', className: 'btn--gold', onClick: function () {
         RS.Audio.play({ type: 'click' });
-        var save = RS.App.save;
-        if (levelId === RS.LEVELS.length && !save.finaleSeen) {
-          RS.UI.Dialog.say(RS.STORY.finale, { skippable: true }).then(function () {
-            RS.App.save.finaleSeen = true;
+        // Nach Level 10 das Zwischenspiel, nach Level 20 das große Finale (je einmal).
+        var flag = levelId === 10 ? 'finaleSeen' : levelId === 20 ? 'grandFinaleSeen' : null;
+        var lines = levelId === 10 ? RS.STORY.interlude : RS.STORY.grandFinale;
+        if (flag && !RS.App.save[flag]) {
+          RS.UI.Dialog.say(lines, { skippable: true }).then(function () {
+            RS.App.save[flag] = true;
             RS.App.persist();
-            RS.UI.show('map');
+            RS.UI.show('map', mapParams(levelId));
           });
         } else {
-          RS.UI.show('map');
+          RS.UI.show('map', mapParams(levelId));
         }
       } }]
     });
@@ -361,7 +375,7 @@
       lines.push(el('p', 'result-line', 'Du hast noch ' + rescue.stock + ' × +5 Züge.'));
     }
     var buttons = [
-      { label: 'Zur Karte', className: 'btn--ghost', onClick: function () { RS.UI.show('map'); } },
+      { label: 'Zur Karte', className: 'btn--ghost', onClick: function () { RS.UI.show('map', mapParams(levelId)); } },
       { label: 'Nochmal', className: rescue ? 'btn--ghost' : 'btn--gold', onClick: function () {
         RS.Audio.play({ type: 'click' });
         RS.UI.show('game', { levelId: levelId });
@@ -430,7 +444,16 @@
 
   // ---------- Bildschirm ----------
 
+  var introSeen = {};   // Boss-Intro nur beim ersten Versuch je Seitenladen
+
+  // Karte nach dem Spielen: in der Welt des gespielten Levels.
+  function mapParams(levelId) {
+    var level = RS.LEVELS[levelId - 1];
+    return { world: level ? (level.world || (level.id > 10 ? 2 : 1)) : 1 };
+  }
+
   var active = null;   // Rückgabe von mountBoard
+  var activeBoss = null;   // Boss-Leiste (RS.UI.BossView) in Bosslevels
 
   function mount(root, params) {
     var levelId = Number(params.levelId);
@@ -449,6 +472,11 @@
     var reward = 0;
     var hammerOn = false;
     var bar = null;
+    var boss = null;
+    if (session.boss) {
+      boss = RS.UI.BossView.create(document.createDocumentFragment(), session.boss,
+        RS.BOSSES[session.boss.id], { cellRect: function (pos) { return active.view.cellRect(pos); } });
+    }
 
     function moved(events) {
       var res = RS.Save.recordWin(RS.App.save, levelId, events);
@@ -471,7 +499,26 @@
     }
 
     function refreshBar() {
-      if (bar) { bar.update(Boolean(active) && active.view.isBusy()); }
+      var busy = Boolean(active) && active.view.isBusy();
+      if (bar) { bar.update(busy); }
+      if (boss) { boss.setSpellEnabled(canUse() && !busy && session.boss.charge >= RS.Boss.SPELL_MAX); }
+    }
+
+    // Während eine Aktion abläuft, sind Joker und Sternenzauber gesperrt.
+    function lockControls() {
+      bar.update(true);
+      if (boss) { boss.setSpellEnabled(false); }
+    }
+
+    function castSpell() {
+      if (!canUse() || active.view.isBusy()) { return; }
+      var events = RS.Session.starSpell(session);
+      if (!events.length) { return; }
+      RS.Audio.play({ type: 'click' });
+      setHammer(false);
+      moved(events);
+      lockControls();
+      active.playEvents(events);
     }
 
     function useMoves() {
@@ -502,7 +549,7 @@
       RS.App.persist();
       moved(events);
       setHammer(false);
-      bar.update(true);
+      lockControls();
       active.playEvents(events);
     }
 
@@ -515,9 +562,7 @@
       active.hint.restart();
     }
 
-    function finished(events) {
-      hud.apply(events);
-      setHammer(false);
+    function showResult(events) {
       events.forEach(function (e) {
         if (e.type === 'levelWon') {
           showWin(levelId, e, reward);
@@ -527,6 +572,29 @@
         }
       });
       refreshBar();
+    }
+
+    function has(events, type) {
+      return events.some(function (e) { return e.type === type; });
+    }
+
+    // Im Bosslevel laufen nach der Animation erst die Szenen (Phase 2, Niederlage),
+    // danach das Ergebnis.
+    function finished(events) {
+      hud.apply(events);
+      setHammer(false);
+      var parts = [];
+      if (boss && has(events, 'bossPhase')) { parts.push('phase2'); }
+      if (boss && has(events, 'levelWon')) { parts.push('defeat'); }
+      if (!parts.length) { showResult(events); return; }
+      var me = active;
+      refreshBar();
+      if (boss) { boss.setSpellEnabled(false); }
+      parts.reduce(function (chain, part) {
+        return chain.then(function () { return me.isDead() ? null : RS.UI.BossView.scene(session.boss.id, part); });
+      }, Promise.resolve()).then(function () {
+        if (!me.isDead()) { showResult(events); }
+      });
     }
 
     bar = createJokerBar({ canUse: canUse, useMoves: useMoves, toggleHammer: toggleHammer });
@@ -541,18 +609,35 @@
         confirmText: 'Dein Fortschritt in diesem Level geht verloren.',
         stayLabel: 'Weiterspielen',
         leaveLabel: 'Zur Karte',
-        target: 'map'
+        target: 'map',
+        params: mapParams(levelId)
       },
       footer: bar.el,
-      onMoved: function (events) { moved(events); bar.update(true); },
+      top: boss ? boss.el : null,
+      className: boss ? 'game--boss' : '',
+      onMoved: function (events) { moved(events); lockControls(); },
       onFinished: finished
     });
     refreshBar();
+    if (boss) {
+      activeBoss = boss;
+      var me = active;
+      boss.onSpell(castSpell);
+      me.view.setEventHook(boss.play);
+      // Vor dem ersten Zug: die Boss-Szene mit wechselnden Sprechern
+      if (introSeen[session.boss.id]) { return; }
+      introSeen[session.boss.id] = true;
+      RS.UI.BossView.scene(session.boss.id, 'intro').then(function () {
+        if (!me.isDead()) { refreshBar(); }
+      });
+    }
   }
 
   function unmount() {
     if (active) { active.view.setPicker(null); active.teardown(); }
+    if (activeBoss) { activeBoss.destroy(); }
     active = null;
+    activeBoss = null;
   }
 
   RS.UI.screens.game = { mount: mount, unmount: unmount };

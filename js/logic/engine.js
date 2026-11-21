@@ -12,9 +12,10 @@
     board.candies[b.r][b.c] = tmp;
   }
 
-  // A cell that gravity fills: playable and not locked (locked candies stay put).
+  // A cell that gravity fills: playable, not locked or frozen (those candies stay put) and not
+  // chocolate (candies fall past it).
   function isFallSlot(board, r, c) {
-    return board.mask[r][c] && !board.lock[r][c];
+    return board.mask[r][c] && !board.lock[r][c] && !board.choco[r][c] && board.ice[r][c] === 0;
   }
 
   function pushObstacleEvent(ctx, event) {
@@ -41,6 +42,15 @@
     if (board.lock[p.r][p.c]) {
       pushObstacleEvent(ctx, RS.Obstacles.hitLock(board, p));
       if (!matched) { return; }
+    }
+    // Ice and chocolate absorb the hit: the candy below stays, a frozen special stays silent.
+    if (board.ice[p.r][p.c] > 0) {
+      pushObstacleEvent(ctx, RS.Obstacles.hitIce(board, p));
+      return;
+    }
+    if (board.choco[p.r][p.c]) {
+      pushObstacleEvent(ctx, RS.Obstacles.hitChoco(board, p));
+      return;
     }
     var candy = RS.Board.get(board, p);
     if (!candy) { return; }
@@ -114,7 +124,7 @@
   }
 
   // Per column, bottom-up: candies drop into the lowest free fall slot below them.
-  // Void and locked cells are skipped, so candies fall through/past them.
+  // Void, locked, frozen and chocolate cells are skipped, so candies fall through/past them.
   function applyGravity(board, ctx) {
     var moves = [];
     for (var c = 0; c < board.cols; c++) {
@@ -216,6 +226,34 @@
     });
   }
 
+  // Each ice or chocolate cell next to a matched cell gets one hit (once per cell and stage).
+  function thawNeighbours(board, matches, ctx) {
+    var seen = new Set();
+    matches.forEach(function (m) {
+      m.cells.forEach(function (p) {
+        [pos(p.r - 1, p.c), pos(p.r + 1, p.c), pos(p.r, p.c - 1), pos(p.r, p.c + 1)].forEach(function (q) {
+          if (!RS.Board.isPlayable(board, q) || seen.has(key(q))) { return; }
+          seen.add(key(q));
+          if (board.ice[q.r][q.c] > 0 || board.choco[q.r][q.c]) {
+            RS.Engine._hitCell(board, q, ctx, false);
+          }
+        });
+      });
+    });
+  }
+
+  // Reshuffles a board without a possible move and appends the shuffled event.
+  function shuffleIfDead(board, events) {
+    if (RS.Board.findPossibleMoves(board).length > 0) { return; }
+    var moved = RS.Board.shuffle(board);
+    events.push({
+      type: 'shuffled',
+      candies: moved.map(function (m) {
+        return { id: m.id, pos: m.pos, color: board.candies[m.pos.r][m.pos.c].color };
+      })
+    });
+  }
+
   // Runs cascade stages until the board has no matches, then reshuffles a dead board.
   // A caller may pre-fill ctx.toClear to run a stage without a match. A combo swap sets
   // ctx.combo: stage 1 then runs the combo instead of matches, later stages cascade as usual.
@@ -242,21 +280,14 @@
       matches.forEach(function (m) {
         m.cells.forEach(function (p) { RS.Engine._hitCell(board, p, ctx, true); });
       });
+      thawNeighbours(board, matches, ctx);
       createSpecials(board, matches, ctx);
       clearCollected(board, ctx);
       applyGravity(board, ctx);
       spawn(board, ctx);
       matches = RS.Board.findMatches(board);
     }
-    if (RS.Board.findPossibleMoves(board).length === 0) {
-      var moved = RS.Board.shuffle(board);
-      ctx.events.push({
-        type: 'shuffled',
-        candies: moved.map(function (m) {
-          return { id: m.id, pos: m.pos, color: board.candies[m.pos.r][m.pos.c].color };
-        })
-      });
-    }
+    shuffleIfDead(board, ctx.events);
   }
 
   function swap(board, a, b) {
@@ -288,7 +319,7 @@
 
   // Hammer joker: hits one cell like a match would (glaze, lock, special), then resolves.
   function smash(board, p) {
-    if (!RS.Board.isPlayable(board, p) || !RS.Board.get(board, p)) {
+    if (!RS.Board.isPlayable(board, p) || (!RS.Board.get(board, p) && !board.choco[p.r][p.c])) {
       return { valid: false, events: [{ type: 'smashRejected', pos: p }] };
     }
     var ctx = {
@@ -308,6 +339,7 @@
     POINTS: POINTS,
     swap: swap,
     smash: smash,
+    shuffleIfDead: shuffleIfDead,
     _resolve: resolve,
     _hitCell: hitCell
   };

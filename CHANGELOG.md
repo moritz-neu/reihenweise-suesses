@@ -2,6 +2,24 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
+## [3.0.0] – 2026-11-20
+
+### Neu
+- Zweite Welt „Frostzuckerberge“ mit den Leveln 11–20 und eigener Karte. Ein Tor nach Station 10 bleibt verschlossen, bis Graf Lakritz besiegt ist, und führt dann in die neue Welt; dort bringt ein Tor zurück.
+- Bosskämpfe: Level 10 gegen Graf Lakritz (36 Züge, 600 Leben) und Level 20 gegen Eiskönigin Kandara (40 Züge, 730 Leben). Die Leben hat der Balancing-Simulator festgelegt.
+  - Lebensleiste, Schwachstellen-Farbe (doppelter Schaden) und zwei Phasen mit schnellerem Angriffsrhythmus.
+  - Angriffe: Lakritzgitter (Graf Lakritz), dicke Glasur und dickes Eis (Kandara).
+  - Sternenzauber: lädt mit jedem aufgelösten Bonbon, bei 40 voll, macht 25 Schaden und entfernt bis zu 6 Hindernisse.
+  - Szenen für Intro, Phasenwechsel und Sieg, Bossfiguren als SVG und Effekte für Treffer, Angriff und Sieg.
+- Neue Hindernisse Eis (Stufe 1 und 2, auf einem Bonbon) und Schokolade (belegt ein Feld und breitet sich aus) sowie das Ziel „Schokolade entfernen“.
+- Story für Welt 2, Einleitung beim ersten Betreten, großes Finale nach Level 20.
+- Cartoon-Optik für Hauptmenü und Levelkarten: gezeichnete Hintergründe, Häuser, Bäume und Tor.
+- Hinweis zu den Hintergründen: Es sind gezeichnete Ersatz-Hintergründe (SVG und Farbverlauf), keine generierten Bilder, weil sich keine erzeugen ließen. Eigene Bilder lassen sich später in `img/` ablegen; dafür genügt es, die Variablen `--photo-*` in `css/map.css` zu ändern (eine Zeile).
+
+### Geändert
+- Level 10 ist jetzt der Bosskampf Graf Lakritz. Das bisherige Finale nach Level 10 ist das Zwischenfinale, in dem der Graf durch das Tor flieht. Gespeicherte Sterne für Level 10 bleiben erhalten.
+- Spielstand-Format Version 3 (Level 1–20, Merker für Tor, Welt-2-Einleitung und großes Finale). Spielstände der Versionen 1 und 2 werden beim Laden verlustfrei umgewandelt. Wer Level 10 schon geschafft hat, bekommt Level 11 freigeschaltet, und das Tor öffnet sich einmal mit Animation.
+
 ## [2.0.0] – 2026-11-19
 
 ### Neu

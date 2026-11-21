@@ -184,7 +184,52 @@
   text-align: center;
 }
 
-/* Dorf-Silhouette am unteren Rand */
+/* Hintergrund-Schichten: gezeichnete Ferne, Bild (siehe --photo-kandishain in map.css),
+   Wolken. Ohne Bild bleibt .menu-photo leer und durchsichtig. */
+.menu-backdrop,
+.menu-photo,
+.menu-clouds {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.menu-photo {
+  background: var(--photo-kandishain, none) center / cover no-repeat;
+}
+
+.menu-far {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: clamp(11rem, 40vh, 21rem);
+}
+
+.menu-far .far-hill--1 { fill: #4a2c80; opacity: 0.8; }
+.menu-far .far-hill--2 { fill: #3a2170; }
+.menu-far .far-village { fill: #2c1858; }
+.menu-far .far-lights { fill: var(--gold); opacity: 0.85; }
+
+.menu-cloud {
+  position: absolute;
+  aspect-ratio: 5 / 2;
+  background:
+    radial-gradient(circle at 30% 60%, rgba(236, 222, 255, 0.22) 0 30%, transparent 31%),
+    radial-gradient(circle at 55% 40%, rgba(236, 222, 255, 0.22) 0 34%, transparent 35%),
+    radial-gradient(circle at 76% 62%, rgba(236, 222, 255, 0.2) 0 26%, transparent 27%),
+    radial-gradient(ellipse at 50% 78%, rgba(236, 222, 255, 0.2) 0 46%, transparent 47%);
+  max-width: 32vw;
+  animation: rs-menu-cloud 70s ease-in-out infinite alternate;
+}
+
+@keyframes rs-menu-cloud {
+  from { transform: translateX(-8vw); }
+  to { transform: translateX(8vw); }
+}
+
+/* Dorf im Vordergrund am unteren Rand */
 .menu-village {
   position: absolute;
   left: 0;
@@ -195,21 +240,55 @@
   pointer-events: none;
 }
 
-.menu-village .hill-far { fill: #2a1d5c; opacity: 0.7; }
-.menu-village .hill { fill: #0e0824; }
-.menu-village .house { fill: #1b1140; stroke: rgba(255, 215, 140, 0.18); stroke-width: 1.5; stroke-linejoin: round; }
-.menu-village .window { fill: var(--gold); opacity: 0.85; }
-.menu-village .window--candy0 { fill: var(--candy-0-glow); }
-.menu-village .window--candy2 { fill: var(--candy-2-glow); }
-.menu-village .window--candy3 { fill: var(--candy-3-glow); }
-.menu-village .window--candy4 { fill: var(--candy-4-glow); }
-.menu-village .window--candy5 { fill: var(--candy-5-glow); }
-.menu-village .windows { filter: drop-shadow(0 0 4px rgba(255, 215, 140, 0.8)); animation: rs-flicker 6s ease-in-out infinite; }
+.menu-village .v-ground { fill: #2a1652; }
+.menu-village .v-ground-rim { fill: none; stroke: rgba(255, 210, 235, 0.35); stroke-width: 3; }
+.menu-village .v-body { fill: #a8642f; stroke: #6e3a16; stroke-width: 1.5; }
+.menu-village .v-roof { stroke: rgba(40, 12, 30, 0.45); stroke-width: 1.5; stroke-linejoin: round; }
+.menu-village [data-color="0"] { fill: var(--candy-0); }
+.menu-village [data-color="1"] { fill: var(--candy-1); }
+.menu-village [data-color="2"] { fill: var(--candy-2); }
+.menu-village [data-color="3"] { fill: var(--candy-3); }
+.menu-village [data-color="4"] { fill: var(--candy-4); }
+.menu-village [data-color="5"] { fill: var(--candy-5); }
+.menu-village .v-icing { fill: none; stroke: #fff8ee; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.menu-village .v-drip { fill: #fff8ee; }
+.menu-village .v-door { fill: #5c2f14; stroke: #fff8ee; stroke-width: 1.5; }
+.menu-village .v-stick { fill: #f6eee2; }
+.menu-village .v-lolli { fill: var(--candy-0-glow); stroke: rgba(255, 255, 255, 0.5); stroke-width: 1.5; }
+.menu-village .v-swirl { fill: none; stroke: rgba(255, 255, 255, 0.75); stroke-width: 3; stroke-linecap: round; }
+.menu-village .v-rail,
+.menu-village .v-post { fill: none; stroke: #fffaf2; stroke-width: 6; stroke-linecap: round; }
+.menu-village .v-rail-stripes,
+.menu-village .v-post-stripes { fill: none; stroke: #e0204f; stroke-width: 6; stroke-dasharray: 5 5; }
+.menu-village .v-creek { fill: #5a2e14; }
+.menu-village .v-ripple {
+  fill: none;
+  stroke: #a5652f;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 18 26;
+  animation: rs-creek 6s linear infinite;
+}
+.menu-village .v-ripple--b { stroke: #8a4f22; animation-duration: 9s; }
+
+@keyframes rs-creek {
+  to { stroke-dashoffset: -88; }
+}
+
+/* Fenster leuchten und blinken einzeln (Verzögerung je Fenster per style) */
+.menu-village .window {
+  fill: #ffd78c;
+  stroke: #fff8ee;
+  stroke-width: 1.5;
+  filter: drop-shadow(0 0 5px rgba(255, 200, 100, 0.9));
+  animation: rs-flicker 6s ease-in-out infinite;
+}
 
 @keyframes rs-flicker {
   0%, 100% { opacity: 1; }
-  45% { opacity: 0.8; }
-  50% { opacity: 0.95; }
+  44% { opacity: 1; }
+  50% { opacity: 0.35; }
+  56% { opacity: 1; }
 }
 
 /* ---------- Dialoge und Überlagerungen (auch für spätere Bildschirme) ---------- */

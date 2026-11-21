@@ -4,7 +4,7 @@
   // Spielfeld-Ansicht: zeichnet ein RS.Board, spielt Engine-Ereignisse als Animation ab
   // und meldet Tausch-Wünsche (Ziehen oder Klick-Klick).
   //
-  // Aufbau (Ebenen von unten nach oben): Kacheln, Glasur, Bonbons, Lakritzgitter, Effekte.
+  // Aufbau (Ebenen von unten nach oben): Kacheln, Glasur, Schokolade, Bonbons, Eis, Lakritzgitter, Effekte.
   // Jedes Element ist eine Zelle groß und wird per transform: translate(c*100%, r*100%)
   // platziert; so passt alles ohne Messen zu jeder Feldgröße.
 
@@ -12,7 +12,7 @@
 
   var DUR = {
     swap: 150, rejected: 150, matched: 220, cleared: 220, created: 260,
-    beam: 320, shockwave: 320, swirl: 420, fell: 200, spawned: 200, shuffled: 400,
+    beam: 320, shockwave: 320, swirl: 420, fell: 200, spawned: 200, shuffled: 400, spread: 360,
     stagePause: 70
   };
 
@@ -62,11 +62,15 @@
     var root = el('div', 'bv-board');
     var tiles = el('div', 'bv-layer bv-tiles');
     var glazeLayer = el('div', 'bv-layer bv-glazes');
+    var chocoLayer = el('div', 'bv-layer bv-chocos');
     var pieceLayer = el('div', 'bv-layer bv-pieces');
+    var iceLayer = el('div', 'bv-layer bv-ices');
     var lockLayer = el('div', 'bv-layer bv-locks');
     root.appendChild(tiles);
     root.appendChild(glazeLayer);
+    root.appendChild(chocoLayer);
     root.appendChild(pieceLayer);
+    root.appendChild(iceLayer);
     root.appendChild(lockLayer);
     root.setAttribute('role', 'group');
     root.setAttribute('aria-label', 'Spielfeld');
@@ -82,6 +86,8 @@
     var pieces = {};         // id -> { el, body, candy, r, c, color, special }
     var glazeEls = [];
     var lockEls = [];
+    var iceEls = [];
+    var chocoEls = [];
 
     var busy = false;
     var destroyed = false;   // nach destroy(): laufende Abspielung bricht ab
@@ -89,6 +95,7 @@
     var pickHandler = null;  // gesetzt: Klick wählt eine Zelle aus, kein Tausch
     var selected = null;     // Pos der ersten angeklickten Zelle
     var hint = null;         // { a, b }
+    var eventHook = null;    // spielt Ereignisse ab, die das Feld nicht kennt (z. B. Boss)
     var queue = Promise.resolve();
 
     // ---------- Aufbau ----------
@@ -101,6 +108,10 @@
       tiles.innerHTML = '';
       glazeLayer.innerHTML = '';
       lockLayer.innerHTML = '';
+      iceLayer.innerHTML = '';
+      chocoLayer.innerHTML = '';
+      iceEls = grid(rows, cols, null);
+      chocoEls = grid(rows, cols, null);
       glazeEls = grid(rows, cols, null);
       lockEls = grid(rows, cols, null);
       for (var r = 0; r < rows; r++) {
@@ -117,6 +128,14 @@
           l.style.transform = tf(r, c);
           lockLayer.appendChild(l);
           lockEls[r][c] = l;
+          var ic = el('div', 'bv-cell bv-ice');
+          ic.style.transform = tf(r, c);
+          iceLayer.appendChild(ic);
+          iceEls[r][c] = ic;
+          var cz = el('div', 'bv-cell bv-choco');
+          cz.style.transform = tf(r, c);
+          chocoLayer.appendChild(cz);
+          chocoEls[r][c] = cz;
         }
       }
       maskKey = maskSignature(b);
@@ -136,6 +155,16 @@
     function setLock(r, c, locked) {
       var l = lockEls[r] && lockEls[r][c];
       if (l) { l.setAttribute('data-on', locked ? '1' : '0'); }
+    }
+
+    function setIce(r, c, level) {
+      var n = iceEls[r] && iceEls[r][c];
+      if (n) { n.setAttribute('data-level', String(level || 0)); }
+    }
+
+    function setChoco(r, c, on) {
+      var n = chocoEls[r] && chocoEls[r][c];
+      if (n) { n.setAttribute('data-on', on ? '1' : '0'); }
     }
 
     function makePiece(id, color, special) {
@@ -197,6 +226,8 @@
         for (var c = 0; c < cols; c++) {
           setGlaze(r, c, b.glaze[r][c]);
           setLock(r, c, b.lock[r][c]);
+          setIce(r, c, b.ice ? b.ice[r][c] : 0);
+          setChoco(r, c, b.choco ? b.choco[r][c] : false);
           var candy = b.mask[r][c] ? b.candies[r][c] : null;
           if (!candy) { continue; }
           var p = pieces[candy.id] || makePiece(candy.id, candy.color, candy.special);
@@ -383,6 +414,27 @@
           burstWhite(e.pos);
           if (node) { animate(node, [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1.08)' },
             { opacity: 1, transform: tf(e.pos.r, e.pos.c) }], 200); }
+        } else if (e.kind === 'ice') {
+          node = iceEls[e.pos.r] && iceEls[e.pos.r][e.pos.c];
+          setIce(e.pos.r, e.pos.c, e.remaining);
+          effects.splinter(e.pos, e.remaining === 0 ? 12 : 6);
+          if (node) {
+            animate(node, e.remaining === 0
+              ? [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1)' },
+                 { opacity: 0, transform: tf(e.pos.r, e.pos.c) + ' scale(1.25)' }]
+              : [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1.1)' },
+                 { opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1)' }], 240);
+          }
+        } else if (e.kind === 'choco') {
+          node = chocoEls[e.pos.r] && chocoEls[e.pos.r][e.pos.c];
+          setChoco(e.pos.r, e.pos.c, false);
+          effects.crumble(e.pos, 12);
+          if (node) {
+            animate(node, [
+              { opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1)' },
+              { opacity: 0, transform: tf(e.pos.r, e.pos.c) + ' scale(0.5) rotate(-10deg)' }
+            ], 260);
+          }
         } else {
           node = lockEls[e.pos.r] && lockEls[e.pos.r][e.pos.c];
           setLock(e.pos.r, e.pos.c, e.remaining > 0);
@@ -399,8 +451,45 @@
       return Promise.resolve();
     }
 
+    // Boss-Angriff: Der Wurf ist gelandet (eventHook), jetzt erscheinen die neuen Hindernisse.
+    function showAttack(e) {
+      e.cells.forEach(function (p) {
+        var node;
+        if (e.kind === 'lock') { setLock(p.r, p.c, true); node = lockEls[p.r] && lockEls[p.r][p.c]; }
+        else if (e.kind === 'glaze') { setGlaze(p.r, p.c, e.level); node = glazeEls[p.r] && glazeEls[p.r][p.c]; }
+        else { setIce(p.r, p.c, e.level); node = iceEls[p.r] && iceEls[p.r][p.c]; }
+        effects.burst(p, e.kind === 'lock' ? '#6b4a5c' : '#bfeaff', 8);
+        if (node) {
+          animate(node, [{ opacity: 0, transform: tf(p.r, p.c) + ' scale(1.5)' },
+            { opacity: 1, transform: tf(p.r, p.c) + ' scale(1)' }], 220, 'cubic-bezier(.3,1.5,.5,1)');
+        }
+      });
+      return wait(dur(160));
+    }
+
     function burstWhite(pos) {
       effects.burst(pos, '#ffffff', 6);
+    }
+
+    // Schokolade breitet sich aus: Strang von Zelle zu Zelle, das Bonbon dort verschwindet.
+    function playChocoSpread(e) {
+      effects.flow(e.from, e.to, DUR.spread);
+      var p = pieces[e.candyId] || pieceAt(e.to);
+      if (p && ids[e.to.r] && ids[e.to.r][e.to.c] === e.candyId) { ids[e.to.r][e.to.c] = null; }
+      var jobs = [];
+      if (p) {
+        jobs.push(animate(p.body, [{ transform: 'scale(1)' }, { transform: 'scale(0.1)' }], DUR.spread, 'ease-in')
+          .then(function () { removePiece(e.candyId); }));
+      }
+      var node = chocoEls[e.to.r] && chocoEls[e.to.r][e.to.c];
+      setChoco(e.to.r, e.to.c, true);
+      if (node) {
+        jobs.push(animate(node, [
+          { opacity: 0, transform: tf(e.to.r, e.to.c) + ' scale(0.2)' },
+          { opacity: 1, transform: tf(e.to.r, e.to.c) + ' scale(1)' }
+        ], DUR.spread, 'ease-out'));
+      }
+      return Promise.all(jobs);
     }
 
     function playFell(e) {
@@ -500,7 +589,12 @@
           else if (e.type === 'fell') { job = playFell(e); }
           else if (e.type === 'spawned') { job = playSpawned(e); }
           else if (e.type === 'shuffled') { job = playShuffled(e); }
-          else { job = Promise.resolve(); }   // Sitzungs-Ereignisse: nur Ton
+          else if (e.type === 'chocoSpread') { job = playChocoSpread(e); }
+          else {
+            // Sitzungs-Ereignisse: Ton, dazu ggf. der eventHook (Boss-Anzeige)
+            job = eventHook ? Promise.resolve(eventHook(e)) : Promise.resolve();
+            if (e.type === 'bossAttack') { job = job.then(function () { return showAttack(e); }); }
+          }
         }
         return job.then(step);
       }
@@ -626,8 +720,17 @@
       refreshMarks();
     }
 
+    // Lage einer Zelle im Fenster (für Effekte außerhalb des Felds)
+    function cellRect(pos) {
+      var rect = root.getBoundingClientRect();
+      var w = rect.width / cols;
+      var h = rect.height / rows;
+      return { left: rect.left + pos.c * w, top: rect.top + pos.r * h, width: w, height: h };
+    }
+
     function destroy() {
       destroyed = true;
+      eventHook = null;
       clearHint();
       effects.destroy();
       if (root.parentNode) { root.parentNode.removeChild(root); }
@@ -644,6 +747,8 @@
       render: render,
       play: play,
       onSwap: function (handler) { swapHandler = handler; },
+      setEventHook: function (fn) { eventHook = fn || null; },
+      cellRect: cellRect,
       setBusy: setBusy,
       setPicker: setPicker,
       isBusy: function () { return busy; },

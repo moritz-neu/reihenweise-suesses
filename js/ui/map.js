@@ -1,115 +1,31 @@
 (function (RS) {
   'use strict';
 
-  // Levelkarte: das nächtliche Kandishain mit einem geschwungenen Weg und zehn Häusern.
-  // Zwei Anordnungen: quer (breite Fenster) und hoch (schmale Fenster, scrollt senkrecht).
+  // Levelkarte: zwei Welten (Kandishain, Frostzuckerberge), je zehn Häuser an einem
+  // geschwungenen Weg und ein Tor dazwischen. Zwei Anordnungen: quer (breite Fenster)
+  // und hoch (schmale Fenster, scrollt senkrecht). Die Zeichnungen liefert RS.UI.MapArt.
 
   var el = RS.UI.el;
-  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var Art = RS.UI.MapArt;
   var NARROW = '(max-width: 720px), (max-aspect-ratio: 4/5)';
 
-  var LAYOUTS = {
-    wide: {
-      w: 1000, h: 640,
-      points: [[95, 560], [255, 525], [415, 565], [580, 530], [745, 485],
-        [880, 365], [725, 285], [540, 315], [350, 270], [420, 135]],
-      crystal: [610, 92],
-      moon: [90, 80],
-      trees: [[175, 470], [335, 455], [495, 480], [660, 600], [820, 575], [965, 470],
-        [640, 235], [255, 200], [290, 385], [860, 245], [110, 380], [950, 600]]
-    },
-    tall: {
-      w: 400, h: 1300,
-      points: [[100, 1220], [300, 1100], [110, 980], [290, 860], [100, 740],
-        [300, 620], [110, 500], [290, 380], [100, 260], [270, 150]],
-      crystal: [110, 80],
-      moon: [340, 60],
-      trees: [[30, 1120], [370, 1010], [370, 760], [30, 860], [30, 620], [370, 520],
-        [370, 280], [30, 380], [30, 160], [210, 1240]]
-    }
-  };
+  // Wolken und Glitzer liegen über dem Bild: [links %, oben %, Breite %, Verzögerung s]
+  var CLOUDS = [[18, 3, 14, 0], [42, 1, 11, -18], [58, 9, 11, -34], [74, 1, 9, -9]];
+  var GLITTER = [[14, 8, 0], [30, 18, -1.1], [52, 6, -2.3], [72, 16, -0.7], [90, 9, -1.7],
+    [8, 30, -2.8], [60, 26, -0.4], [44, 34, -1.9]];
 
-  // Kleines Haus je Station; Dachfarbe aus der Bonbon-Palette.
-  function houseSvg(index) {
-    return '<svg class="station-house" viewBox="0 0 60 56" aria-hidden="true" focusable="false">' +
-      '<path class="house-roof" data-color="' + (index % 6) + '" d="M4 26 L30 4 L56 26 Z"/>' +
-      '<rect class="house-chimney" x="41" y="8" width="7" height="12"/>' +
-      '<rect class="house-body" x="10" y="24" width="40" height="30" rx="2"/>' +
-      '<rect class="house-window" x="15" y="30" width="11" height="11" rx="2"/>' +
-      '<path class="house-door" d="M33 54 V40 a6 6 0 0 1 12 0 V54 Z"/>' +
-      '<circle class="house-attic" cx="30" cy="18" r="3.5"/>' +
-    '</svg>';
+  function worldOf(level) {
+    return level.world || (level.id > 10 ? 2 : 1);
   }
 
-  // Catmull-Rom-Kurve durch alle Punkte als SVG-Pfad.
-  function curve(points) {
-    var d = 'M' + points[0][0] + ' ' + points[0][1];
-    for (var i = 0; i < points.length - 1; i++) {
-      var p0 = points[i - 1] || points[i];
-      var p1 = points[i];
-      var p2 = points[i + 1];
-      var p3 = points[i + 2] || p2;
-      var c1x = p1[0] + (p2[0] - p0[0]) / 6;
-      var c1y = p1[1] + (p2[1] - p0[1]) / 6;
-      var c2x = p2[0] - (p3[0] - p1[0]) / 6;
-      var c2y = p2[1] - (p3[1] - p1[1]) / 6;
-      d += ' C' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) + ' ' + c2x.toFixed(1) + ' ' + c2y.toFixed(1) +
-        ' ' + p2[0] + ' ' + p2[1];
-    }
-    return d;
-  }
-
-  function svgEl(tag, attrs) {
-    var node = document.createElementNS(SVG_NS, tag);
-    Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); });
-    return node;
-  }
-
-  function scenery(layout, progressCount, crystalLit) {
-    var svg = svgEl('svg', {
-      'class': 'map-scenery', viewBox: '0 0 ' + layout.w + ' ' + layout.h,
-      preserveAspectRatio: 'none', 'aria-hidden': 'true', focusable: 'false'
-    });
-    var w = layout.w;
-    var h = layout.h;
-    // Hügel im Hintergrund
-    svg.appendChild(svgEl('path', { 'class': 'map-hill-far',
-      d: 'M0 ' + h * 0.55 + ' Q ' + w * 0.25 + ' ' + h * 0.42 + ' ' + w * 0.5 + ' ' + h * 0.52 +
-        ' T ' + w + ' ' + h * 0.48 + ' V' + h + ' H0 Z' }));
-    svg.appendChild(svgEl('path', { 'class': 'map-hill',
-      d: 'M0 ' + h * 0.78 + ' Q ' + w * 0.3 + ' ' + h * 0.68 + ' ' + w * 0.6 + ' ' + h * 0.8 +
-        ' T ' + w + ' ' + h * 0.74 + ' V' + h + ' H0 Z' }));
-    // Mond
-    var mx = layout.moon[0];
-    var my = layout.moon[1];
-    svg.appendChild(svgEl('path', { 'class': 'map-moon',
-      d: 'M' + mx + ' ' + (my - 26) + ' A26 26 0 1 0 ' + mx + ' ' + (my + 26) +
-        ' A18 26 0 0 1 ' + mx + ' ' + (my - 26) + ' Z' }));
-    // Lolli-Bäume abseits des Wegs
-    layout.trees.forEach(function (t, i) {
-      var tree = svgEl('g', { 'class': 'map-tree', transform: 'translate(' + t[0] + ' ' + t[1] + ')' });
-      tree.appendChild(svgEl('rect', { x: -1.5, y: 0, width: 3, height: 18 }));
-      tree.appendChild(svgEl('circle', { cx: 0, cy: -2, r: 9, 'data-color': String((i + 2) % 6) }));
-      svg.appendChild(tree);
-    });
-    var pts = layout.points;
-    // Weg: ganzer Weg gedämpft, freigeschalteter Teil golden
-    var d = curve(pts);
-    svg.appendChild(svgEl('path', { 'class': 'map-path-bed', d: d }));
-    svg.appendChild(svgEl('path', { 'class': 'map-path', d: d }));
-    if (progressCount > 1) {
-      svg.appendChild(svgEl('path', { 'class': 'map-path-lit', d: curve(pts.slice(0, progressCount)) }));
-    }
-    // Kristallbonbon auf dem Dorfplatz
-    var cx = layout.crystal[0];
-    var cy = layout.crystal[1];
-    var crystal = svgEl('g', { 'class': 'map-crystal' + (crystalLit ? ' is-lit' : ''),
-      transform: 'translate(' + cx + ' ' + cy + ')' });
-    crystal.appendChild(svgEl('ellipse', { 'class': 'map-crystal-base', cx: 0, cy: 26, rx: 26, ry: 7 }));
-    crystal.appendChild(svgEl('path', { 'class': 'map-crystal-gem', d: 'M0 -26 L18 0 L0 26 L-18 0 Z' }));
-    crystal.appendChild(svgEl('path', { 'class': 'map-crystal-shine', d: 'M0 -26 L6 0 L0 26 L-18 0 Z' }));
-    svg.appendChild(crystal);
-    return svg;
+  // Startwelt: die des höchsten freigeschalteten Levels. Hat sich das Tor noch nicht
+  // sichtbar geöffnet, beginnt die Karte in Kandishain, damit man die Öffnung sieht.
+  function defaultWorld(save) {
+    var top = Math.min(save.unlocked, RS.LEVELS.length);
+    var level = RS.LEVELS[top - 1];
+    var world = level ? worldOf(level) : 1;
+    if (world === 2 && (!RS.Save.isGateOpen(save) || !save.gateOpenSeen)) { world = 1; }
+    return world;
   }
 
   function goalSummary(level) {
@@ -157,26 +73,101 @@
     });
   }
 
-  function renderMap(holder) {
+  function place(node, pt, layout) {
+    node.style.left = (pt[0] / layout.w * 100) + '%';
+    node.style.top = (pt[1] / layout.h * 100) + '%';
+  }
+
+  // Wolken und Glitzer über dem Bild (gezeichnet, nur Dekoration).
+  function skyLayer() {
+    var layer = el('div', 'map-sky');
+    layer.setAttribute('aria-hidden', 'true');
+    CLOUDS.forEach(function (c) {
+      var cloud = el('span', 'map-cloud');
+      cloud.style.left = c[0] + '%';
+      cloud.style.top = c[1] + '%';
+      cloud.style.width = c[2] + '%';
+      cloud.style.animationDelay = c[3] + 's';
+      layer.appendChild(cloud);
+    });
+    GLITTER.forEach(function (g) {
+      var star = el('span', 'sparkle map-glitter');
+      star.style.left = g[0] + '%';
+      star.style.top = g[1] + '%';
+      star.style.animationDelay = g[2] + 's';
+      layer.appendChild(star);
+    });
+    return layer;
+  }
+
+  // Tor-Knopf. Welt 1: führt in die Frostzuckerberge (zu, offen oder gerade öffnend).
+  // Welt 2: führt immer offen zurück nach Kandishain.
+  function gateButton(world, layout, state, onPass) {
+    var b = el('button', 'map-gate map-gate--w' + world.id + ' is-' + (state === 'closed' ? 'closed' : 'open') +
+      (state === 'opening' ? ' is-opening' : ''));
+    b.type = 'button';
+    place(b, layout.gate, layout);
+    b.innerHTML = Art.gate(world.id);
+    b.appendChild(el('span', 'map-gate-label', world.target));
+    if (state === 'closed') {
+      b.setAttribute('aria-disabled', 'true');
+      b.setAttribute('aria-label', 'Tor nach ' + world.target + ', verschlossen. ' + RS.STORY.gateLocked);
+      var tip = el('span', 'map-gate-tip', RS.STORY.gateLocked);
+      tip.setAttribute('aria-hidden', 'true');
+      b.appendChild(tip);
+    } else {
+      b.setAttribute('aria-label', 'Tor nach ' + world.target);
+      b.addEventListener('click', function () {
+        RS.Audio.play({ type: 'click' });
+        onPass();
+      });
+    }
+    return b;
+  }
+
+  // view = { world, gateState, onPass }
+  function renderMap(holder, view) {
     var save = RS.App.save;
-    var layout = LAYOUTS[mq && mq.matches ? 'tall' : 'wide'];
+    var world = view.world;
+    var tall = Boolean(mq && mq.matches);
+    var layout = world.layouts[tall ? 'tall' : 'wide'];
     var unlocked = Math.min(save.unlocked, RS.LEVELS.length);
+    var levels = RS.LEVELS.filter(function (level) { return worldOf(level) === world.id; });
+    var litCount = levels.filter(function (level) { return level.id <= unlocked; }).length;
+    var lastId = levels[levels.length - 1].id;
     holder.innerHTML = '';
-    holder.className = 'map-world map-world--' + (layout === LAYOUTS.tall ? 'tall' : 'wide');
+    holder.className = 'map-world map-world--' + (tall ? 'tall' : 'wide') + ' map-world--w' + world.id;
     holder.style.aspectRatio = layout.w + ' / ' + layout.h;
-    holder.appendChild(scenery(layout, unlocked, save.finaleSeen || Boolean(save.stars[RS.LEVELS.length])));
+
+    var art = el('div', 'map-art');
+    art.innerHTML = Art.backdrop(world, layout);
+    holder.appendChild(art.firstChild);
+    var photo = el('div', 'map-photo');
+    photo.setAttribute('aria-hidden', 'true');
+    holder.appendChild(photo);
+    holder.appendChild(skyLayer());
+    art.innerHTML = Art.foreground(world, layout, {
+      lit: litCount,
+      gateOpen: view.gateState !== 'closed',
+      crystalLit: world.id === 1 ? (save.finaleSeen || Boolean(save.stars[lastId]))
+        : (save.grandFinaleSeen || Boolean(save.stars[lastId]))
+    });
+    holder.appendChild(art.firstChild);
+
+    var gateBtn = gateButton(world, layout, world.id === 1 ? view.gateState : 'open', view.onPass);
+    holder.appendChild(gateBtn);
 
     var focusTarget = null;
-    RS.LEVELS.forEach(function (level, i) {
+    levels.forEach(function (level, i) {
       var pt = layout.points[i];
       var stars = save.stars[level.id] || 0;
       var open = level.id <= unlocked;
       var state = stars > 0 ? 'done' : (open ? 'next' : 'locked');
       var b = el('button', 'station station--' + state);
       b.type = 'button';
-      b.style.left = (pt[0] / layout.w * 100) + '%';
-      b.style.top = (pt[1] / layout.h * 100) + '%';
-      b.innerHTML = houseSvg(i);
+      place(b, pt, layout);
+      b.style.setProperty('--blink-delay', (-(i * 1.7) % 7).toFixed(1) + 's');
+      b.innerHTML = Art.house(world.id, level.id - 1);
       b.appendChild(el('span', 'station-num', String(level.id)));
       if (state === 'done') { b.appendChild(starRow(stars)); }
       b.setAttribute('aria-label', 'Level ' + level.id + ', ' + (state === 'done'
@@ -192,12 +183,23 @@
       if (state === 'next' || (!focusTarget && open && level.id === unlocked)) { focusTarget = b; }
       holder.appendChild(b);
     });
+    if (view.gateState === 'opening') { focusTarget = gateBtn; }
     return focusTarget;
   }
 
-  function mount(root) {
+  // params.world: 1 oder 2; ohne Angabe die Welt des höchsten freigeschalteten Levels.
+  function mount(root, params) {
     var save = RS.App.save;
-    section = el('section', 'screen map');
+    var gateOpen = RS.Save.isGateOpen(save);
+    var worldId = Number(params && params.world) || defaultWorld(save);
+    if (worldId !== 2 || !gateOpen) { worldId = 1; }
+    var world = Art.WORLDS[worldId];
+    var view = {
+      world: world,
+      gateState: !gateOpen ? 'closed' : (worldId === 1 && !save.gateOpenSeen ? 'opening' : 'open'),
+      onPass: function () { RS.UI.show('map', { world: worldId === 1 ? 2 : 1 }); }
+    };
+    section = el('section', 'screen map map--w' + worldId);
 
     var head = el('header', 'map-head');
     var back = el('button', 'btn btn--ghost', 'Zurück');
@@ -207,11 +209,12 @@
       RS.UI.show('menu');
     });
     head.appendChild(back);
-    head.appendChild(el('h1', 'screen-title', 'Kandishain'));
+    head.appendChild(el('h1', 'screen-title', world.name));
     var total = el('p', 'map-total');
+    var max = RS.LEVELS.length * 3;
     total.appendChild(el('span', 'map-total-star', '★'));
-    total.appendChild(document.createTextNode(' ' + totalStars(save) + ' / ' + RS.LEVELS.length * 3));
-    total.setAttribute('aria-label', totalStars(save) + ' von ' + RS.LEVELS.length * 3 + ' Sternen');
+    total.appendChild(document.createTextNode(' ' + totalStars(save) + ' / ' + max));
+    total.setAttribute('aria-label', totalStars(save) + ' von ' + max + ' Sternen');
     var side = el('div', 'map-side');
     var balance = RS.UI.Shop.balance(save);
     side.appendChild(balance);
@@ -230,14 +233,20 @@
     head.appendChild(side);
     section.appendChild(head);
 
-    var world = el('div', 'map-world');
-    section.appendChild(world);
+    var holder = el('div', 'map-world');
+    section.appendChild(holder);
     root.appendChild(section);
 
     mq = window.matchMedia ? window.matchMedia(NARROW) : null;
-    var focusTarget = renderMap(world);
+    var focusTarget = renderMap(holder, view);
+    if (view.gateState === 'opening') {
+      // Die Öffnung spielt genau einmal; ein neuer Aufbau (Fenstergröße) zeigt das Tor offen.
+      view.gateState = 'open';
+      save.gateOpenSeen = true;
+      RS.App.persist();
+    }
     onMedia = function () {
-      if (section) { renderMap(world); }
+      if (section) { renderMap(holder, view); }
     };
     if (mq) {
       if (mq.addEventListener) { mq.addEventListener('change', onMedia); }
@@ -246,9 +255,14 @@
 
     (focusTarget || back).focus();
 
-    if (!save.prologueSeen) {
+    if (worldId === 1 && !save.prologueSeen) {
       RS.UI.Dialog.say(RS.STORY.prologue, { skippable: true }).then(function () {
         RS.App.save.prologueSeen = true;
+        RS.App.persist();
+      });
+    } else if (worldId === 2 && !save.world2IntroSeen) {
+      RS.UI.Dialog.say(RS.STORY.world2Intro, { skippable: true }).then(function () {
+        RS.App.save.world2IntroSeen = true;
         RS.App.persist();
       });
     }
@@ -264,5 +278,5 @@
     section = null;
   }
 
-  RS.UI.screens.map = { mount: mount, unmount: unmount, LAYOUTS: LAYOUTS };
+  RS.UI.screens.map = { mount: mount, unmount: unmount, WORLDS: Art.WORLDS, defaultWorld: defaultWorld };
 })(window.RS = window.RS || {});

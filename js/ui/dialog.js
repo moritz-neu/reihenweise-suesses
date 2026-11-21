@@ -2,7 +2,10 @@
   'use strict';
 
   // Annika, die Zuckerfee: kleine SVG-Figur mit Sprechblase.
-  // RS.UI.Dialog.say(lines, { skippable }) zeigt Zeile für Zeile (ein Klick je Zeile).
+  // RS.UI.Dialog.say(lines, { skippable, speakers }) zeigt Zeile für Zeile (ein Klick je Zeile).
+  // Eine Zeile ist ein Text (Annika spricht) oder { who, text }; who ist 'annika' oder ein
+  // Schlüssel aus speakers = { boss: { name, figure() } }. Dann zeigt der Dialog die Figur
+  // dieses Sprechers und seinen Namen als Titel.
   // RS.UI.Dialog.annika(text) liefert Figur + Blase als Baustein für andere Dialoge.
 
   var el = RS.UI.el;
@@ -77,18 +80,37 @@
   // *Überspringen*, und Escape überspringt ebenfalls. Das Promise endet in jedem Fall,
   // sobald der Dialog zu ist.
   function say(lines, opts) {
-    var list = (lines || []).slice();
+    var list = (lines || []).map(function (l) {
+      return typeof l === 'string' ? { who: 'annika', text: l } : l;
+    });
     var skippable = !opts || opts.skippable !== false;
+    var speakers = (opts && opts.speakers) || {};
     return new Promise(function (resolve) {
       if (!list.length) { resolve(); return; }
       var index = 0;
-      var parts = annika(list[0]);
+      var parts = annika(list[0].text);
+      var annikaFigure = parts.node.firstChild;
+      var figures = {};   // who -> Figur eines anderen Sprechers
       var counter = el('p', 'annika-counter');
       parts.bubble.appendChild(counter);
       var nextButton = null;
+      var titleNode = null;
+
+      function setSpeaker(who) {
+        var sp = who !== 'annika' ? speakers[who] : null;
+        if (sp && !figures[who]) {
+          figures[who] = sp.figure();
+          parts.node.insertBefore(figures[who], parts.bubble);
+        }
+        annikaFigure.hidden = Boolean(sp);
+        Object.keys(figures).forEach(function (k) { figures[k].hidden = !sp || k !== who; });
+        parts.node.setAttribute('data-speaker', sp ? who : 'annika');
+        if (titleNode) { titleNode.textContent = sp ? sp.name : 'Annika'; }
+      }
 
       function update() {
-        parts.text.textContent = list[index];
+        setSpeaker(list[index].who);
+        parts.text.textContent = list[index].text;
         counter.textContent = list.length > 1 ? (index + 1) + ' / ' + list.length : '';
         if (nextButton) {
           nextButton.textContent = index < list.length - 1 ? 'Weiter' : 'Los geht’s';
@@ -121,6 +143,7 @@
       });
       var btns = overlay.querySelectorAll('.dialog-actions .btn');
       nextButton = btns[btns.length - 1];
+      titleNode = overlay.querySelector('.dialog-title');
       update();
     });
   }

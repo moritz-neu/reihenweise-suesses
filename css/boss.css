@@ -1,0 +1,458 @@
+/* Bosskampf: Boss-Leiste über dem Feld, Würfe, Szenen-Figuren */
+
+.game-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.game-main .game-board {
+  flex: none;
+}
+
+/* Die Boss-Leiste braucht Höhe: das Feld wird entsprechend kleiner */
+.game--boss .bv-board {
+  --bv-reserve: 23rem;
+}
+
+@media (min-width: 900px) {
+  .game-main {
+    flex: 0 1 40rem;
+  }
+
+  .game--boss .bv-board {
+    --bv-reserve: 14rem;
+  }
+}
+
+.boss-panel {
+  --boss-glow: rgba(224, 32, 79, 0.45);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: min(100%, 40rem);
+  padding: 0.45rem 0.9rem 0.45rem 0.5rem;
+  border: 1px solid var(--gold-line);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 12% 50%, var(--boss-glow), transparent 55%),
+    rgba(20, 12, 46, 0.72);
+  box-shadow: inset 0 0 18px rgba(140, 90, 255, 0.15);
+  transition: background 0.6s;
+}
+
+.boss-panel[data-boss="lakritz"][data-phase="2"] { --boss-glow: rgba(77, 195, 255, 0.4); }
+.boss-panel[data-boss="kandara"] { --boss-glow: rgba(127, 208, 242, 0.45); }
+.boss-panel[data-boss="kandara"][data-phase="2"] { --boss-glow: rgba(199, 125, 255, 0.5); }
+
+/* ---------- Figur ---------- */
+
+.boss-stage {
+  position: relative;
+  flex: 0 0 auto;
+  width: 5.6rem;
+  height: 5.6rem;
+}
+
+.boss-art {
+  width: 100%;
+  height: 100%;
+}
+
+.boss-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.boss-panel .boss-art {
+  animation: rs-boss-idle 3s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+
+.boss-art.is-hit .boss-svg {
+  animation: rs-boss-shake 0.38s ease-out;
+}
+
+.boss-art.is-attacking .boss-svg {
+  animation: rs-boss-lunge 0.4s ease-out;
+}
+
+.boss-art.is-phase .boss-svg {
+  animation: rs-boss-grow 0.7s ease-out;
+}
+
+.boss-panel.is-defeated .boss-art {
+  animation: rs-boss-vanish 0.9s ease-in forwards;
+}
+
+/* Farben je Phase: Graf Lakritz wechselt von Rot zu Blau, Kandara von Eisblau zu Violett */
+.boss-art path,
+.boss-art circle,
+.boss-art ellipse {
+  transition: fill 0.6s, stroke 0.6s, opacity 0.6s;
+}
+
+.boss-art[data-phase="2"] .lk-cape { fill: #262a78; }
+.boss-art[data-phase="2"] .lk-lining { fill: #4dc3ff; }
+.boss-art[data-phase="2"] .lk-bead { fill: #1384d6; }
+.boss-art[data-phase="2"] .lk-tash { stroke: #4dc3ff; }
+.boss-art[data-phase="2"] .lk-pupil { fill: #0b4f8a; }
+.boss-art[data-phase="1"] .lk-brow { opacity: 0; }
+
+.boss-art[data-phase="2"] .kd-gown { fill: #9a6cf0; }
+.boss-art[data-phase="2"] .kd-gown-dark { fill: #6a3fc8; }
+.boss-art[data-phase="2"] .kd-collar { fill: #d9c2ff; }
+.boss-art[data-phase="2"] .kd-candy { fill: #c77dff; }
+.boss-art[data-phase="2"] .kd-eye { fill: #8a2be2; }
+.boss-art[data-phase="2"] .kd-crack { opacity: 1; }
+.boss-art[data-phase="1"] .kd-brow { opacity: 0; }
+
+.boss-flash {
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, rgba(255, 255, 255, 0.6) 35%, transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boss-fx {
+  position: absolute;
+  left: -100%;
+  top: -100%;
+  width: 300%;
+  height: 300%;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.boss-dmg {
+  position: absolute;
+  top: 30%;
+  z-index: 2;
+  transform: translateX(-50%);
+  font-family: var(--font-title);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 6px #e0204f, 0 2px 0 #6b0f2a;
+  pointer-events: none;
+  animation: rs-boss-dmg 0.9s ease-out forwards;
+}
+
+.boss-dmg.is-big {
+  font-size: 1.75rem;
+  color: var(--gold);
+}
+
+/* ---------- Werte ---------- */
+
+.boss-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.boss-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.boss-name {
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.boss-phase {
+  flex: none;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--gold-line);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.boss-panel[data-phase="2"] .boss-phase {
+  border-color: #ff6f8f;
+  color: #fff;
+  background: rgba(224, 32, 79, 0.35);
+}
+
+.boss-hp {
+  position: relative;
+  height: 1.15rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.boss-hp-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, #ff7a9a, #e0204f 60%, #a3123a);
+  transition: width 0.35s ease-out;
+}
+
+.boss-hp.is-low .boss-hp-fill {
+  background: linear-gradient(180deg, #ffd78c, #f5b942 60%, #b8791c);
+}
+
+.boss-hp-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.boss-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.boss-weak {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.boss-weak-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.boss-weak .candy {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex: none;
+}
+
+.boss-spell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.boss-spell-bar {
+  flex: 1 1 auto;
+  height: 0.6rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 140, 0.25);
+  overflow: hidden;
+}
+
+.boss-spell-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #c77dff, #ffd78c);
+  transition: width 0.3s ease-out;
+}
+
+.boss-spell.is-full .boss-spell-fill {
+  background: linear-gradient(90deg, #ffd78c, #fff6dc, #ffd78c);
+  box-shadow: 0 0 10px rgba(255, 215, 140, 0.9);
+}
+
+.btn.boss-spell-btn {
+  flex: none;
+  min-width: 0;
+  padding: 0.35em 0.9em;
+  font-size: 0.92rem;
+}
+
+.boss-spell-star {
+  color: var(--gold);
+}
+
+.boss-spell.is-full .boss-spell-btn:not(:disabled) {
+  box-shadow: 0 0 0 2px var(--gold-line), 0 0 16px rgba(255, 215, 120, 0.7);
+  animation: rs-boss-ready 1.2s ease-in-out infinite;
+}
+
+/* ---------- Würfe (fliegen frei über den Bildschirm) ---------- */
+
+.boss-shot {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.boss-shot[data-kind="lock"] {
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle at 50% 50%, #2a1d25 0 2px, #6b4a5c 2px 4px);
+  box-shadow: 0 0 8px rgba(224, 32, 79, 0.8);
+}
+
+.boss-shot[data-kind="glaze"] {
+  border-radius: 50% 50% 50% 10%;
+  background: radial-gradient(circle at 35% 30%, #fff, #e8fbff 40%, #9fd4f0);
+  box-shadow: 0 0 10px rgba(191, 233, 255, 0.9);
+}
+
+.boss-shot[data-kind="ice"] {
+  clip-path: polygon(50% 0, 78% 36%, 100% 50%, 78% 64%, 50% 100%, 22% 64%, 0 50%, 22% 36%);
+  background: linear-gradient(135deg, #fff, #a8e6ff 55%, #4dc3ff);
+}
+
+.boss-shot[data-kind="star"] {
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  background: radial-gradient(circle, #fff, #ffd78c 60%, #f5b942);
+}
+
+/* ---------- Figur im Szenen-Dialog ---------- */
+
+.boss-say-figure {
+  flex: 0 0 auto;
+  width: 6.5rem;
+  height: 6.5rem;
+}
+
+.annika-say[data-speaker="boss"] .annika-bubble,
+.annika-say[data-speaker="boss"] .annika-bubble::before {
+  background: #2b2038;
+  border-color: rgba(255, 111, 143, 0.55);
+}
+
+.annika-say[data-speaker="boss"] .annika-bubble {
+  color: var(--text);
+  box-shadow: 0 0 18px rgba(224, 32, 79, 0.35);
+}
+
+.annika-say[data-speaker="boss"] .annika-counter {
+  color: var(--text-dim);
+}
+
+.hud-boss-icon {
+  flex: 0 0 auto;
+  width: 1.7rem;
+  height: 1.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #ff6f8f;
+}
+
+/* ---------- Schmale Bildschirme ---------- */
+
+@media (max-width: 480px) {
+  .boss-panel {
+    gap: 0.5rem;
+    padding-right: 0.6rem;
+  }
+
+  .boss-stage {
+    width: 4.4rem;
+    height: 4.4rem;
+  }
+
+  .boss-say-figure {
+    width: 4.6rem;
+    height: 4.6rem;
+  }
+
+  .boss-name {
+    font-size: 0.95rem;
+  }
+
+  .btn.boss-spell-btn {
+    padding: 0.35em 0.7em;
+    font-size: 0.85rem;
+  }
+}
+
+/* ---------- Animationen ---------- */
+
+@keyframes rs-boss-idle {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-2px) scaleY(1.03); }
+}
+
+@keyframes rs-boss-shake {
+  0%, 100% { transform: translateX(0) rotate(0); filter: none; }
+  20% { transform: translateX(-6px) rotate(-4deg); filter: brightness(1.8); }
+  45% { transform: translateX(5px) rotate(3deg); }
+  70% { transform: translateX(-3px) rotate(-1deg); }
+}
+
+@keyframes rs-boss-lunge {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(4px, -4px) scale(1.12); }
+}
+
+@keyframes rs-boss-grow {
+  0% { transform: scale(1); filter: brightness(2.2); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); filter: none; }
+}
+
+@keyframes rs-boss-vanish {
+  0% { transform: scale(1) rotate(0); opacity: 1; filter: none; }
+  30% { transform: scale(1.15) rotate(-6deg); opacity: 1; filter: brightness(2.5); }
+  100% { transform: scale(0.2) rotate(25deg); opacity: 0; filter: brightness(3); }
+}
+
+@keyframes rs-boss-dmg {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.7); }
+  20% { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%, -2.6rem) scale(1); }
+}
+
+@keyframes rs-boss-ready {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Reduzierte Bewegung: keine Bewegung, besiegter Boss bleibt einfach blass stehen */
+@media (prefers-reduced-motion: reduce) {
+  .boss-panel .boss-art,
+  .boss-art .boss-svg,
+  .boss-dmg,
+  .boss-spell-btn {
+    animation: none !important;
+  }
+
+  .boss-panel.is-defeated .boss-art {
+    opacity: 0.35;
+  }
+
+  .boss-hp-fill,
+  .boss-spell-fill,
+  .boss-art path,
+  .boss-art circle,
+  .boss-art ellipse {
+    transition: none;
+  }
+}

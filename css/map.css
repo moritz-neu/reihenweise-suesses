@@ -14,6 +14,15 @@
 
 /* ---------- Levelkarte ---------- */
 
+/* Hintergrundbilder: Schicht .map-photo (und .menu-photo) über der gezeichneten Kulisse.
+   Ohne Bilder bleibt der Wert none: kein Netzabruf, keine 404 in der Konsole, die
+   gezeichnete Kulisse ist sichtbar. Liegen img/kandishain-bg.webp und
+   img/frostberge-bg.webp vor, hier none durch url("../img/…-bg.webp") ersetzen. */
+:root {
+  --photo-kandishain: none;
+  --photo-frostberge: none;
+}
+
 .map {
   gap: 0.75rem;
   padding-top: 1rem;
@@ -51,16 +60,25 @@
 }
 
 /* Die Welt behält ihr Seitenverhältnis (per style gesetzt); Stationen werden in
-   Prozent darauf platziert und in cqw (Breite der Welt) bemessen. */
+   Prozent darauf platziert und in cqw (Breite der Welt) bemessen.
+   Schichten von hinten nach vorn: Himmelsverlauf (background), .map-backdrop,
+   .map-photo, .map-sky (Wolken, Glitzer), .map-scenery, Tor und Stationen. */
 .map-world {
   position: relative;
   width: min(100%, 72rem, calc((100vh - 6.5rem) * 1.5625));
   container-type: inline-size;
   border-radius: 28px;
-  background: radial-gradient(ellipse at 50% 15%, rgba(90, 60, 170, 0.35), rgba(14, 8, 36, 0.4) 70%);
+  background: linear-gradient(180deg, #160b3d 0%, #34196a 38%, #7a3a8f 62%, #c46a9e 82%, #f2a7b8 100%);
   box-shadow: inset 0 0 0 1px rgba(255, 215, 140, 0.12), 0 0 40px rgba(140, 90, 255, 0.18);
   overflow: hidden;
   --station: 9.2cqw;
+  --world-photo: var(--photo-kandishain);
+}
+
+.map-world--w2 {
+  background: linear-gradient(180deg, #06123a 0%, #12306b 40%, #2a6a9c 66%, #6fc0d6 86%, #c9f1ff 100%);
+  box-shadow: inset 0 0 0 1px rgba(196, 236, 255, 0.18), 0 0 40px rgba(90, 190, 255, 0.2);
+  --world-photo: var(--photo-frostberge);
 }
 
 .map-world--tall {
@@ -68,36 +86,151 @@
   --station: 19cqw;
 }
 
+.map-backdrop,
+.map-photo,
+.map-sky,
 .map-scenery {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
 }
 
-.map-hill-far { fill: #2a1d5c; opacity: 0.55; }
-.map-moon { fill: var(--gold); filter: drop-shadow(0 0 10px rgba(255, 215, 140, 0.7)); }
-.map-hill { fill: #170e3a; opacity: 0.85; }
+.map-photo {
+  background: var(--world-photo) center / cover no-repeat;
+}
 
-.map-tree rect { fill: #e8dcc8; opacity: 0.7; }
-.map-tree circle { opacity: 0.75; }
-.map-tree circle[data-color="0"] { fill: var(--candy-0); }
-.map-tree circle[data-color="1"] { fill: var(--candy-1); }
-.map-tree circle[data-color="2"] { fill: var(--candy-2); }
-.map-tree circle[data-color="3"] { fill: var(--candy-3); }
-.map-tree circle[data-color="4"] { fill: var(--candy-4); }
-.map-tree circle[data-color="5"] { fill: var(--candy-5); }
+/* Wolken ziehen langsam hin und her */
+.map-sky {
+  overflow: hidden;
+}
 
-.map-path-bed {
+.map-world--tall .map-sky {
+  height: 22%;
+}
+
+.map-cloud {
+  position: absolute;
+  aspect-ratio: 5 / 2;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 30% 60%, rgba(236, 222, 255, 0.34) 0 30%, transparent 31%),
+    radial-gradient(circle at 55% 40%, rgba(236, 222, 255, 0.34) 0 34%, transparent 35%),
+    radial-gradient(circle at 76% 62%, rgba(236, 222, 255, 0.3) 0 26%, transparent 27%),
+    radial-gradient(ellipse at 50% 78%, rgba(236, 222, 255, 0.3) 0 46%, transparent 47%);
+  filter: blur(0.5px);
+  animation: rs-cloud-drift 52s ease-in-out infinite alternate;
+}
+
+.map-world--w2 .map-cloud { opacity: 0.8; }
+
+.map-world--tall .map-cloud { width: 22% !important; }
+
+@keyframes rs-cloud-drift {
+  from { transform: translateX(-6cqw); }
+  to { transform: translateX(6cqw); }
+}
+
+.map-glitter {
+  width: 1.2cqw;
+  height: 1.2cqw;
+  min-width: 7px;
+  min-height: 7px;
+}
+
+.map-world--w2 .map-glitter {
+  background: #e6faff;
+  filter: drop-shadow(0 0 4px #9fe6ff);
+}
+
+/* Gezeichnete Kulisse */
+.art-stars circle { fill: #fff6e0; opacity: 0.8; }
+.art-stars .is-twinkle { animation: rs-twinkle 3.4s ease-in-out infinite; }
+.map-world--w2 .art-stars circle { fill: #e8f8ff; }
+
+@keyframes rs-twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.art-moon { fill: var(--gold); }
+.art-moon-glow { fill: rgba(255, 215, 140, 0.12); }
+.map-world--w2 .art-moon { fill: #f4fbff; }
+.map-world--w2 .art-moon-glow { fill: rgba(200, 240, 255, 0.14); }
+
+.art-hill-rim,
+.art-ground-rim {
   fill: none;
-  stroke: rgba(10, 5, 28, 0.6);
-  stroke-width: 30;
+  stroke: rgba(255, 220, 240, 0.35);
+  stroke-width: 3;
   stroke-linecap: round;
 }
 
+.art-hill--1 { fill: #6a3f93; }
+.art-hill--2 { fill: #522d84; }
+.art-hill--3 { fill: #432474; }
+.art-hill--4 { fill: #391d66; }
+.art-ground--1 { fill: #2f1858; }
+.art-ground--2 { fill: #21103f; }
+
+.map-world--tall .art-hill--1 { fill: #6a3f93; }
+
+.art-far-village path { fill: #3b1f63; }
+.art-far-window { fill: #ffd78c; opacity: 0.9; }
+
+/* Welt 2: Puderzuckerberge, Polarlicht, Schneefelder */
+.art-mountain { fill: #3d5f9c; }
+.art-mountain--b { fill: #33528c; }
+.art-snowcap { fill: #f2fbff; opacity: 0.95; }
+
+.art-aurora-band {
+  fill: none;
+  stroke-width: 26;
+  stroke-linecap: round;
+  opacity: 0.32;
+  filter: blur(6px);
+  animation: rs-aurora 9s ease-in-out infinite alternate;
+}
+.art-aurora-band--a { stroke: #6dffc4; }
+.art-aurora-band--b { stroke: #7fd8ff; animation-delay: -3s; }
+.art-aurora-band--c { stroke: #c79bff; animation-delay: -6s; }
+
+@keyframes rs-aurora {
+  from { opacity: 0.18; }
+  to { opacity: 0.45; }
+}
+
+.map-world--w2 .art-hill-rim,
+.map-world--w2 .art-ground-rim { stroke: rgba(240, 252, 255, 0.85); stroke-width: 4; }
+.map-world--w2 .art-hill--1 { fill: #4a72ad; }
+.map-world--w2 .art-hill--2 { fill: #3e639e; }
+.map-world--w2 .art-hill--3 { fill: #355790; }
+.map-world--w2 .art-hill--4 { fill: #304f88; }
+.map-world--w2 .art-ground--1 { fill: #2b4a82; }
+.map-world--w2 .art-ground--2 { fill: #213a6c; }
+
+/* Weg: dunkler Rand, Karamellstraße, Punkte; freigeschalteter Teil golden */
+.map-path-bed {
+  fill: none;
+  stroke: rgba(14, 6, 32, 0.55);
+  stroke-width: 34;
+  stroke-linecap: round;
+}
+
+.map-path-road {
+  fill: none;
+  stroke: #8a5a7e;
+  stroke-width: 24;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+
+.map-world--w2 .map-path-road { stroke: #8fb8dd; opacity: 0.7; }
+
 .map-path {
   fill: none;
-  stroke: rgba(185, 169, 220, 0.35);
+  stroke: rgba(255, 240, 250, 0.45);
   stroke-width: 7;
   stroke-dasharray: 2 16;
   stroke-linecap: round;
@@ -112,9 +245,32 @@
   filter: drop-shadow(0 0 5px rgba(255, 215, 140, 0.9));
 }
 
+/* Bäume */
+.art-tree-shadow { fill: rgba(8, 3, 22, 0.45); }
+.art-lolli-stick { fill: #f6eee2; }
+.art-lolli-disc { stroke: rgba(255, 255, 255, 0.55); stroke-width: 1.5; }
+.art-lolli-disc[data-color="0"] { fill: var(--candy-0); }
+.art-lolli-disc[data-color="1"] { fill: var(--candy-1); }
+.art-lolli-disc[data-color="2"] { fill: var(--candy-2); }
+.art-lolli-disc[data-color="3"] { fill: var(--candy-3); }
+.art-lolli-disc[data-color="4"] { fill: var(--candy-4); }
+.art-lolli-disc[data-color="5"] { fill: var(--candy-5); }
+.art-lolli-swirl { fill: none; stroke: rgba(255, 255, 255, 0.75); stroke-width: 2.4; stroke-linecap: round; }
+.art-lolli-bow { fill: #ff8fc4; }
+
+.art-fir-trunk { fill: #8a5a3c; }
+.art-fir-body { fill: #6fd0e6; stroke: #d9f7ff; stroke-width: 1.2; stroke-linejoin: round; }
+.art-fir--mint .art-fir-body { fill: #6fe0b8; }
+.art-fir--rose .art-fir-body { fill: #b9a6ff; }
+.art-fir-snow { fill: none; stroke: #ffffff; stroke-width: 2.6; stroke-linecap: round; }
+.art-fir-star { fill: #fff2b3; filter: drop-shadow(0 0 3px #ffd78c); }
+
+/* Kristallbonbon: Dorfplatz (Welt 1) und Gipfel (Welt 2) */
 .map-crystal-base { fill: rgba(255, 215, 140, 0.2); }
 .map-crystal-gem { fill: #4a3a7a; stroke: rgba(255, 255, 255, 0.35); stroke-width: 1.5; }
 .map-crystal-shine { fill: rgba(255, 255, 255, 0.08); }
+.map-crystal--ice .map-crystal-base { fill: rgba(200, 240, 255, 0.35); }
+.map-crystal--ice .map-crystal-gem { fill: #3a5a8a; }
 .map-crystal.is-lit .map-crystal-gem {
   fill: #c4ecff;
   stroke: #fff;
@@ -126,6 +282,155 @@
 @keyframes rs-crystal {
   0%, 100% { opacity: 0.85; }
   50% { opacity: 1; }
+}
+
+/* ---------- Tor zwischen den Welten ---------- */
+
+.map-gate {
+  position: absolute;
+  width: calc(var(--station) * 1.05);
+  height: calc(var(--station) * 1.26);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transform: translate(-50%, -88%);
+  transition: transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.map-gate.is-open:hover {
+  transform: translate(-50%, -91%) scale(1.06);
+}
+
+.map-gate.is-closed {
+  cursor: not-allowed;
+}
+
+.map-gate:focus-visible {
+  outline-offset: 4px;
+  border-radius: 14px;
+}
+
+.gate-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.gate-shadow { fill: rgba(8, 3, 22, 0.5); }
+.gate-arch { fill: none; stroke: #fffaf2; stroke-width: 10; stroke-linecap: round; }
+.gate-arch-stripes { fill: none; stroke: #e0204f; stroke-width: 10; stroke-dasharray: 7 7; }
+.gate-svg--w2 .gate-arch-stripes { stroke: #1aa5d6; }
+.gate-portal { fill: #120a2c; }
+.gate-bars rect { fill: #1b1220; stroke: #3d2a45; stroke-width: 1; }
+.gate-bar-shine { fill: none; stroke: rgba(255, 120, 160, 0.35); stroke-width: 1.4; stroke-linecap: round; }
+.gate-sparkle { fill: #fff6dc; filter: drop-shadow(0 0 4px #ffe9b8); opacity: 0; }
+
+/* Offen: leuchtendes Tor in die andere Welt, Stäbe weg, Glitzer */
+.map-gate.is-open .gate-portal {
+  fill: #9fe2ff;
+  filter: drop-shadow(0 0 10px rgba(159, 226, 255, 0.9));
+  animation: rs-portal 2.8s ease-in-out infinite;
+}
+.map-gate--w2.is-open .gate-portal {
+  fill: #ffb3d4;
+  filter: drop-shadow(0 0 10px rgba(255, 160, 205, 0.9));
+}
+.map-gate.is-open .gate-bars { opacity: 0; transform: translateY(-70px); }
+.map-gate.is-open .gate-sparkle { opacity: 1; animation: rs-gate-twinkle 2.2s ease-in-out infinite; }
+.map-gate.is-open .gate-sparkle--s { animation-delay: -1.1s; }
+
+@keyframes rs-portal {
+  0%, 100% { opacity: 0.78; }
+  50% { opacity: 1; }
+}
+
+@keyframes rs-gate-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.gate-sparkle { transform-box: fill-box; transform-origin: center; }
+
+/* Einmalige Öffnung: Stäbe heben sich, das Tor leuchtet auf */
+.map-gate.is-opening .gate-bars { animation: rs-gate-bars 1.5s ease-in 0.6s backwards; }
+.map-gate.is-opening .gate-portal { animation: rs-gate-glow 2.1s ease-out backwards, rs-portal 2.8s ease-in-out 2.1s infinite; }
+.map-gate.is-opening .gate-svg { animation: rs-gate-shake 0.6s ease-in-out 0.1s; }
+
+@keyframes rs-gate-bars {
+  from { opacity: 1; transform: translateY(0); }
+  60% { opacity: 1; }
+  to { opacity: 0; transform: translateY(-70px); }
+}
+
+@keyframes rs-gate-glow {
+  0%, 40% { fill: #120a2c; opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes rs-gate-shake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+.map-gate-label {
+  position: absolute;
+  left: 50%;
+  bottom: -14%;
+  padding: 0.1em 0.6em;
+  transform: translateX(-50%);
+  border: 2px solid var(--gold-line);
+  border-radius: var(--radius-pill);
+  background: var(--night-bottom);
+  font-size: clamp(0.65rem, calc(var(--station) * 0.15), 0.9rem);
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+
+.map-gate.is-open .map-gate-label { border-color: var(--gold); color: var(--gold); }
+
+/* Hinweis am verschlossenen Tor (Maus darüber oder Fokus) */
+.map-gate-tip {
+  position: absolute;
+  left: 50%;
+  bottom: 104%;
+  z-index: 2;
+  width: max-content;
+  max-width: 14rem;
+  padding: 0.45em 0.75em;
+  transform: translateX(-50%);
+  border: 2px solid var(--gold-line);
+  border-radius: 12px;
+  background: rgba(255, 246, 220, 0.97);
+  color: #2a1840;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.map-gate.is-closed:hover .map-gate-tip,
+.map-gate.is-closed:focus .map-gate-tip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Tor ganz oben in der hohen Anordnung: Hinweis darunter statt darüber */
+.map-world--tall.map-world--w1 .map-gate-tip,
+.map-world--wide.map-world--w1 .map-gate-tip {
+  bottom: auto;
+  top: 124%;
 }
 
 /* Station = Haus + Nummer + Sterne */
@@ -156,13 +461,42 @@
   width: 100%;
   height: 100%;
   overflow: visible;
+  filter: drop-shadow(0 3px 3px rgba(8, 3, 22, 0.55));
 }
 
-.house-body { fill: #2b1d5e; stroke: rgba(255, 215, 140, 0.25); stroke-width: 1.2; }
-.house-roof { fill: #3d2c74; stroke: rgba(255, 215, 140, 0.25); stroke-width: 1.2; stroke-linejoin: round; }
-.house-chimney { fill: #2b1d5e; }
-.house-window, .house-attic { fill: #120a2c; }
-.house-door { fill: #1a1040; }
+/* Lebkuchenhaus mit Zuckerguss (Welt 1) */
+.house-body { fill: #a8642f; stroke: #6e3a16; stroke-width: 1.2; }
+.house-chimney { fill: #8c4f22; stroke: #6e3a16; stroke-width: 1; }
+.house-roof { stroke: rgba(40, 12, 30, 0.45); stroke-width: 1.2; stroke-linejoin: round; }
+.house-roof[data-color="0"] { fill: var(--candy-0); }
+.house-roof[data-color="1"] { fill: var(--candy-1); }
+.house-roof[data-color="2"] { fill: var(--candy-2); }
+.house-roof[data-color="3"] { fill: var(--candy-3); }
+.house-roof[data-color="4"] { fill: var(--candy-4); }
+.house-roof[data-color="5"] { fill: var(--candy-5); }
+.house-icing { fill: none; stroke: #fff8ee; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.house-icing-drip { fill: #fff8ee; }
+.house-window, .house-attic { fill: #2a1638; stroke: #fff8ee; stroke-width: 1.6; }
+.house-window-cross { fill: none; stroke: #fff8ee; stroke-width: 1.2; }
+.house-door { fill: #5c2f14; stroke: #fff8ee; stroke-width: 1.2; }
+.house-knob { fill: var(--gold); }
+.house-button { stroke: #fff; stroke-width: 0.6; }
+.house-button[data-color="0"] { fill: var(--candy-0-glow); }
+.house-button[data-color="1"] { fill: var(--candy-1-glow); }
+.house-button[data-color="2"] { fill: var(--candy-2-glow); }
+.house-button[data-color="3"] { fill: var(--candy-3-glow); }
+.house-button[data-color="4"] { fill: var(--candy-4-glow); }
+.house-button[data-color="5"] { fill: var(--candy-5-glow); }
+
+/* Eisbonbonhütte mit Schneehaube (Welt 2) */
+.station-house--w2 .house-body { fill: #9fd6f2; stroke: #e8f9ff; stroke-width: 1.4; }
+.station-house--w2 .house-chimney { fill: #7fbbe0; stroke: #e8f9ff; }
+.house-snow { fill: #ffffff; }
+.house-icicles { fill: #e6faff; }
+.house-frost { fill: none; stroke: rgba(255, 255, 255, 0.7); stroke-width: 2; stroke-dasharray: 1 3; stroke-linecap: round; }
+.station-house--w2 .house-window,
+.station-house--w2 .house-attic { fill: #1d2c5a; stroke: #ffffff; }
+.station-house--w2 .house-door { fill: #3a5f9c; stroke: #ffffff; }
 
 .station-num {
   position: absolute;
@@ -200,29 +534,31 @@
   text-shadow: 0 0 6px rgba(255, 200, 100, 0.9);
 }
 
-/* Gewonnen: warmes Licht in den Fenstern, farbiges Dach */
+/* Gewonnen: warmes Licht in den Fenstern, das leise blinkt */
 .station--done .house-window,
 .station--done .house-attic {
   fill: #ffd78c;
   filter: drop-shadow(0 0 4px #ffc861) drop-shadow(0 0 9px rgba(255, 180, 60, 0.8));
+  animation: rs-window-blink 7s ease-in-out infinite;
+  animation-delay: var(--blink-delay, 0s);
 }
-.station--done .house-door { fill: #f5b942; opacity: 0.75; }
+.station--done .house-door { fill: #f5b942; }
 .station--done .station-house { filter: drop-shadow(0 0 10px rgba(255, 200, 100, 0.45)); }
-.station--done .house-body { fill: #43307c; }
-.station--done .house-roof[data-color="0"] { fill: var(--candy-0); }
-.station--done .house-roof[data-color="1"] { fill: var(--candy-1); }
-.station--done .house-roof[data-color="2"] { fill: var(--candy-2); }
-.station--done .house-roof[data-color="3"] { fill: var(--candy-3); }
-.station--done .house-roof[data-color="4"] { fill: var(--candy-4); }
-.station--done .house-roof[data-color="5"] { fill: var(--candy-5); }
 .station--done .station-num { border-color: var(--gold); color: var(--gold); }
+
+@keyframes rs-window-blink {
+  0%, 100% { opacity: 1; }
+  46% { opacity: 1; }
+  50% { opacity: 0.45; }
+  54% { opacity: 1; }
+}
 
 /* Nächstes Level: pulsiert */
 .station--next .station-house {
   animation: rs-station-pulse 1.6s ease-in-out infinite;
 }
 .station--next .house-window,
-.station--next .house-attic { fill: rgba(255, 215, 140, 0.35); }
+.station--next .house-attic { fill: rgba(255, 215, 140, 0.55); }
 .station--next .station-num {
   border-color: var(--gold);
   background: var(--gold-strong);
@@ -234,15 +570,11 @@
   50% { transform: scale(1.08); filter: drop-shadow(0 0 16px rgba(255, 215, 140, 0.95)); }
 }
 
-/* Gesperrt: grau */
+/* Gesperrt: grau und dunkel */
 .station--locked {
   cursor: not-allowed;
-  filter: grayscale(1) brightness(0.7);
+  filter: grayscale(1) brightness(0.6);
 }
-
-.station--locked .house-body,
-.station--locked .house-roof,
-.station--locked .house-chimney { fill: #241c38; }
 
 /* ---------- Annika und ihre Sprechblasen ---------- */
 
@@ -509,10 +841,21 @@
 
 .hud-goal .candy,
 .hud-glaze-icon,
+.hud-choco-icon,
 .hud-score-icon {
   flex: 0 0 auto;
   width: 1.7rem;
   height: 1.7rem;
+}
+
+.hud-choco-icon {
+  display: inline-block;
+  border-radius: 18%;
+  background:
+    linear-gradient(90deg, transparent 46%, rgba(30, 14, 6, 0.5) 46% 54%, transparent 54%),
+    linear-gradient(0deg, transparent 46%, rgba(30, 14, 6, 0.5) 46% 54%, transparent 54%),
+    radial-gradient(circle at 30% 25%, #b5703a, #5a2e14 75%);
+  box-shadow: inset 0 0 0 2px #3a1c0b, 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .hud-glaze-icon {
@@ -632,6 +975,10 @@
   .map-head .screen-title,
   .game-head .screen-title {
     font-size: 1.3rem;
+  }
+
+  .map-head .screen-title {
+    font-size: 1.1rem;
   }
 
   .map-head .btn,

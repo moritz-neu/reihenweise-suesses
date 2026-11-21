@@ -25,6 +25,8 @@
       candies: grid(rows, cols, null),
       glaze: grid(rows, cols, 0),
       lock: grid(rows, cols, false),
+      ice: grid(rows, cols, 0),
+      choco: grid(rows, cols, false),
       rng: RS.createRng(seed),
       nextId: 1
     };
@@ -71,6 +73,11 @@
         board.candies[r][c] = cell.candy;
         if (opts.glaze) { board.glaze[r][c] = Number(opts.glaze[r].charAt(c)); }
         if (opts.lock) { board.lock[r][c] = opts.lock[r].charAt(c) === 'L'; }
+        if (opts.ice) { board.ice[r][c] = Number(opts.ice[r].charAt(c)); }
+        if (opts.choco && opts.choco[r].charAt(c) === 'C') {
+          board.choco[r][c] = true;
+          board.candies[r][c] = null;
+        }
       }
     }
     return board;
@@ -95,6 +102,7 @@
   // Color used for matching; null for void, empty cells and colorballs.
   function colorAt(board, r, c) {
     var candy = board.candies[r][c];
+    if (board.ice[r][c] > 0) { return null; }
     return candy && candy.color !== null ? candy.color : null;
   }
 
@@ -175,6 +183,8 @@
     return isPlayable(board, a) && isPlayable(board, b) &&
       get(board, a) !== null && get(board, b) !== null &&
       !board.lock[a.r][a.c] && !board.lock[b.r][b.c] &&
+      board.ice[a.r][a.c] === 0 && board.ice[b.r][b.c] === 0 &&
+      !board.choco[a.r][a.c] && !board.choco[b.r][b.c] &&
       isAdjacent(a, b);
   }
 
@@ -223,7 +233,8 @@
     for (r = 0; r < board.rows; r++) {
       for (c = 0; c < board.cols; c++) {
         var candy = board.candies[r][c];
-        if (board.mask[r][c] && candy && !candy.special && !board.lock[r][c]) {
+        if (board.mask[r][c] && candy && !candy.special && !board.lock[r][c] &&
+            board.ice[r][c] === 0 && !board.choco[r][c]) {
           cells.push({ r: r, c: c });
           originals.push({ candy: candy, color: candy.color });
         }
@@ -265,7 +276,7 @@
   function fillRandom(board) {
     for (var r = 0; r < board.rows; r++) {
       for (var c = 0; c < board.cols; c++) {
-        if (!board.mask[r][c]) { continue; }
+        if (!board.mask[r][c] || board.choco[r][c]) { continue; }
         var banned = {};
         if (c >= 2 && colorAt(board, r, c - 1) !== null &&
             colorAt(board, r, c - 1) === colorAt(board, r, c - 2)) {
@@ -289,6 +300,8 @@
         board.mask[r][c] = ch !== '.';
         board.glaze[r][c] = ch === '1' || ch === 'K' ? 1 : ch === '2' ? 2 : 0;
         board.lock[r][c] = ch === 'L' || ch === 'K';
+        board.ice[r][c] = ch === 'I' ? 1 : ch === 'J' ? 2 : 0;
+        board.choco[r][c] = ch === 'C';
       }
     }
   }

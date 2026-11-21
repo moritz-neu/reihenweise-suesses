@@ -277,4 +277,67 @@
     var e = RS.Session._fromBoard(null, B.fromRows(ROWS, { colors: 5 }), 'endless');
     eq(RS.Session.addMoves(e, 5).length, 0);
   });
+
+  // Chocolate spread after swap moves.
+  var NOWIN = [{ type: 'score', target: 100000 }];
+  function chocoCount(b) { return RS.Obstacles.countChoco(b); }
+
+  t('choco: spreads when none removed', function () {
+    var s = session(NOWIN, 5, { colors: 5, choco: ['.....C', '......', '......', '......'] });
+    var ev = play(s);
+    var sp = ofType(ev, 'chocoSpread');
+    eq(sp.length, 1);
+    eq(ofType(ev, 'obstacleHit').length, 0);
+    eq(chocoCount(s.board), 2);
+    eq(s.board.choco[sp[0].to.r][sp[0].to.c], true);
+    eq(s.board.candies[sp[0].to.r][sp[0].to.c], null);
+    eq(s.board.choco[sp[0].from.r][sp[0].from.c], true);
+    ok(sp[0].candyId !== undefined);
+  });
+
+  t('choco: no spread when one was removed', function () {
+    var s = session(NOWIN, 5, { colors: 5, choco: ['.....C', '......', 'C.....', '......'] });
+    var ev = play(s);
+    ok(ofType(ev, 'obstacleHit').some(function (e) { return e.kind === 'choco'; }));
+    eq(ofType(ev, 'chocoSpread').length, 0);
+  });
+
+  t('choco: no spread from hammer', function () {
+    var s = session(NOWIN, 5, { colors: 5, choco: ['.....C', '......', '......', '......'] });
+    var ev = RS.Session.smash(s, P(3, 0));
+    eq(ofType(ev, 'chocoSpread').length, 0);
+    eq(chocoCount(s.board), 1);
+  });
+
+  t('choco: no free neighbour, no spread', function () {
+    var s = session(NOWIN, 5, { colors: 5, choco: ['.....C', '......', '......', '......'],
+      lock: ['....L.', '.....L', '......', '......'] });
+    var ev = play(s);
+    eq(ofType(ev, 'chocoSpread').length, 0);
+    eq(chocoCount(s.board), 1);
+  });
+
+  t('choco: no spread after winning move', function () {
+    var s = session([{ type: 'score', target: 60 }], 5, { colors: 5, choco: ['.....C', '......', '......', '......'] });
+    var ev = play(s);
+    eq(s.status, 'won');
+    eq(ofType(ev, 'chocoSpread').length, 0);
+    eq(chocoCount(s.board), 1);
+  });
+
+  t('choco: spread raises the goal target, goal completes only when board is clear', function () {
+    var s = session([{ type: 'choco' }], 5, { colors: 5, choco: ['.....C', '......', '......', '......'] });
+    eq(s.goals.goals[0].target, 1);
+    var ev = play(s);
+    eq(ofType(ev, 'chocoSpread').length, 1);
+    eq(s.goals.goals[0].target, 2);
+    var prog = ofType(ev, 'goalProgress');
+    eq(prog[prog.length - 1].goals[0].target, 2);
+    ok(prog.length >= 2);
+    var hit = { type: 'obstacleHit', pos: P(0, 5), kind: 'choco', remaining: 0 };
+    RS.Goals.apply(s.goals, [hit]);
+    eq(RS.Goals.allDone(s.goals), false);
+    RS.Goals.apply(s.goals, [hit]);
+    eq(RS.Goals.allDone(s.goals), true);
+  });
 })(window.RS = window.RS || {});

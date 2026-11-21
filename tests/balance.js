@@ -8,7 +8,7 @@
   // die meisten Punkte. Gleichstände entscheidet sein eigener Zufallsgenerator.
   // Aufruf: balance.html?seeds=200&levels=1,2,3  (Standard: 200 Startwerte, alle Level)
   // Probewerte ohne levels.js zu ändern: &set=9.moves=30;5.g1=20
-  // (gN = Zielmenge des N-ten Ziels).
+  // (gN = Zielmenge des N-ten Ziels, hp = Leben des Bosses im Level: &set=10.hp=280).
   // Standard: jeder Lauf bekommt einen eigenen Feld-Startwert (wechselnde Verläufe).
   // &boards=fixed nutzt den festen Level-Startwert; dann spielt der Bot in manchen Leveln
   // jede Partie gleich und die Siegquote ist nur 0 oder 100 %.
@@ -59,6 +59,7 @@
       level: s.level,
       board: cloneBoard(s.board),
       goals: JSON.parse(JSON.stringify(s.goals)),
+      boss: s.boss ? JSON.parse(JSON.stringify(s.boss)) : null,
       status: s.status
     };
   }
@@ -67,7 +68,8 @@
 
   // Fortschritt eines Zugs auf die noch offenen Ziele (wie ein Mensch, der auf die Ziele
   // spielt): Glasurschichten für ein Glasurziel, Bonbons der Farbe für ein Sammelziel,
-  // Punkte nur für ein offenes Punkteziel. Jeweils höchstens bis zum Rest des Ziels.
+  // Punkte nur für ein offenes Punkteziel, entfernte Schokolade für ein Schokoladenziel,
+  // Bossschaden für ein Bossziel. Jeweils höchstens bis zum Rest des Ziels.
   function goalProgress(before, events, gain) {
     var progress = 0;
     before.goals.forEach(function (g) {
@@ -76,6 +78,8 @@
       var n = 0;
       events.forEach(function (e) {
         if (g.type === 'glaze' && e.type === 'obstacleHit' && e.kind === 'glaze') { n++; }
+        if (g.type === 'choco' && e.type === 'obstacleHit' && e.kind === 'choco') { n++; }
+        if (g.type === 'boss' && e.type === 'bossDamaged') { n += e.damage; }
         if (g.type === 'collect' && e.type === 'cleared') {
           n += e.candies.filter(function (c) { return c.color === g.color; }).length;
         }
@@ -95,6 +99,11 @@
     }
     var s = RS.Session.startLevel(def);
     while (s.status === 'playing') {
+      // Sternenzauber, sobald die Leiste voll ist (kostet keinen Zug).
+      if (s.boss && s.boss.charge >= RS.Boss.SPELL_MAX) {
+        RS.Session.starSpell(s);
+        continue;
+      }
       var moves = RS.Board.findPossibleMoves(s.board);
       if (!moves.length) { break; }
       var best = [];
@@ -146,9 +155,11 @@
     return a[Math.min(a.length - 1, Math.floor(p * a.length))];
   }
 
-  function goalText(g) {
+  function goalText(g, level) {
     if (g.type === 'score') { return g.target + ' P'; }
     if (g.type === 'collect') { return g.target + '×F' + g.color; }
+    if (g.type === 'choco') { return 'Schoko'; }
+    if (g.type === 'boss') { return 'Boss ' + RS.BOSSES[level.boss].hp + ' LP'; }
     return 'Glasur';
   }
 
@@ -163,10 +174,11 @@
     if (!spec) { return levels; }
     var copy = JSON.parse(JSON.stringify(levels));
     spec.split(';').forEach(function (part) {
-      var m = /^(\d+)\.(moves|g\d)=(.+)$/.exec(part.trim());
+      var m = /^(\d+)\.(moves|hp|g\d)=(.+)$/.exec(part.trim());
       if (!m) { throw new Error('unbekannter Probewert: ' + part); }
       var level = copy[Number(m[1]) - 1];
       if (m[2] === 'moves') { level.moves = Number(m[3]); }
+      else if (m[2] === 'hp') { RS.BOSSES[level.boss].hp = Number(m[3]); }
       else { level.goals[Number(m[2].slice(1))].target = Number(m[3]); }
     });
     return copy;
@@ -199,7 +211,7 @@
       function pct(n) { return Math.round(n / results.length * 100); }
       lines.push(
         pad(level.id, 2) + ' ' + pad(level.moves, 4) + ' ' +
-        (level.goals.map(goalText).join(' + ') + '                  ').slice(0, 18) + ' ' +
+        (level.goals.map(function (g) { return goalText(g, level); }).join(' + ') + '                  ').slice(0, 18) + ' ' +
         (RS.Goals.starMoves(level.moves).join('/') + '            ').slice(0, 12) + ' ' +
         pad(pct(wins.length), 6) + ' ' +
         pad(median(results.map(function (r) { return r.score; })), 9) + ' ' +
