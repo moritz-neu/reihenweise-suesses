@@ -41,12 +41,30 @@
     return n;
   }
 
-  // A playable cell with a normal candy and no lock, ice or chocolate.
+  // Gingerbread crate: one level less per hit, at 0 the cell is an empty fall slot.
+  // null when the cell holds no crate.
+  function hitCrate(board, p) {
+    if (board.crate[p.r][p.c] <= 0) { return null; }
+    board.crate[p.r][p.c]--;
+    return { type: 'obstacleHit', pos: pos(p.r, p.c), kind: 'crate', remaining: board.crate[p.r][p.c] };
+  }
+
+  function countCrates(board) {
+    var n = 0;
+    for (var r = 0; r < board.rows; r++) {
+      for (var c = 0; c < board.cols; c++) {
+        if (board.crate[r][c] > 0) { n++; }
+      }
+    }
+    return n;
+  }
+
+  // A playable cell with a normal candy and no lock, ice, chocolate or crate.
   function isFree(board, p) {
     if (!RS.Board.isPlayable(board, p)) { return false; }
     var candy = board.candies[p.r][p.c];
     return Boolean(candy) && !candy.special && !board.lock[p.r][p.c] &&
-      board.ice[p.r][p.c] === 0 && !board.choco[p.r][p.c];
+      board.ice[p.r][p.c] === 0 && !board.choco[p.r][p.c] && board.crate[p.r][p.c] === 0;
   }
 
   function countGlaze(board) {
@@ -65,6 +83,8 @@
     hitIce: hitIce,
     hitChoco: hitChoco,
     countChoco: countChoco,
+    hitCrate: hitCrate,
+    countCrates: countCrates,
     isFree: isFree,
     countGlaze: countGlaze
   };

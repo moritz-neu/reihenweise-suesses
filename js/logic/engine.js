@@ -13,9 +13,10 @@
   }
 
   // A cell that gravity fills: playable, not locked or frozen (those candies stay put) and not
-  // chocolate (candies fall past it).
+  // chocolate or a crate (candies fall past them).
   function isFallSlot(board, r, c) {
-    return board.mask[r][c] && !board.lock[r][c] && !board.choco[r][c] && board.ice[r][c] === 0;
+    return board.mask[r][c] && !board.lock[r][c] && !board.choco[r][c] &&
+      board.crate[r][c] === 0 && board.ice[r][c] === 0;
   }
 
   function pushObstacleEvent(ctx, event) {
@@ -43,13 +44,17 @@
       pushObstacleEvent(ctx, RS.Obstacles.hitLock(board, p));
       if (!matched) { return; }
     }
-    // Ice and chocolate absorb the hit: the candy below stays, a frozen special stays silent.
+    // Ice, chocolate and crates absorb the hit: the candy below stays, a frozen special stays silent.
     if (board.ice[p.r][p.c] > 0) {
       pushObstacleEvent(ctx, RS.Obstacles.hitIce(board, p));
       return;
     }
     if (board.choco[p.r][p.c]) {
       pushObstacleEvent(ctx, RS.Obstacles.hitChoco(board, p));
+      return;
+    }
+    if (board.crate[p.r][p.c] > 0) {
+      pushObstacleEvent(ctx, RS.Obstacles.hitCrate(board, p));
       return;
     }
     var candy = RS.Board.get(board, p);
@@ -124,7 +129,7 @@
   }
 
   // Per column, bottom-up: candies drop into the lowest free fall slot below them.
-  // Void, locked, frozen and chocolate cells are skipped, so candies fall through/past them.
+  // Void, locked, frozen, chocolate and crate cells are skipped, so candies fall through/past them.
   function applyGravity(board, ctx) {
     var moves = [];
     for (var c = 0; c < board.cols; c++) {
@@ -226,7 +231,7 @@
     });
   }
 
-  // Each ice or chocolate cell next to a matched cell gets one hit (once per cell and stage).
+  // Each ice, chocolate or crate cell next to a matched cell gets one hit (once per cell and stage).
   function thawNeighbours(board, matches, ctx) {
     var seen = new Set();
     matches.forEach(function (m) {
@@ -234,7 +239,7 @@
         [pos(p.r - 1, p.c), pos(p.r + 1, p.c), pos(p.r, p.c - 1), pos(p.r, p.c + 1)].forEach(function (q) {
           if (!RS.Board.isPlayable(board, q) || seen.has(key(q))) { return; }
           seen.add(key(q));
-          if (board.ice[q.r][q.c] > 0 || board.choco[q.r][q.c]) {
+          if (board.ice[q.r][q.c] > 0 || board.choco[q.r][q.c] || board.crate[q.r][q.c] > 0) {
             RS.Engine._hitCell(board, q, ctx, false);
           }
         });
@@ -258,8 +263,8 @@
   // A caller may pre-fill ctx.toClear to run a stage without a match. A combo swap sets
   // ctx.combo: stage 1 then runs the combo instead of matches, later stages cascade as usual.
   function resolve(board, ctx) {
-    var matches = ctx.combo || ctx.smash ? [] : RS.Board.findMatches(board);
-    while (matches.length > 0 || ctx.toClear.size > 0 || ctx.combo || ctx.smash) {
+    var matches = ctx.combo || ctx.smash || ctx.blast ? [] : RS.Board.findMatches(board);
+    while (matches.length > 0 || ctx.toClear.size > 0 || ctx.combo || ctx.smash || ctx.blast) {
       ctx.stage++;
       ctx.events.push({ type: 'cascade', stage: ctx.stage });
       if (ctx.combo) {
@@ -269,6 +274,10 @@
       if (ctx.smash) {
         RS.Engine._hitCell(board, ctx.smash, ctx, true);
         ctx.smash = null;
+      }
+      if (ctx.blast) {
+        ctx.blast.forEach(function (p) { RS.Engine._hitCell(board, p, ctx, false); });
+        ctx.blast = null;
       }
       matches.forEach(function (m) {
         ctx.events.push({ type: 'matched', color: m.color, cells: m.cells, shape: m.shape });
@@ -288,6 +297,15 @@
       matches = RS.Board.findMatches(board);
     }
     shuffleIfDead(board, ctx.events);
+  }
+
+  // Refills cells freed without a match (a crate the star spell removed), then cascades as usual.
+  function settle(board, ctx) {
+    ctx.stage++;
+    ctx.events.push({ type: 'cascade', stage: ctx.stage });
+    applyGravity(board, ctx);
+    spawn(board, ctx);
+    resolve(board, ctx);
   }
 
   function swap(board, a, b) {
@@ -319,7 +337,7 @@
 
   // Hammer joker: hits one cell like a match would (glaze, lock, special), then resolves.
   function smash(board, p) {
-    if (!RS.Board.isPlayable(board, p) || (!RS.Board.get(board, p) && !board.choco[p.r][p.c])) {
+    if (!RS.Board.isPlayable(board, p) || (!RS.Board.get(board, p) && !board.choco[p.r][p.c] && !board.crate[p.r][p.c])) {
       return { valid: false, events: [{ type: 'smashRejected', pos: p }] };
     }
     var ctx = {
@@ -335,12 +353,34 @@
     return { valid: true, events: ctx.events };
   }
 
+  // Besen joker: hits every playable cell of `cells` like a special's effect (a locked candy
+  // only loses its lock), then resolves. Invalid when no cell is playable.
+  function blast(board, cells, startEvent) {
+    var hits = cells.filter(function (p) { return RS.Board.isPlayable(board, p); });
+    if (hits.length === 0) {
+      return { valid: false, events: [{ type: 'blastRejected', cells: cells }] };
+    }
+    var ctx = {
+      stage: 0,
+      events: [startEvent],
+      swap: null,
+      triggered: new Set(),
+      toClear: new Map(),
+      combo: null,
+      blast: hits
+    };
+    RS.Engine._resolve(board, ctx);
+    return { valid: true, events: ctx.events };
+  }
+
   RS.Engine = {
     POINTS: POINTS,
     swap: swap,
     smash: smash,
+    blast: blast,
     shuffleIfDead: shuffleIfDead,
     _resolve: resolve,
+    _settle: settle,
     _hitCell: hitCell
   };
 })(window.RS = window.RS || {});

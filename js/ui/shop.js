@@ -1,16 +1,12 @@
 (function (RS) {
   'use strict';
 
-  // Laden auf der Levelkarte: Zuckerstangen gegen Joker tauschen.
+  // Laden auf der Levelkarte: Zuckerstangen gegen Joker tauschen. Er zeigt die Joker,
+  // deren Welt offen ist; Name, Preis und Wirkung stehen in der Joker-Tabelle (RS.Jokers).
   // Beim ersten Besuch erklärt Annika zuerst, wie es funktioniert.
 
   var el = RS.UI.el;
   var SVG_NS = 'http://www.w3.org/2000/svg';
-
-  var jokerInfo = {
-    moves: { name: '+5 Züge', text: 'Fünf Züge mehr im laufenden Level.' },
-    hammer: { name: 'Zuckerhammer', text: 'Zerschlägt ein Bonbon deiner Wahl – samt Glasur und Gitter.' }
-  };
 
   var PROBLEMS = { money: 'Nicht genug Zuckerstangen', full: 'Vorrat voll' };
 
@@ -34,11 +30,19 @@
     return svg;
   }
 
-  // Eigene kleine Zeichnungen für die Joker: Hammer und "+5"-Abzeichen.
+  // Eigene kleine Zeichnungen für die Joker: Hammer, Besen und "+5"-Abzeichen.
   function jokerIcon(kind) {
     var svg = svgEl('svg', { 'class': 'joker-icon', viewBox: '0 0 24 24',
       'aria-hidden': 'true', focusable: 'false' });
-    if (kind === 'hammer') {
+    if (kind === 'besen') {
+      svg.appendChild(svgEl('rect', { x: '10.8', y: '1.5', width: '2.4', height: '12', rx: '1.2', fill: '#fff',
+        stroke: '#e0204f', 'stroke-width': '0.8', 'stroke-dasharray': '1.6 1.6' }));
+      svg.appendChild(svgEl('path', { d: 'M8 13 h8 l3 9 H5 Z', fill: '#ffd24d', stroke: '#fff', 'stroke-width': '1.1',
+        'stroke-linejoin': 'round' }));
+      svg.appendChild(svgEl('path', { d: 'M9 16 L8 21 M12 16 V21 M15 16 L16 21', stroke: '#c98a4b',
+        'stroke-width': '1', 'stroke-linecap': 'round' }));
+      svg.appendChild(svgEl('rect', { x: '7.5', y: '12', width: '9', height: '2.6', rx: '1.3', fill: '#ff4d7a' }));
+    } else if (kind === 'hammer') {
       svg.appendChild(svgEl('rect', { x: '10.5', y: '9', width: '3', height: '13', rx: '1.2', fill: '#c98a4b' }));
       svg.appendChild(svgEl('rect', { x: '3', y: '3', width: '18', height: '8', rx: '2.5', fill: '#ff4d7a',
         stroke: '#fff', 'stroke-width': '1.2' }));
@@ -78,8 +82,8 @@
     body.appendChild(top);
 
     var list = el('ul', 'shop-list');
-    RS.Shop.JOKERS.forEach(function (kind) {
-      var info = jokerInfo[kind];
+    RS.Jokers.available(save).forEach(function (info) {
+      var kind = info.kind;
       var problem = RS.Shop.buyProblem(save, kind);
       var item = el('li', 'shop-item');
       var text = el('div', 'shop-item-text');
@@ -129,13 +133,13 @@
 
   function open(onClose) {
     var save = RS.App.save;
-    if (save.shopSeen) { showShop(onClose); return; }
+    if (RS.Save.hasSeen(save, 'laden')) { showShop(onClose); return; }
     RS.UI.Dialog.say(RS.STORY.shop).then(function () {
-      save.shopSeen = true;
+      RS.Save.markSeen(save, 'laden');
       RS.App.persist();
       showShop(onClose);
     });
   }
 
-  RS.UI.Shop = { stickIcon: stickIcon, jokerIcon: jokerIcon, balance: balance, jokerInfo: jokerInfo, open: open };
+  RS.UI.Shop = { stickIcon: stickIcon, jokerIcon: jokerIcon, balance: balance, open: open };
 })(window.RS = window.RS || {});

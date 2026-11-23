@@ -16,11 +16,26 @@
 <script src="../js/logic/goals.js"></script>
 <script src="../js/logic/boss.js"></script>
 <script src="../js/logic/session.js"></script>
+<script src="../js/logic/jokers.js"></script>
 <script src="../js/logic/shop.js"></script>
 <script src="../js/save.js"></script>
-<script src="../js/data/levels.js"></script>
-<script src="../js/data/bosses.js"></script>
+<script src="../js/logic/progress.js"></script>
+<script src="../js/data/curve.js"></script>
+<script src="../js/data/registry.js"></script>
+<script src="../js/data/worlds/w01.js"></script>
+<script src="../js/data/worlds/w02.js"></script>
+<script src="../js/data/worlds/w03.js"></script>
+<script src="../js/data/worlds/w04.js"></script>
 <script src="../js/data/story.js"></script>
+<!-- sound (Web Audio; silent without AudioContext) -->
+<script src="../js/audio.js"></script>
+<script src="../js/audio-sfx.js"></script>
+<!-- map art (strings only, no DOM) -->
+<script src="../js/ui/mapkit.js"></script>
+<script src="../js/ui/worlds/w01.js"></script>
+<script src="../js/ui/worlds/w02.js"></script>
+<script src="../js/ui/worlds/w03.js"></script>
+<script src="../js/ui/worlds/w04.js"></script>
 <!-- tests -->
 <script src="rng.test.js"></script>
 <script src="board.test.js"></script>
@@ -29,9 +44,13 @@
 <script src="obstacles.test.js"></script>
 <script src="session.test.js"></script>
 <script src="shop.test.js"></script>
+<script src="jokers.test.js"></script>
 <script src="save.test.js"></script>
 <script src="levels.test.js"></script>
 <script src="boss.test.js"></script>
+<script src="registry.test.js"></script>
+<script src="progress.test.js"></script>
+<script src="audio.test.js"></script>
 <script>
 (function (RS) { RS.test('runner works', function () { RS.assert.equal(1, 1); }); })(window.RS);
 </script>

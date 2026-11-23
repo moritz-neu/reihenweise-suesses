@@ -21,6 +21,8 @@
 :root {
   --photo-kandishain: none;
   --photo-frostberge: none;
+  --photo-karamellwueste: none;
+  --photo-kaugummidschungel: none;
 }
 
 .map {
@@ -41,6 +43,39 @@
 .map-head > :first-child,
 .game-head > :first-child {
   justify-self: start;
+}
+
+.map-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Joker-Geschenk beim ersten Betreten einer Welt */
+.gift {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.gift .joker-icon {
+  width: 3.4rem;
+  height: 3.4rem;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 140, 0.7));
+}
+
+.gift-text {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.gift-desc {
+  margin: 0;
+  color: var(--text-dim);
 }
 
 .map-total {
@@ -426,11 +461,17 @@
   visibility: visible;
 }
 
-/* Tor ganz oben in der hohen Anordnung: Hinweis darunter statt darüber */
-.map-world--tall.map-world--w1 .map-gate-tip,
-.map-world--wide.map-world--w1 .map-gate-tip {
+/* Das Tor am Ende liegt oben auf der Karte: Hinweis darunter statt darüber */
+.map-gate--exit .map-gate-tip {
   bottom: auto;
   top: 124%;
+}
+
+/* Hinter dem letzten vorhandenen Boss: „Fortsetzung folgt …“ */
+.map-gate.is-sealed .map-gate-label {
+  border-style: dashed;
+  color: var(--gold);
+  font-style: italic;
 }
 
 /* Station = Haus + Nummer + Sterne */
@@ -497,6 +538,160 @@
 .station-house--w2 .house-window,
 .station-house--w2 .house-attic { fill: #1d2c5a; stroke: #ffffff; }
 .station-house--w2 .house-door { fill: #3a5f9c; stroke: #ffffff; }
+
+/* ---------- Welt 3: Karamellwüste ---------- */
+
+/* Warmer Nachthimmel über Zuckersand */
+.map-world--w3 {
+  background: linear-gradient(180deg, #1a0d3a 0%, #3b1d5e 34%, #8a3f5e 58%, #d9774a 80%, #f5b766 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 150, 0.18), 0 0 40px rgba(255, 150, 70, 0.2);
+  --world-photo: var(--photo-karamellwueste);
+}
+.map-world--w3 .map-cloud { opacity: 0.55; }
+.map-world--w3 .map-glitter {
+  background: #ffe2a8;
+  filter: drop-shadow(0 0 4px #ffb860);
+}
+.map-world--w3 .art-stars circle { fill: #fff0d0; }
+.map-world--w3 .art-moon { fill: #ffe6b0; }
+.map-world--w3 .art-moon-glow { fill: rgba(255, 200, 130, 0.16); }
+
+/* Dünen und Sand */
+.map-world--w3 .art-hill-rim,
+.map-world--w3 .art-ground-rim { stroke: rgba(255, 226, 170, 0.6); stroke-width: 3; }
+.map-world--w3 .art-hill--1 { fill: #b8693a; }
+.map-world--w3 .art-hill--2 { fill: #a65c33; }
+.map-world--w3 .art-hill--3 { fill: #96512e; }
+.map-world--w3 .art-hill--4 { fill: #8a4a2b; }
+.map-world--w3 .art-ground--1 { fill: #7c4226; }
+.map-world--w3 .art-ground--2 { fill: #5e301c; }
+.map-world--w3 .map-path-road { stroke: #e0a060; opacity: 0.7; }
+
+/* Karamellpyramiden und Horizontschimmer */
+.art-desert-haze { fill: rgba(255, 170, 90, 0.2); filter: blur(18px); }
+.art-pyramid-body { fill: #c98140; }
+.art-pyramid--b .art-pyramid-body { fill: #b87436; }
+.art-pyramid-shade { fill: rgba(70, 25, 10, 0.32); }
+.art-pyramid-lines { fill: none; stroke: rgba(90, 40, 10, 0.35); stroke-width: 2; }
+.art-pyramid-cap { fill: #f5c27a; }
+
+/* Lutscherkakteen */
+.art-cactus-body { fill: #4fbf86; stroke: #d9ffe9; stroke-width: 1.2; stroke-linejoin: round; }
+.art-cactus--mint .art-cactus-body { fill: #5fd6c0; }
+.art-cactus--lime .art-cactus-body { fill: #9ad65a; }
+.art-cactus-stripes { fill: none; stroke: rgba(255, 255, 255, 0.45); stroke-width: 1.6; stroke-linecap: round; }
+.art-cactus-bloom { stroke: rgba(255, 255, 255, 0.6); stroke-width: 1.2; }
+.art-cactus-bloom[data-color="0"] { fill: var(--candy-0); }
+.art-cactus-bloom[data-color="1"] { fill: var(--candy-1); }
+.art-cactus-bloom[data-color="2"] { fill: var(--candy-2); }
+.art-cactus-bloom[data-color="3"] { fill: var(--candy-3); }
+.art-cactus-bloom[data-color="4"] { fill: var(--candy-4); }
+.art-cactus-bloom[data-color="5"] { fill: var(--candy-5); }
+.art-cactus-swirl { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 1.4; stroke-linecap: round; }
+
+/* Karamell-Kristallbonbon */
+.map-crystal--caramel .map-crystal-base { fill: rgba(255, 190, 110, 0.3); }
+.map-crystal--caramel .map-crystal-gem { fill: #7a4a2a; }
+
+/* Tor aus hartem Karamell */
+.gate-caramel { fill: #d98a3a; stroke: #8a4a18; stroke-width: 1.4; stroke-linejoin: round; }
+.gate-caramel-joints { fill: none; stroke: rgba(90, 40, 10, 0.5); stroke-width: 1.4; stroke-linecap: round; }
+.gate-caramel-shine { fill: none; stroke: rgba(255, 240, 200, 0.6); stroke-width: 2; stroke-linecap: round; }
+.gate-caramel-drip { fill: #f5c27a; }
+.map-gate--w3.is-open .gate-portal {
+  fill: #ffd08a;
+  filter: drop-shadow(0 0 10px rgba(255, 200, 120, 0.9));
+}
+
+/* Karamell-Kuppelhaus */
+.station-house--w3 .house-body { fill: #e0a35a; stroke: #fff2d8; stroke-width: 1.4; }
+.station-house--w3 .house-chimney { fill: #fff6ec; stroke: none; }
+.station-house--w3 .house-window { fill: #3a1a10; stroke: #fff2d8; stroke-width: 1.6; }
+.station-house--w3 .house-door { fill: #8a4a1e; stroke: #fff2d8; }
+.house-dome-shine { fill: none; stroke: rgba(255, 255, 255, 0.55); stroke-width: 2.2; stroke-linecap: round; }
+.house-drip { fill: #f7cf8e; }
+.house-sand { fill: none; stroke: rgba(255, 236, 200, 0.7); stroke-width: 1.4; stroke-linecap: round; }
+
+/* ---------- Welt 4: Kaugummi-Dschungel ---------- */
+
+/* Grüner Nachthimmel mit rosa Schimmer über dem Dschungel */
+.map-world--w4 {
+  background: linear-gradient(180deg, #0b1f2a 0%, #123a3a 34%, #1f5a43 56%, #3c7a3e 78%, #6d9a3e 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 170, 220, 0.18), 0 0 40px rgba(255, 110, 190, 0.18);
+  --world-photo: var(--photo-kaugummidschungel);
+}
+.map-world--w4 .map-cloud { opacity: 0.45; }
+.map-world--w4 .map-glitter {
+  background: #ffd0ec;
+  filter: drop-shadow(0 0 4px #ff8fd0);
+}
+.map-world--w4 .art-stars circle { fill: #e6fff0; }
+.map-world--w4 .art-moon { fill: #fff2c0; }
+.map-world--w4 .art-moon-glow { fill: rgba(220, 255, 200, 0.14); }
+
+/* Hügel und Waldboden */
+.map-world--w4 .art-hill-rim,
+.map-world--w4 .art-ground-rim { stroke: rgba(190, 255, 170, 0.5); stroke-width: 3; }
+.map-world--w4 .art-hill--1 { fill: #1d5a3c; }
+.map-world--w4 .art-hill--2 { fill: #1a5036; }
+.map-world--w4 .art-hill--3 { fill: #174731; }
+.map-world--w4 .art-hill--4 { fill: #143f2c; }
+.map-world--w4 .art-ground--1 { fill: #123726; }
+.map-world--w4 .art-ground--2 { fill: #0c2a1c; }
+.map-world--w4 .map-path-road { stroke: #c98a5a; opacity: 0.7; }
+
+/* Riesenblätter und Lianen */
+.art-leaf-body { fill: #2f8a4e; stroke: rgba(200, 255, 190, 0.35); stroke-width: 2; }
+.art-leaf--b .art-leaf-body { fill: #3a9a5c; }
+.art-leaf-veins { fill: none; stroke: rgba(210, 255, 200, 0.4); stroke-width: 2; stroke-linecap: round; }
+.art-vine-stem { fill: none; stroke: #4fa860; stroke-width: 3; stroke-linecap: round; }
+.art-vine-leaf { fill: #6cc46e; }
+
+/* Kaugummiblüten-Bäume */
+.art-gumtree-trunk { fill: #7a4a2e; stroke: #b07a50; stroke-width: 1; }
+.art-gumtree-crown { fill: #3fa85e; stroke: #c8ffd4; stroke-width: 1.2; stroke-linejoin: round; }
+.art-gumtree--teal .art-gumtree-crown { fill: #3fb0a0; }
+.art-gumtree--lime .art-gumtree-crown { fill: #86c84a; }
+.art-gumtree-shine { fill: none; stroke: rgba(255, 255, 255, 0.45); stroke-width: 1.8; stroke-linecap: round; }
+.art-gumtree-bloom { stroke: rgba(255, 255, 255, 0.7); stroke-width: 1; }
+.art-gumtree-bloom[data-color="0"] { fill: var(--candy-0); }
+.art-gumtree-bloom[data-color="1"] { fill: var(--candy-1); }
+.art-gumtree-bloom[data-color="2"] { fill: #ff8fd0; }
+.art-gumtree-bloom[data-color="3"] { fill: var(--candy-3); }
+.art-gumtree-bloom[data-color="4"] { fill: var(--candy-4); }
+.art-gumtree-bloom[data-color="5"] { fill: var(--candy-5); }
+.art-gumtree-bloom-shine { fill: rgba(255, 255, 255, 0.85); }
+
+/* Glühwürmchen */
+.art-fly-glow { fill: rgba(230, 255, 120, 0.25); }
+.art-fly-dot { fill: #f4ff9a; }
+.art-fly.is-blink { animation: rs-twinkle 3s ease-in-out infinite; }
+
+/* Kaugummi-Kristallbonbon */
+.map-crystal--gum .map-crystal-base { fill: rgba(255, 140, 210, 0.3); }
+.map-crystal--gum .map-crystal-gem { fill: #7a2a5a; }
+
+/* Tor aus verdrehten Kaugummiranken */
+.gate-gum { fill: none; stroke: #ff6fb7; stroke-width: 9; stroke-linecap: round; }
+.gate-gum-twist { fill: none; stroke: #3fa85e; stroke-width: 4; stroke-dasharray: 7 6; stroke-linecap: round; }
+.gate-gum-shine { fill: none; stroke: rgba(255, 230, 245, 0.6); stroke-width: 2; stroke-linecap: round; }
+.gate-gum-leaf { fill: #6cc46e; stroke: #2f8a4e; stroke-width: 0.8; }
+.gate-gum-bubble { fill: rgba(255, 150, 215, 0.85); stroke: #ffd3ee; stroke-width: 1.2; }
+.gate-gum-bubble-shine { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; }
+.map-gate--w4.is-open .gate-portal {
+  fill: #ffc2e6;
+  filter: drop-shadow(0 0 10px rgba(255, 150, 215, 0.9));
+}
+
+/* Baumhaus */
+.station-house--w4 .house-body { fill: #b77a4a; stroke: #ffe8d0; stroke-width: 1.4; }
+.station-house--w4 .house-window { fill: #1e2a1a; stroke: #ffe8d0; stroke-width: 1.6; }
+.station-house--w4 .house-door { fill: #6a3a1e; stroke: #ffe8d0; }
+.house-trunk { fill: #7a4a2e; stroke: #a8724a; stroke-width: 1; }
+.house-deck { fill: #9a6038; stroke: #ffe8d0; stroke-width: 1; }
+.house-ladder { fill: none; stroke: #d9a070; stroke-width: 1.6; stroke-linecap: round; }
+.house-leafvein { fill: none; stroke: rgba(255, 255, 255, 0.5); stroke-width: 1.2; stroke-linecap: round; }
+.house-liana { fill: none; stroke: #6cc46e; stroke-width: 1.8; stroke-linecap: round; }
 
 .station-num {
   position: absolute;
@@ -842,6 +1037,7 @@
 .hud-goal .candy,
 .hud-glaze-icon,
 .hud-choco-icon,
+.hud-crate-icon,
 .hud-score-icon {
   flex: 0 0 auto;
   width: 1.7rem;
@@ -856,6 +1052,15 @@
     linear-gradient(0deg, transparent 46%, rgba(30, 14, 6, 0.5) 46% 54%, transparent 54%),
     radial-gradient(circle at 30% 25%, #b5703a, #5a2e14 75%);
   box-shadow: inset 0 0 0 2px #3a1c0b, 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hud-crate-icon {
+  display: inline-block;
+  border-radius: 16%;
+  background:
+    linear-gradient(135deg, transparent 42%, #fff3e0 42% 58%, transparent 58%),
+    linear-gradient(160deg, #d28a4a, #9a5523);
+  box-shadow: inset 0 0 0 2px #fff3e0, inset 0 0 0 3px #7a3e14, 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .hud-glaze-icon {
@@ -970,6 +1175,18 @@
 }
 
 /* ---------- Schmale Bildschirme ---------- */
+
+/* Kartenkopf zweizeilig: Titel oben, darunter Knöpfe und Vorrat */
+@media (max-width: 600px) {
+  .map-head {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .map-head .screen-title {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+}
 
 @media (max-width: 480px) {
   .map-head .screen-title,

@@ -153,13 +153,27 @@
     return events;
   }
 
-  function smash(session, p) {
-    if (session.mode !== 'level' || session.status !== 'playing') { return []; }
-    var res = RS.Engine.smash(session.board, p);
+  // Shared body of the jokers: no move, no boss attack, no chocolate spread.
+  function jokerAction(session, res) {
     var events = res.events.slice();
     if (!res.valid) { return events; }
     bossHit(session, events, false);
     return finishLevelAction(session, events, true);
+  }
+
+  function smash(session, p) {
+    if (session.mode !== 'level' || session.status !== 'playing') { return []; }
+    return jokerAction(session, RS.Engine.smash(session.board, p));
+  }
+
+  // Joker effect on the board: hammer hits one cell, besen sweeps the row of pos.
+  function useJoker(session, kind, p) {
+    if (session.mode !== 'level' || session.status !== 'playing') { return []; }
+    if (kind === 'hammer') { return smash(session, p); }
+    if (kind !== 'besen') { return []; }
+    var cells = [];
+    for (var c = 0; c < session.board.cols; c++) { cells.push({ r: p.r, c: c }); }
+    return jokerAction(session, RS.Engine.blast(session.board, cells, { type: 'swept', row: p.r }));
   }
 
   // Star spell: only at a full bar; costs no move and triggers no attack or spread.
@@ -168,10 +182,12 @@
     if (session.mode !== 'level' || session.status !== 'playing' || !boss ||
       boss.charge < RS.Boss.SPELL_MAX) { return []; }
     var events = RS.Boss.castSpell(boss, session.board);
-    // Freed candies may complete a match: resolve it like a hammer cascade.
-    if (RS.Board.findMatches(session.board).length > 0) {
+    // A removed crate leaves an empty cell to refill; freed candies may complete a match.
+    // Both resolve like a hammer cascade.
+    var crateGone = events.some(function (e) { return e.kind === 'crate' && e.remaining === 0; });
+    if (crateGone || RS.Board.findMatches(session.board).length > 0) {
       var ctx = { stage: 0, events: [], swap: null, triggered: new Set(), toClear: new Map(), combo: null };
-      RS.Engine._resolve(session.board, ctx);
+      if (crateGone) { RS.Engine._settle(session.board, ctx); } else { RS.Engine._resolve(session.board, ctx); }
       bossHit(session, ctx.events, false);
       events = events.concat(ctx.events);
     }
@@ -187,6 +203,6 @@
 
   RS.Session = {
     ENDLESS: ENDLESS, startLevel: startLevel, startEndless: startEndless,
-    move: move, smash: smash, starSpell: starSpell, addMoves: addMoves, tick: tick, _fromBoard: fromBoard
+    move: move, smash: smash, useJoker: useJoker, starSpell: starSpell, addMoves: addMoves, tick: tick, _fromBoard: fromBoard
   };
 })(window.RS = window.RS || {});

@@ -8,7 +8,8 @@
   function d(sticks, moves, hammer) { return { sticks: sticks, jokers: { moves: moves, hammer: hammer } }; }
 
   t('shop: constants', function () {
-    deep(S.PRICES, { moves: 30, hammer: 20 });
+    deep(S.PRICES, { moves: 30, hammer: 20, besen: 25 });
+    deep(S.JOKERS, ['moves', 'hammer', 'besen']);
     eq(S.MAX_STOCK, 10);
     eq(S.EXTRA_MOVES, 5);
     eq(S.START_STOCK, 1);
@@ -25,6 +26,30 @@
     eq(S.winReward(3, 1), 2);
     eq(S.winReward(1, 3), 12);
     eq(S.winReward(2, 3), 7);
+  });
+
+  t('shop: perStar per world', function () {
+    eq(S.perStar(1), 5);
+    eq(S.perStar(2), 5);
+    eq(S.perStar(3), 6);
+    eq(S.perStar(10), 13);
+  });
+
+  t('shop: winReward per world', function () {
+    eq(S.winReward(0, 2, 4), 14);
+    eq(S.winReward(2, 3, 4), 7 + 2);
+    eq(S.winReward(0, 3, 3), 18);
+    eq(S.winReward(0, 1, 1), 5);
+  });
+
+  t('shop: buy besen costs 25', function () {
+    var x = { sticks: 30, jokers: { moves: 0, hammer: 0, besen: 0 } };
+    eq(S.buy(x, 'besen'), true);
+    eq(x.sticks, 5);
+    eq(x.jokers.besen, 1);
+    eq(S.buyProblem(x, 'besen'), 'money');
+    eq(S.use(x, 'besen'), true);
+    eq(x.jokers.besen, 0);
   });
 
   t('shop: endless pays per full 1000', function () {

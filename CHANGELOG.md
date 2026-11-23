@@ -2,6 +2,24 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
+## [4.0.0] – 2026-11-23
+
+Version 4.0.0 ist auf GitHub (Pages) veröffentlicht.
+
+### Neu
+- Welt 3 „Karamellwüste“ (Level 21–30) und Welt 4 „Kaugummi-Dschungel“ (Level 31–40), je mit eigener Karte, Story, Tor und Musikmotiv.
+- Lebkuchenkisten (Stufe 1 bis 3) als neues Hindernis und das Ziel „Kisten“; die Kisten brechen bei Treffern in der Nachbarschaft Stufe um Stufe auf.
+- Neuer Joker Zuckerbesen (25 Zuckerstangen), der eine ganze Reihe abräumt. Er erscheint im Laden nach dem Sieg über den Karamellkoloss, zwei gibt es beim ersten Betreten von Welt 4 geschenkt.
+- Bosse Karamellkoloss (Welt 3, 720 Leben) und Kaugummi-Krake Blubba (Welt 4, 615 Leben). Die Boss-Logik unterstützt jetzt auch drei Phasen.
+- Weltenübersicht als Übersicht aller Welten, die kommenden als Silhouetten. Kapitelenden mit eigenem Text je Welt; hinter Welt 4 steht „Fortsetzung folgt“.
+- Joker-Tabelle mit Name, Preis, Einführungswelt und Wirkung; Laden und Spielleiste lesen daraus und zeigen nur Joker offener Welten.
+- Belohnung je Stern wächst mit der Welt: 5 in Welt 1 und 2, 6 in Welt 3, 7 in Welt 4. Der Wiederholungsbonus bleibt 2.
+- Musik je Bildschirm und Welt sowie Soundeffekte, erzeugt mit Web Audio ohne Audiodateien. Zwei Schalter im Hauptmenü (Musik, Effekte), die Wahl wird gespeichert.
+
+### Geändert
+- Welt 1 und 2 sind leichter. Kein Level ist schwerer als in 3.0.1; Level, die schon leicht genug waren, behalten ihre Werte. Graf Lakritz hat 520 statt 600 Leben, Eiskönigin Kandara 625 statt 730. Level 9 der Welt 1 nennt in der Einleitung jetzt die richtige Zielmenge.
+- Spielstand-Format Version 4 (Einstellungen für Musik und Effekte, Vorrat je Joker-Sorte, Merker für Geschenke). Spielstände der Versionen 1 bis 3 werden beim Laden verlustfrei umgewandelt.
+
 ## [3.0.1] – 2026-11-21
 
 ### Geändert

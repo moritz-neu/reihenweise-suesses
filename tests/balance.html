@@ -6,8 +6,8 @@
 </head>
 <body>
 <h1>Balancing-Simulator</h1>
-<p>Ein gieriger Bot spielt jedes Level mit vielen Startwerten. Das dauert ein paar Minuten.
-Parameter: <code>?seeds=200&amp;levels=1,2,3</code></p>
+<p>Ein Bot spielt jedes Level mit vielen Startwerten und vergleicht die Siegquote mit der Zielkurve. Das dauert ein paar Minuten.
+Parameter: <code>?seeds=200&amp;welt=3</code>, <code>&amp;levels=w3-01,w3-02</code>, <code>&amp;set=w3-01.moves=30;w3-10.hp=500</code></p>
 <pre id="out">läuft …</pre>
 <pre id="summary"></pre>
 <script src="../js/logic/rng.js"></script>
@@ -18,8 +18,16 @@ Parameter: <code>?seeds=200&amp;levels=1,2,3</code></p>
 <script src="../js/logic/goals.js"></script>
 <script src="../js/logic/boss.js"></script>
 <script src="../js/logic/session.js"></script>
-<script src="../js/data/levels.js"></script>
-<script src="../js/data/bosses.js"></script>
+<script src="../js/logic/jokers.js"></script>
+<script src="../js/logic/shop.js"></script>
+<script src="../js/save.js"></script>
+<script src="../js/logic/progress.js"></script>
+<script src="../js/data/curve.js"></script>
+<script src="../js/data/registry.js"></script>
+<script src="../js/data/worlds/w01.js"></script>
+<script src="../js/data/worlds/w02.js"></script>
+<script src="../js/data/worlds/w03.js"></script>
+<script src="../js/data/worlds/w04.js"></script>
 <script src="balance.js"></script>
 </body>
 </html>

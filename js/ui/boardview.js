@@ -4,7 +4,8 @@
   // Spielfeld-Ansicht: zeichnet ein RS.Board, spielt Engine-Ereignisse als Animation ab
   // und meldet Tausch-Wünsche (Ziehen oder Klick-Klick).
   //
-  // Aufbau (Ebenen von unten nach oben): Kacheln, Glasur, Schokolade, Bonbons, Eis, Lakritzgitter, Effekte.
+  // Aufbau (Ebenen von unten nach oben): Kacheln, Glasur, Schokolade, Lebkuchenkisten, Bonbons, Eis,
+  // Lakritzgitter, Effekte.
   // Jedes Element ist eine Zelle groß und wird per transform: translate(c*100%, r*100%)
   // platziert; so passt alles ohne Messen zu jeder Feldgröße.
 
@@ -63,12 +64,14 @@
     var tiles = el('div', 'bv-layer bv-tiles');
     var glazeLayer = el('div', 'bv-layer bv-glazes');
     var chocoLayer = el('div', 'bv-layer bv-chocos');
+    var crateLayer = el('div', 'bv-layer bv-crates');
     var pieceLayer = el('div', 'bv-layer bv-pieces');
     var iceLayer = el('div', 'bv-layer bv-ices');
     var lockLayer = el('div', 'bv-layer bv-locks');
     root.appendChild(tiles);
     root.appendChild(glazeLayer);
     root.appendChild(chocoLayer);
+    root.appendChild(crateLayer);
     root.appendChild(pieceLayer);
     root.appendChild(iceLayer);
     root.appendChild(lockLayer);
@@ -88,6 +91,7 @@
     var lockEls = [];
     var iceEls = [];
     var chocoEls = [];
+    var crateEls = [];
 
     var busy = false;
     var destroyed = false;   // nach destroy(): laufende Abspielung bricht ab
@@ -110,8 +114,10 @@
       lockLayer.innerHTML = '';
       iceLayer.innerHTML = '';
       chocoLayer.innerHTML = '';
+      crateLayer.innerHTML = '';
       iceEls = grid(rows, cols, null);
       chocoEls = grid(rows, cols, null);
+      crateEls = grid(rows, cols, null);
       glazeEls = grid(rows, cols, null);
       lockEls = grid(rows, cols, null);
       for (var r = 0; r < rows; r++) {
@@ -136,6 +142,10 @@
           cz.style.transform = tf(r, c);
           chocoLayer.appendChild(cz);
           chocoEls[r][c] = cz;
+          var kx = el('div', 'bv-cell bv-crate');
+          kx.style.transform = tf(r, c);
+          crateLayer.appendChild(kx);
+          crateEls[r][c] = kx;
         }
       }
       maskKey = maskSignature(b);
@@ -165,6 +175,12 @@
     function setChoco(r, c, on) {
       var n = chocoEls[r] && chocoEls[r][c];
       if (n) { n.setAttribute('data-on', on ? '1' : '0'); }
+    }
+
+    // Lebkuchenkiste: Stufe 0 (keine) bis 3.
+    function setCrate(r, c, level) {
+      var n = crateEls[r] && crateEls[r][c];
+      if (n) { n.setAttribute('data-level', String(level || 0)); }
     }
 
     function makePiece(id, color, special) {
@@ -228,6 +244,7 @@
           setLock(r, c, b.lock[r][c]);
           setIce(r, c, b.ice ? b.ice[r][c] : 0);
           setChoco(r, c, b.choco ? b.choco[r][c] : false);
+          setCrate(r, c, b.crate ? b.crate[r][c] : 0);
           var candy = b.mask[r][c] ? b.candies[r][c] : null;
           if (!candy) { continue; }
           var p = pieces[candy.id] || makePiece(candy.id, candy.color, candy.special);
@@ -425,6 +442,17 @@
               : [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1.1)' },
                  { opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1)' }], 240);
           }
+        } else if (e.kind === 'crate') {
+          node = crateEls[e.pos.r] && crateEls[e.pos.r][e.pos.c];
+          setCrate(e.pos.r, e.pos.c, e.remaining);
+          effects.crumble(e.pos, e.remaining === 0 ? 14 : 7);
+          if (node) {
+            animate(node, e.remaining === 0
+              ? [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1)' },
+                 { opacity: 0, transform: tf(e.pos.r, e.pos.c) + ' scale(0.6) rotate(8deg)' }]
+              : [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' rotate(-6deg) scale(1.06)' },
+                 { opacity: 1, transform: tf(e.pos.r, e.pos.c) }], 240);
+          }
         } else if (e.kind === 'choco') {
           node = chocoEls[e.pos.r] && chocoEls[e.pos.r][e.pos.c];
           setChoco(e.pos.r, e.pos.c, false);
@@ -457,8 +485,15 @@
         var node;
         if (e.kind === 'lock') { setLock(p.r, p.c, true); node = lockEls[p.r] && lockEls[p.r][p.c]; }
         else if (e.kind === 'glaze') { setGlaze(p.r, p.c, e.level); node = glazeEls[p.r] && glazeEls[p.r][p.c]; }
+        else if (e.kind === 'crate') {
+          // Die Kiste ersetzt das Bonbon der Zelle.
+          var gone = ids[p.r] && ids[p.r][p.c];
+          if (gone !== null && gone !== undefined) { ids[p.r][p.c] = null; removePiece(gone); }
+          setCrate(p.r, p.c, e.level);
+          node = crateEls[p.r] && crateEls[p.r][p.c];
+        }
         else { setIce(p.r, p.c, e.level); node = iceEls[p.r] && iceEls[p.r][p.c]; }
-        effects.burst(p, e.kind === 'lock' ? '#6b4a5c' : '#bfeaff', 8);
+        effects.burst(p, e.kind === 'lock' ? '#6b4a5c' : e.kind === 'crate' ? '#c98a4b' : '#bfeaff', 8);
         if (node) {
           animate(node, [{ opacity: 0, transform: tf(p.r, p.c) + ' scale(1.5)' },
             { opacity: 1, transform: tf(p.r, p.c) + ' scale(1)' }], 220, 'cubic-bezier(.3,1.5,.5,1)');
@@ -590,6 +625,11 @@
           else if (e.type === 'spawned') { job = playSpawned(e); }
           else if (e.type === 'shuffled') { job = playShuffled(e); }
           else if (e.type === 'chocoSpread') { job = playChocoSpread(e); }
+          else if (e.type === 'swept') {
+            // Zuckerbesen: ein Strahl fegt über die ganze Reihe.
+            effects.beam('h', e.row, null, dur(DUR.beam));
+            job = wait(dur(DUR.beam * 0.75));
+          }
           else {
             // Sitzungs-Ereignisse: Ton, dazu ggf. der eventHook (Boss-Anzeige)
             job = eventHook ? Promise.resolve(eventHook(e)) : Promise.resolve();
@@ -646,7 +686,9 @@
     function onPointerDown(ev) {
       if (busy || (ev.button !== undefined && ev.button !== 0)) { return; }
       var hit = cellFromEvent(ev);
-      if (!hit || !usable(hit.pos)) { drag = null; return; }
+      // Mit scharfem Joker zählt jede Feldzelle (auch Kiste oder Schokolade), sonst nur Bonbons.
+      var ok = hit && (pickHandler ? current.mask[hit.pos.r][hit.pos.c] : usable(hit.pos));
+      if (!ok) { drag = null; return; }
       ev.preventDefault();
       drag = { id: ev.pointerId, start: hit.pos, x: ev.clientX, y: ev.clientY, size: hit.size, moved: false };
       if (root.setPointerCapture) {

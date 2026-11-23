@@ -1,12 +1,13 @@
 (function (RS) {
   'use strict';
 
-  // Levelkarte: zwei Welten (Kandishain, Frostzuckerberge), je zehn Häuser an einem
-  // geschwungenen Weg und ein Tor dazwischen. Zwei Anordnungen: quer (breite Fenster)
-  // und hoch (schmale Fenster, scrollt senkrecht). Die Zeichnungen liefert RS.UI.MapArt.
+  // Levelkarte einer Welt: gemeinsame Steuerung für Weg, Stationen und Tore. Die Zeichnung
+  // kommt aus RS.UI.WorldArt (js/ui/worlds/wNN.js). Zwei Anordnungen: quer (breite Fenster)
+  // und hoch (schmale Fenster, scrollt senkrecht). Beim Betreten spielt die Karte die Story
+  // der Welt: Prolog oder Einleitung mit Joker-Geschenk, nach dem Bosssieg das Kapitelende
+  // und danach einmalig die Öffnung des Tors.
 
   var el = RS.UI.el;
-  var Art = RS.UI.MapArt;
   var NARROW = '(max-width: 720px), (max-aspect-ratio: 4/5)';
 
   // Wolken und Glitzer liegen über dem Bild: [links %, oben %, Breite %, Verzögerung s]
@@ -14,34 +15,34 @@
   var GLITTER = [[14, 8, 0], [30, 18, -1.1], [52, 6, -2.3], [72, 16, -0.7], [90, 9, -1.7],
     [8, 30, -2.8], [60, 26, -0.4], [44, 34, -1.9]];
 
-  function worldOf(level) {
-    return level.world || (level.id > 10 ? 2 : 1);
+  var section = null;
+  var mq = null;
+  var onMedia = null;
+
+  function seen(key) { return RS.Save.hasSeen(RS.App.save, key); }
+
+  function markSeen(key) {
+    RS.Save.markSeen(RS.App.save, key);
+    RS.App.persist();
   }
 
-  // Startwelt: die des höchsten freigeschalteten Levels. Hat sich das Tor noch nicht
-  // sichtbar geöffnet, beginnt die Karte in Kandishain, damit man die Öffnung sieht.
+  function bossWon(save, worldId) {
+    var lv = RS.Worlds.inWorld(worldId);
+    return lv.length > 0 && RS.Progress.isWon(save, lv[lv.length - 1].id);
+  }
+
+  // Startwelt aus RS.Progress. Hat sich das Tor davor noch nicht sichtbar geöffnet,
+  // beginnt die Karte eine Welt früher, damit man die Öffnung sieht.
   function defaultWorld(save) {
-    var top = Math.min(save.unlocked, RS.LEVELS.length);
-    var level = RS.LEVELS[top - 1];
-    var world = level ? worldOf(level) : 1;
-    if (world === 2 && (!RS.Save.isGateOpen(save) || !save.gateOpenSeen)) { world = 1; }
-    return world;
+    var id = RS.Progress.startWorld(save);
+    if (id > 1 && bossWon(save, id - 1) && !RS.Save.hasSeen(save, 'tor:' + (id - 1))) { return id - 1; }
+    return id;
   }
 
   function goalSummary(level) {
     var kit = RS.UI.GameKit;
     var parts = level.goals.map(function (g) { return kit ? kit.goalLabel(g) : ''; });
     return 'Ziel: ' + parts.join(' · ') + ' · ' + level.moves + ' Züge';
-  }
-
-  var section = null;
-  var mq = null;
-  var onMedia = null;
-
-  function totalStars(save) {
-    var sum = 0;
-    Object.keys(save.stars).forEach(function (id) { sum += save.stars[id]; });
-    return sum;
   }
 
   function starRow(count) {
@@ -53,12 +54,11 @@
   }
 
   function openIntro(level) {
-    var story = RS.STORY.levels[level.id] || {};
     var body = el('div');
-    body.appendChild(RS.UI.Dialog.annika(story.intro || '').node);
+    body.appendChild(RS.UI.Dialog.annika(level.intro || '').node);
     body.appendChild(el('p', 'intro-goal', goalSummary(level)));
     RS.UI.dialog({
-      title: 'Level ' + level.id,
+      title: 'Level ' + level.num,
       className: 'dialog--annika',
       body: body,
       buttons: [
@@ -100,136 +100,227 @@
     return layer;
   }
 
-  // Tor-Knopf. Welt 1: führt in die Frostzuckerberge (zu, offen oder gerade öffnend).
-  // Welt 2: führt immer offen zurück nach Kandishain.
-  function gateButton(world, layout, state, onPass) {
-    var b = el('button', 'map-gate map-gate--w' + world.id + ' is-' + (state === 'closed' ? 'closed' : 'open') +
-      (state === 'opening' ? ' is-opening' : ''));
+  // ---------- Tore ----------
+
+  // Tor am Ende der Welt: { target, label, state: 'closed' | 'open' | 'opening', tip }.
+  // Ohne nächste Welt bleibt es zu und trägt „Fortsetzung folgt …“. Die letzte Welt
+  // des Spiels hat kein Tor am Ende.
+  function exitGate(save, world) {
+    if (world.id >= RS.Worlds.FINAL_WORLD) { return null; }
+    var next = RS.Worlds.get(world.id + 1);
+    var open = Boolean(next) && RS.Progress.isWorldOpen(save, next.id);
+    return {
+      target: next ? next.id : null,
+      label: next ? next.name : RS.STORY.toBeContinued,
+      state: open ? 'open' : 'closed',
+      tip: !next && bossWon(save, world.id) ? RS.STORY.toBeContinued : world.gateLocked
+    };
+  }
+
+  // Tor am Anfang ab Welt 2: führt immer offen zurück.
+  function backGate(world) {
+    var prev = RS.Worlds.get(world.id - 1);
+    return prev ? { target: prev.id, label: prev.name, state: 'open' } : null;
+  }
+
+  function gateButton(view, gate, kind, pt, layout) {
+    var b = el('button', 'map-gate map-gate--' + kind + ' map-gate--w' + view.world.id +
+      ' is-' + (gate.state === 'closed' ? 'closed' : 'open') + (gate.state === 'opening' ? ' is-opening' : '') +
+      (gate.target ? '' : ' is-sealed'));
     b.type = 'button';
-    place(b, layout.gate, layout);
-    b.innerHTML = Art.gate(world.id);
-    b.appendChild(el('span', 'map-gate-label', world.target));
-    if (state === 'closed') {
+    place(b, pt, layout);
+    b.innerHTML = view.art.gate(gate.state);
+    b.appendChild(el('span', 'map-gate-label', gate.label));
+    var name = gate.target ? 'Tor nach ' + gate.label : 'Tor: ' + gate.label;
+    if (gate.state === 'closed') {
       b.setAttribute('aria-disabled', 'true');
-      b.setAttribute('aria-label', 'Tor nach ' + world.target + ', verschlossen. ' + RS.STORY.gateLocked);
-      var tip = el('span', 'map-gate-tip', RS.STORY.gateLocked);
+      b.setAttribute('aria-label', name + ', verschlossen. ' + gate.tip);
+      var tip = el('span', 'map-gate-tip', gate.tip);
       tip.setAttribute('aria-hidden', 'true');
       b.appendChild(tip);
     } else {
-      b.setAttribute('aria-label', 'Tor nach ' + world.target);
+      b.setAttribute('aria-label', name);
       b.addEventListener('click', function () {
         RS.Audio.play({ type: 'click' });
-        onPass();
+        RS.UI.show('map', { world: gate.target });
       });
     }
     return b;
   }
 
-  // view = { world, gateState, onPass }
+  // ---------- Karte ----------
+
+  // view = { world, art, exit, back }
   function renderMap(holder, view) {
     var save = RS.App.save;
     var world = view.world;
     var tall = Boolean(mq && mq.matches);
-    var layout = world.layouts[tall ? 'tall' : 'wide'];
-    var unlocked = Math.min(save.unlocked, RS.LEVELS.length);
-    var levels = RS.LEVELS.filter(function (level) { return worldOf(level) === world.id; });
-    var litCount = levels.filter(function (level) { return level.id <= unlocked; }).length;
-    var lastId = levels[levels.length - 1].id;
+    var layout = view.art.layouts[tall ? 'tall' : 'wide'];
+    var levels = RS.Worlds.inWorld(world.id);
+    var pts = RS.UI.MapKit.stations(layout.route, levels.length);
+    var open = levels.map(function (l) { return RS.Progress.isWon(save, l.id) || RS.Progress.isPlayable(save, l.id); });
+    var litCount = open.lastIndexOf(true) + 1;
+    var backPt = view.back && layout.backGate ? layout.backGate : null;
+    var exitPt = view.exit ? layout.gate : null;
+    var head = backPt ? [backPt] : [];
+    var exitLit = exitPt && view.exit.state !== 'closed' ? [exitPt] : [];
     holder.innerHTML = '';
     holder.className = 'map-world map-world--' + (tall ? 'tall' : 'wide') + ' map-world--w' + world.id;
     holder.style.aspectRatio = layout.w + ' / ' + layout.h;
 
     var art = el('div', 'map-art');
-    art.innerHTML = Art.backdrop(world, layout);
+    art.innerHTML = view.art.backdrop(layout);
     holder.appendChild(art.firstChild);
     var photo = el('div', 'map-photo');
     photo.setAttribute('aria-hidden', 'true');
     holder.appendChild(photo);
     holder.appendChild(skyLayer());
-    art.innerHTML = Art.foreground(world, layout, {
-      lit: litCount,
-      gateOpen: view.gateState !== 'closed',
-      crystalLit: world.id === 1 ? (save.finaleSeen || Boolean(save.stars[lastId]))
-        : (save.grandFinaleSeen || Boolean(save.stars[lastId]))
+    art.innerHTML = view.art.foreground(layout, {
+      path: head.concat(pts, exitPt ? [exitPt] : []),
+      lit: head.concat(pts.slice(0, litCount), exitLit),
+      crystalLit: bossWon(save, world.id) || seen('kapitel:' + world.id)
     });
     holder.appendChild(art.firstChild);
 
-    var gateBtn = gateButton(world, layout, world.id === 1 ? view.gateState : 'open', view.onPass);
-    holder.appendChild(gateBtn);
+    var exitBtn = null;
+    if (backPt) { holder.appendChild(gateButton(view, view.back, 'back', backPt, layout)); }
+    if (exitPt) {
+      exitBtn = gateButton(view, view.exit, 'exit', exitPt, layout);
+      holder.appendChild(exitBtn);
+    }
 
-    var focusTarget = null;
+    var nextBtn = null;
+    var lastOpen = null;
     levels.forEach(function (level, i) {
-      var pt = layout.points[i];
       var stars = save.stars[level.id] || 0;
-      var open = level.id <= unlocked;
-      var state = stars > 0 ? 'done' : (open ? 'next' : 'locked');
+      var state = stars > 0 ? 'done' : (open[i] ? 'next' : 'locked');
       var b = el('button', 'station station--' + state);
       b.type = 'button';
-      place(b, pt, layout);
+      place(b, pts[i], layout);
       b.style.setProperty('--blink-delay', (-(i * 1.7) % 7).toFixed(1) + 's');
-      b.innerHTML = Art.house(world.id, level.id - 1);
-      b.appendChild(el('span', 'station-num', String(level.id)));
+      b.innerHTML = view.art.house(i);
+      b.appendChild(el('span', 'station-num', String(level.num)));
       if (state === 'done') { b.appendChild(starRow(stars)); }
-      b.setAttribute('aria-label', 'Level ' + level.id + ', ' + (state === 'done'
-        ? stars + ' von 3 Sternen' : (open ? 'spielbar' : 'gesperrt')));
-      if (open) {
+      b.setAttribute('aria-label', 'Level ' + level.num + ', ' + (state === 'done'
+        ? stars + ' von 3 Sternen' : (open[i] ? 'spielbar' : 'gesperrt')));
+      if (open[i]) {
         b.addEventListener('click', function () {
           RS.Audio.play({ type: 'click' });
           openIntro(level);
         });
+        lastOpen = b;
       } else {
         b.disabled = true;
       }
-      if (state === 'next' || (!focusTarget && open && level.id === unlocked)) { focusTarget = b; }
+      if (state === 'next' && !nextBtn) { nextBtn = b; }
       holder.appendChild(b);
     });
-    if (view.gateState === 'opening') { focusTarget = gateBtn; }
-    return focusTarget;
+    if (view.exit && view.exit.state === 'opening') { return exitBtn; }
+    return nextBtn || lastOpen;
   }
 
-  // params.world: 1 oder 2; ohne Angabe die Welt des höchsten freigeschalteten Levels.
+  // ---------- Story beim Betreten ----------
+
+  function sayOnce(lines, key) {
+    return RS.UI.Dialog.say(lines, { skippable: true }).then(function () { markSeen(key); });
+  }
+
+  // Geschenk-Dialog; der Vorrat wächst beim Schließen.
+  function giftDialog(kind) {
+    var joker = RS.Jokers.get(kind);
+    var text = RS.STORY.gift.replace('{n}', String(RS.Jokers.GIFT)).replace('{name}', joker.name);
+    return new Promise(function (resolve) {
+      var body = el('div', 'gift');
+      body.appendChild(RS.UI.Shop.jokerIcon(kind));
+      body.appendChild(el('p', 'gift-text', text));
+      body.appendChild(el('p', 'gift-desc', joker.text));
+      RS.Audio.play({ type: 'gift' });
+      RS.UI.dialog({
+        title: 'Ein Geschenk!',
+        className: 'dialog--gift',
+        body: body,
+        buttons: [{ label: 'Danke!', className: 'btn--gold' }],
+        onCancel: function () {},
+        onClose: function () {
+          RS.Jokers.giveGift(RS.App.save, kind);
+          RS.App.persist();
+          resolve();
+        }
+      });
+    });
+  }
+
+  // Prolog (Welt 1) bzw. Einleitung und Geschenk (ab Welt 2), danach das Kapitelende
+  // nach dem Bosssieg; onChapter läuft danach. Jeder Schritt läuft nur, solange diese
+  // Karte noch zu sehen ist.
+  function playStory(world, mine, chapterDue, onChapter) {
+    function alive() { return section === mine; }
+    var steps = [];
+    var introKey = world.id === 1 ? 'prolog' : 'intro:' + world.id;
+    if (!seen(introKey)) { steps.push(function () { return sayOnce(world.intro, introKey); }); }
+    steps.push(function () {
+      var kind = RS.Jokers.giftDue(RS.App.save, world.id);
+      return kind ? giftDialog(kind) : null;
+    });
+    if (chapterDue) {
+      steps.push(function () { return sayOnce(world.chapterEnd, 'kapitel:' + world.id); });
+      steps.push(onChapter);
+    }
+    steps.reduce(function (chain, step) {
+      return chain.then(function () { return alive() ? step() : null; });
+    }, Promise.resolve());
+  }
+
+  function headButton(label, className, onClick) {
+    var b = el('button', 'btn ' + className, label);
+    b.type = 'button';
+    b.addEventListener('click', function () {
+      RS.Audio.play({ type: 'click' });
+      onClick();
+    });
+    return b;
+  }
+
+  // params.world: Kennzahl einer offenen Welt; ohne Angabe die Startwelt.
   function mount(root, params) {
     var save = RS.App.save;
-    var gateOpen = RS.Save.isGateOpen(save);
     var worldId = Number(params && params.world) || defaultWorld(save);
-    if (worldId !== 2 || !gateOpen) { worldId = 1; }
-    var world = Art.WORLDS[worldId];
-    var view = {
-      world: world,
-      gateState: !gateOpen ? 'closed' : (worldId === 1 && !save.gateOpenSeen ? 'opening' : 'open'),
-      onPass: function () { RS.UI.show('map', { world: worldId === 1 ? 2 : 1 }); }
-    };
+    if (!RS.Worlds.get(worldId) || !RS.Progress.isWorldOpen(save, worldId)) { worldId = defaultWorld(save); }
+    var world = RS.Worlds.get(worldId);
+    RS.Audio.music(worldId);
+    var view = { world: world, art: RS.UI.WorldArt.get(worldId), exit: exitGate(save, world), back: backGate(world) };
+    // Das Tor öffnet sich genau einmal (tor:N), nach dem Kapitelende.
+    var opening = Boolean(view.exit) && view.exit.state === 'open' && !seen('tor:' + worldId);
+    var chapterDue = bossWon(save, worldId) && !seen('kapitel:' + worldId);
+    if (opening) { view.exit.state = chapterDue ? 'closed' : 'opening'; }
     section = el('section', 'screen map map--w' + worldId);
+    var mine = section;
 
     var head = el('header', 'map-head');
-    var back = el('button', 'btn btn--ghost', 'Zurück');
-    back.type = 'button';
-    back.addEventListener('click', function () {
-      RS.Audio.play({ type: 'click' });
-      RS.UI.show('menu');
-    });
-    head.appendChild(back);
+    var nav = el('div', 'map-nav');
+    var back = headButton('Zurück', 'btn--ghost', function () { RS.UI.show('menu'); });
+    nav.appendChild(back);
+    nav.appendChild(headButton('Welten', 'btn--ghost', function () {
+      RS.UI.show('atlas', { from: 'map', world: worldId });
+    }));
+    head.appendChild(nav);
     head.appendChild(el('h1', 'screen-title', world.name));
+    var ws = RS.Progress.worldStars(save, worldId);
     var total = el('p', 'map-total');
-    var max = RS.LEVELS.length * 3;
     total.appendChild(el('span', 'map-total-star', '★'));
-    total.appendChild(document.createTextNode(' ' + totalStars(save) + ' / ' + max));
-    total.setAttribute('aria-label', totalStars(save) + ' von ' + max + ' Sternen');
+    total.appendChild(document.createTextNode(' ' + ws.stars + ' / ' + ws.max));
+    total.setAttribute('aria-label', ws.stars + ' von ' + ws.max + ' Sternen in dieser Welt');
     var side = el('div', 'map-side');
+    side.appendChild(total);
     var balance = RS.UI.Shop.balance(save);
     side.appendChild(balance);
-    var shopBtn = el('button', 'btn btn--gold', 'Laden');
-    shopBtn.type = 'button';
-    shopBtn.addEventListener('click', function () {
-      RS.Audio.play({ type: 'click' });
+    side.appendChild(headButton('Laden', 'btn--gold', function () {
       RS.UI.Shop.open(function () {
         var fresh = RS.UI.Shop.balance(RS.App.save);
         if (balance.parentNode) { balance.parentNode.replaceChild(fresh, balance); }
         balance = fresh;
       });
-    });
-    side.appendChild(shopBtn);
-    side.insertBefore(total, balance);
+    }));
     head.appendChild(side);
     section.appendChild(head);
 
@@ -239,11 +330,11 @@
 
     mq = window.matchMedia ? window.matchMedia(NARROW) : null;
     var focusTarget = renderMap(holder, view);
-    if (view.gateState === 'opening') {
+    if (view.exit && view.exit.state === 'opening') {
       // Die Öffnung spielt genau einmal; ein neuer Aufbau (Fenstergröße) zeigt das Tor offen.
-      view.gateState = 'open';
-      save.gateOpenSeen = true;
-      RS.App.persist();
+      view.exit.state = 'open';
+      markSeen('tor:' + worldId);
+      RS.Audio.play({ type: 'gateOpen' });
     }
     onMedia = function () {
       if (section) { renderMap(holder, view); }
@@ -255,17 +346,15 @@
 
     (focusTarget || back).focus();
 
-    if (worldId === 1 && !save.prologueSeen) {
-      RS.UI.Dialog.say(RS.STORY.prologue, { skippable: true }).then(function () {
-        RS.App.save.prologueSeen = true;
-        RS.App.persist();
-      });
-    } else if (worldId === 2 && !save.world2IntroSeen) {
-      RS.UI.Dialog.say(RS.STORY.world2Intro, { skippable: true }).then(function () {
-        RS.App.save.world2IntroSeen = true;
-        RS.App.persist();
-      });
-    }
+    playStory(world, mine, chapterDue, function () {
+      if (!opening) { return; }
+      view.exit.state = 'opening';
+      var gateBtn = renderMap(holder, view);
+      RS.Audio.play({ type: 'gateOpen' });
+      view.exit.state = 'open';
+      markSeen('tor:' + worldId);
+      if (gateBtn) { gateBtn.focus(); }
+    });
   }
 
   function unmount() {
@@ -278,5 +367,5 @@
     section = null;
   }
 
-  RS.UI.screens.map = { mount: mount, unmount: unmount, WORLDS: Art.WORLDS, defaultWorld: defaultWorld };
+  RS.UI.screens.map = { mount: mount, unmount: unmount, defaultWorld: defaultWorld };
 })(window.RS = window.RS || {});

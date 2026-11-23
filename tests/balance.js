@@ -6,9 +6,11 @@
   // auf einer Kopie der Sitzung aus und nimmt den besten. Zielbewusst (Standard): zuerst
   // ein Zug, der das Level gewinnt, dann der meiste Fortschritt auf die offenen Ziele, dann
   // die meisten Punkte. Gleichstände entscheidet sein eigener Zufallsgenerator.
-  // Aufruf: balance.html?seeds=200&levels=1,2,3  (Standard: 200 Startwerte, alle Level)
-  // Probewerte ohne levels.js zu ändern: &set=9.moves=30;5.g1=20
-  // (gN = Zielmenge des N-ten Ziels, hp = Leben des Bosses im Level: &set=10.hp=280).
+  // Aufruf: balance.html?seeds=200&welt=3  (Standard: 200 Startwerte, alle Level der Registry)
+  // &welt=N spielt eine Welt, &levels=w3-01,w3-02 einzelne Level (Ids).
+  // Probewerte ohne die Weltdateien zu ändern: &set=w3-01.moves=30;w1-05.g1=20
+  // (gN = Zielmenge des N-ten Ziels, hp = Leben des Bosses im Level: &set=w3-10.hp=500).
+  // Je Zeile: Zielquote aus RS.Curve, gemessene Quote und Urteil (OK, ZU LEICHT, ZU SCHWER; Toleranz RS.Curve.TOLERANCE).
   // Standard: jeder Lauf bekommt einen eigenen Feld-Startwert (wechselnde Verläufe).
   // &boards=fixed nutzt den festen Level-Startwert; dann spielt der Bot in manchen Leveln
   // jede Partie gleich und die Siegquote ist nur 0 oder 100 %.
@@ -69,7 +71,7 @@
   // Fortschritt eines Zugs auf die noch offenen Ziele (wie ein Mensch, der auf die Ziele
   // spielt): Glasurschichten für ein Glasurziel, Bonbons der Farbe für ein Sammelziel,
   // Punkte nur für ein offenes Punkteziel, entfernte Schokolade für ein Schokoladenziel,
-  // Bossschaden für ein Bossziel. Jeweils höchstens bis zum Rest des Ziels.
+  // Bossschaden für ein Bossziel, jeder Kistentreffer für ein Kistenziel (Joker nutzt der Bot nie). Jeweils höchstens bis zum Rest des Ziels.
   function goalProgress(before, events, gain) {
     var progress = 0;
     before.goals.forEach(function (g) {
@@ -79,6 +81,7 @@
       events.forEach(function (e) {
         if (g.type === 'glaze' && e.type === 'obstacleHit' && e.kind === 'glaze') { n++; }
         if (g.type === 'choco' && e.type === 'obstacleHit' && e.kind === 'choco') { n++; }
+        if (g.type === 'crate' && e.type === 'obstacleHit' && e.kind === 'crate') { n++; }
         if (g.type === 'boss' && e.type === 'bossDamaged') { n += e.damage; }
         if (g.type === 'collect' && e.type === 'cleared') {
           n += e.candies.filter(function (c) { return c.color === g.color; }).length;
@@ -159,6 +162,7 @@
     if (g.type === 'score') { return g.target + ' P'; }
     if (g.type === 'collect') { return g.target + '×F' + g.color; }
     if (g.type === 'choco') { return 'Schoko'; }
+    if (g.type === 'crate') { return 'Kisten'; }
     if (g.type === 'boss') { return 'Boss ' + RS.BOSSES[level.boss].hp + ' LP'; }
     return 'Glasur';
   }
@@ -174,14 +178,21 @@
     if (!spec) { return levels; }
     var copy = JSON.parse(JSON.stringify(levels));
     spec.split(';').forEach(function (part) {
-      var m = /^(\d+)\.(moves|hp|g\d)=(.+)$/.exec(part.trim());
+      var m = /^(w\d+-\d+)\.(moves|hp|g\d)=(.+)$/.exec(part.trim());
       if (!m) { throw new Error('unbekannter Probewert: ' + part); }
-      var level = copy[Number(m[1]) - 1];
+      var level = copy.filter(function (l) { return l.id === m[1]; })[0];
+      if (!level) { throw new Error('unbekanntes Level im Probewert: ' + part); }
       if (m[2] === 'moves') { level.moves = Number(m[3]); }
       else if (m[2] === 'hp') { RS.BOSSES[level.boss].hp = Number(m[3]); }
-      else { level.goals[Number(m[2].slice(1))].target = Number(m[3]); }
+      else { level.goals[Number(m[2].slice(1)) - 1].target = Number(m[3]); }
     });
     return copy;
+  }
+
+  function verdictFor(measured, target) {
+    if (measured > target + RS.Curve.TOLERANCE) { return 'ZU LEICHT'; }
+    if (measured < target - RS.Curve.TOLERANCE) { return 'ZU SCHWER'; }
+    return 'OK';
   }
 
   function run() {
@@ -189,7 +200,8 @@
     var seeds = Number(params.get('seeds')) || 200;
     var vary = params.get('boards') !== 'fixed';
     var greedy = params.get('bot') === 'greedy';
-    var only = params.get('levels') ? params.get('levels').split(',').map(Number) : null;
+    var only = params.get('levels') ? params.get('levels').split(',') : null;
+    var welt = params.get('welt') ? Number(params.get('welt')) : null;
     var out = document.getElementById('out');
     var lines = [];
     var started = Date.now();
@@ -199,9 +211,11 @@
 
     lines.push('Bot-Startwerte je Level: ' + seeds + (vary ? ', Feld-Startwert je Lauf verschieden' : ', fester Level-Startwert') +
       (greedy ? ', Bot: nur Punkte' : ', Bot: zielbewusst'));
-    lines.push('Lv Züge Ziele              2★/3★ ab Rest Sieg%  Med.alle  Med.Sieg  1★/2★/3★ (je % aller Läufe)  Med.Restzüge  Sieg-Punkte P10/P50/P90  Med.Zielrest bei Niederlage');
-    applyOverrides(RS.LEVELS, params.get('set')).forEach(function (level) {
+    lines.push('Level  Züge Ziele              2★/3★ ab Rest Ziel% Sieg% Urteil     Med.alle  Med.Sieg  1★/2★/3★ (je % aller Läufe)  Med.Restzüge  Sieg-Punkte P10/P50/P90  Med.Zielrest bei Niederlage');
+    var verdicts = { 'ZU LEICHT': 0, 'ZU SCHWER': 0 };
+    applyOverrides(RS.Worlds.levels(), params.get('set')).forEach(function (level) {
       if (only && only.indexOf(level.id) < 0) { return; }
+      if (welt !== null && level.world !== welt) { return; }
       var results = [];
       for (var b = 1; b <= seeds; b++) { results.push(playLevel(level, b, vary, greedy)); }
       var wins = results.filter(function (r) { return r.won; });
@@ -209,11 +223,15 @@
       var starCount = [0, 0, 0, 0];
       results.forEach(function (r) { starCount[r.stars]++; });
       function pct(n) { return Math.round(n / results.length * 100); }
+      var target = RS.Curve.target(level);
+      var measured = pct(wins.length);
+      var verdict = verdictFor(measured, target);
+      if (verdict !== 'OK') { verdicts[verdict]++; }
       lines.push(
-        pad(level.id, 2) + ' ' + pad(level.moves, 4) + ' ' +
+        pad(level.id, 6) + ' ' + pad(level.moves, 4) + ' ' +
         (level.goals.map(function (g) { return goalText(g, level); }).join(' + ') + '                  ').slice(0, 18) + ' ' +
         (RS.Goals.starMoves(level.moves).join('/') + '            ').slice(0, 12) + ' ' +
-        pad(pct(wins.length), 6) + ' ' +
+        pad(target, 6) + ' ' + pad(measured, 5) + ' ' + (verdict + '          ').slice(0, 10) + ' ' +
         pad(median(results.map(function (r) { return r.score; })), 9) + ' ' +
         pad(median(wins.map(function (r) { return r.score; })), 9) + '  ' +
         pad(pct(starCount[1]) + '/' + pct(starCount[2]) + '/' + pct(starCount[3]), 12) +
@@ -226,6 +244,7 @@
         }).join(' + ') : '-')
       );
     });
+    lines.push('Außerhalb der Toleranz (±' + RS.Curve.TOLERANCE + '): ' + verdicts['ZU LEICHT'] + ' zu leicht, ' + verdicts['ZU SCHWER'] + ' zu schwer');
     lines.push('Laufzeit: ' + Math.round((Date.now() - started) / 1000) + ' s');
     RS.createRng = originalRng;
     out.textContent = lines.join('\n');

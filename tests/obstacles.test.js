@@ -359,4 +359,134 @@
     ok(B.get(b, P(0, 0)) !== null, 'candy under ice');
     ok(B.get(b, P(0, 1)) !== null, 'candy under ice 2');
   });
+
+  function crateAt(r, c, level) {
+    var g = ['000000', '000000', '000000', '000000'];
+    g[r] = g[r].substring(0, c) + level + g[r].substring(c + 1);
+    return g;
+  }
+  function crateHits(events) {
+    return events.filter(function (e) { return e.type === 'obstacleHit' && e.kind === 'crate'; });
+  }
+
+  t('crate: blocks swap', function () {
+    var b = B.fromRows(['0 1 2 3'], { crate: ['0100'] });
+    eq(B.get(b, P(0, 1)), null, 'no candy on crate');
+    eq(b.crate[0][1], 1);
+    eq(B.canSwap(b, P(0, 0), P(0, 1)), false);
+    eq(B.canSwap(b, P(0, 1), P(0, 2)), false);
+    eq(B.canSwap(b, P(0, 2), P(0, 3)), true);
+  });
+
+  t('crate: takes one hit per stage from a neighbour match', function () {
+    var b = B.fromRows(rows(), { crate: crateAt(2, 1, 2) });
+    var res = RS.Engine.swap(b, P(3, 2), P(3, 3));
+    eq(res.valid, true);
+    deq(crateHits(stage(res.events, 1)), [{ type: 'obstacleHit', pos: P(2, 1), kind: 'crate', remaining: 1 }]);
+    eq(b.crate[2][1], 1);
+    eq(B.get(b, P(2, 1)), null, 'still no candy');
+    eq(ofType(stage(res.events, 1), 'cleared')[0].points, 3 * RS.Engine.POINTS.CANDY + RS.Engine.POINTS.OBSTACLE);
+  });
+
+  t('crate: Z needs three hits', function () {
+    var b = B.fromRows(rows(), { crate: crateAt(2, 1, 3) });
+    deq(RS.Obstacles.hitCrate(b, P(2, 1)), { type: 'obstacleHit', pos: P(2, 1), kind: 'crate', remaining: 2 });
+    deq(RS.Obstacles.hitCrate(b, P(2, 1)), { type: 'obstacleHit', pos: P(2, 1), kind: 'crate', remaining: 1 });
+    deq(RS.Obstacles.hitCrate(b, P(2, 1)), { type: 'obstacleHit', pos: P(2, 1), kind: 'crate', remaining: 0 });
+    eq(RS.Obstacles.hitCrate(b, P(2, 1)), null);
+    eq(RS.Obstacles.countCrates(b), 0);
+    eq(RS.Obstacles.isFree(b, P(2, 1)), false, 'empty cell is not free');
+    var f = B.fromRows(['0 1'], { crate: ['.2'] });
+    eq(RS.Obstacles.countCrates(f), 1);
+    eq(RS.Obstacles.isFree(f, P(0, 1)), false, 'crate');
+  });
+
+  t('crate: stripe hits crate', function () {
+    var b = B.fromRows(rows('0 0h 2 0 4 3'), { crate: crateAt(3, 5, 2) });
+    var res = RS.Engine.swap(b, P(3, 2), P(3, 3));
+    deq(crateHits(stage(res.events, 1)), [{ type: 'obstacleHit', pos: P(3, 5), kind: 'crate', remaining: 1 }]);
+    eq(b.crate[3][5], 1);
+  });
+
+  t('crate: hammer on crate', function () {
+    var b = B.fromRows(rows(), { crate: crateAt(1, 2, 2) });
+    var res = RS.Engine.smash(b, P(1, 2));
+    eq(res.valid, true);
+    deq(crateHits(res.events), [{ type: 'obstacleHit', pos: P(1, 2), kind: 'crate', remaining: 1 }]);
+    eq(b.crate[1][2], 1);
+    eq(ofType(res.events, 'cleared')[0].points, RS.Engine.POINTS.OBSTACLE);
+  });
+
+  t('crate: candies fall past crate', function () {
+    var b = B.fromRows(rows(), { crate: crateAt(1, 1, 3) });
+    var aboveId = B.get(b, P(0, 1)).id;
+    var belowId = B.get(b, P(2, 1)).id;
+    var res = RS.Engine.swap(b, P(3, 2), P(3, 3));
+    var moves = ofType(stage(res.events, 1), 'fell')[0].moves;
+    deq(moves.filter(function (m) { return m.id === belowId || m.id === aboveId; }), [
+      { id: belowId, from: P(2, 1), to: P(3, 1) },
+      { id: aboveId, from: P(0, 1), to: P(2, 1) }
+    ]);
+    eq(b.crate[1][1], 3);
+    eq(B.get(b, P(1, 1)), null, 'nothing spawns on crate');
+  });
+
+  t('crate: destroyed bottom crate refills', function () {
+    var b = B.fromRows(rows('0 0h 2 0 4 3'), { crate: crateAt(3, 5, 1) });
+    var res = RS.Engine.swap(b, P(3, 2), P(3, 3));
+    deq(crateHits(res.events), [{ type: 'obstacleHit', pos: P(3, 5), kind: 'crate', remaining: 0 }]);
+    eq(b.crate[3][5], 0);
+    ok(B.get(b, P(3, 5)) !== null, 'cell is a candy slot again');
+  });
+
+  t('crate: shuffle leaves crate cells empty', function () {
+    var b = B.fromRows(['0 1 2 3', '1 2 3 4', '2 3 4 5', '3 4 5 0'], {
+      ice: ['1212', '2121', '0000', '0000'],
+      lock: ['....', '....', 'LLLL', '....'],
+      crate: ['0000', '0000', '0000', '2000']
+    });
+    var before = B.toRows(b);
+    B.shuffle(b);
+    deq(B.toRows(b).slice(0, 3), before.slice(0, 3));
+    eq(b.crate[3][0], 2);
+    eq(B.get(b, P(3, 0)), null);
+  });
+
+  t('crate: goal counts cleared cells', function () {
+    var b = B.fromRows(rows(), { crate: ['000000', '000000', '020000', '003000'] });
+    var st = RS.Goals.create({ moves: 5, goals: [{ type: 'crate' }] }, b);
+    eq(st.goals[0].target, 2);
+    RS.Goals.apply(st, [{ type: 'obstacleHit', pos: P(2, 1), kind: 'crate', remaining: 1 },
+      { type: 'obstacleHit', pos: P(0, 0), kind: 'glaze', remaining: 0 }]);
+    eq(st.goals[0].count, 0, 'a level less is no progress');
+    RS.Goals.apply(st, [{ type: 'obstacleHit', pos: P(2, 1), kind: 'crate', remaining: 0 }]);
+    eq(st.goals[0].count, 1);
+    eq(RS.Goals.allDone(st), false);
+    RS.Goals.apply(st, [{ type: 'obstacleHit', pos: P(3, 2), kind: 'crate', remaining: 0 }]);
+    eq(RS.Goals.allDone(st), true);
+  });
+
+  t('crate: layout X/Y/Z parsed', function () {
+    var b = B.create({ rows: 2, cols: 5, colors: 6, seed: 3, layout: ['XYZ.x', 'xxxxx'] });
+    eq(b.crate[0][0], 1);
+    eq(b.crate[0][1], 2);
+    eq(b.crate[0][2], 3);
+    eq(b.crate[0][3], 0);
+    eq(b.crate[1][0], 0);
+    eq(b.mask[0][2], true);
+    eq(B.get(b, P(0, 0)), null, 'no candy on crate');
+    eq(B.get(b, P(0, 2)), null, 'no candy on crate');
+    ok(B.get(b, P(1, 0)) !== null);
+    eq(b.choco[0][0], false);
+  });
+
+  t('crate: 50 points per crate level', function () {
+    var b = B.fromRows(rows('0 0h 2 0 4 3'), { crate: ['000000', '000000', '000000', '000002'] });
+    var res = RS.Engine.swap(b, P(3, 2), P(3, 3));
+    var cleared = ofType(stage(res.events, 1), 'cleared')[0];
+    eq(cleared.points, RS.Engine.POINTS.CANDY * cleared.candies.length + RS.Engine.POINTS.OBSTACLE);
+    var b2 = B.fromRows(rows(), { crate: ['000000', '000000', '000000', '000002'] });
+    var res2 = RS.Engine.smash(b2, P(3, 5));
+    eq(ofType(res2.events, 'cleared')[0].points, RS.Engine.POINTS.OBSTACLE);
+  });
 })(window.RS = window.RS || {});

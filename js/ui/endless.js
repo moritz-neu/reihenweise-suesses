@@ -112,6 +112,7 @@
   var active = null;   // { board: Rückgabe von mountBoard, stopClock, onVisibility }
 
   function mount(root) {
+    RS.Audio.music(1, { endless: true });
     var session = RS.Session.startEndless(Date.now() % 1e9);
     var previousBest = RS.App.save.endlessHighscore;
     var hud = createHud(session, previousBest);
@@ -166,7 +167,7 @@
         var events = RS.Session.tick(session, dt);
         hud.apply(events);
         var over = events.filter(function (e) { return e.type === 'endlessOver'; })[0];
-        if (over) { gameOver(over.score); return; }
+        if (over) { RS.Audio.play(over); gameOver(over.score); return; }
       }
       frameId = requestAnimationFrame(frame);
     }

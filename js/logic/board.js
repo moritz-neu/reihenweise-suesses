@@ -27,6 +27,7 @@
       lock: grid(rows, cols, false),
       ice: grid(rows, cols, 0),
       choco: grid(rows, cols, false),
+      crate: grid(rows, cols, 0),
       rng: RS.createRng(seed),
       nextId: 1
     };
@@ -76,6 +77,10 @@
         if (opts.ice) { board.ice[r][c] = Number(opts.ice[r].charAt(c)); }
         if (opts.choco && opts.choco[r].charAt(c) === 'C') {
           board.choco[r][c] = true;
+          board.candies[r][c] = null;
+        }
+        if (opts.crate && Number(opts.crate[r].charAt(c)) > 0) {
+          board.crate[r][c] = Number(opts.crate[r].charAt(c));
           board.candies[r][c] = null;
         }
       }
@@ -185,6 +190,7 @@
       !board.lock[a.r][a.c] && !board.lock[b.r][b.c] &&
       board.ice[a.r][a.c] === 0 && board.ice[b.r][b.c] === 0 &&
       !board.choco[a.r][a.c] && !board.choco[b.r][b.c] &&
+      !board.crate[a.r][a.c] && !board.crate[b.r][b.c] &&
       isAdjacent(a, b);
   }
 
@@ -234,7 +240,7 @@
       for (c = 0; c < board.cols; c++) {
         var candy = board.candies[r][c];
         if (board.mask[r][c] && candy && !candy.special && !board.lock[r][c] &&
-            board.ice[r][c] === 0 && !board.choco[r][c]) {
+            board.ice[r][c] === 0 && !board.choco[r][c] && !board.crate[r][c]) {
           cells.push({ r: r, c: c });
           originals.push({ candy: candy, color: candy.color });
         }
@@ -276,7 +282,7 @@
   function fillRandom(board) {
     for (var r = 0; r < board.rows; r++) {
       for (var c = 0; c < board.cols; c++) {
-        if (!board.mask[r][c] || board.choco[r][c]) { continue; }
+        if (!board.mask[r][c] || board.choco[r][c] || board.crate[r][c]) { continue; }
         var banned = {};
         if (c >= 2 && colorAt(board, r, c - 1) !== null &&
             colorAt(board, r, c - 1) === colorAt(board, r, c - 2)) {
@@ -302,6 +308,7 @@
         board.lock[r][c] = ch === 'L' || ch === 'K';
         board.ice[r][c] = ch === 'I' ? 1 : ch === 'J' ? 2 : 0;
         board.choco[r][c] = ch === 'C';
+        board.crate[r][c] = ch === 'X' ? 1 : ch === 'Y' ? 2 : ch === 'Z' ? 3 : 0;
       }
     }
   }

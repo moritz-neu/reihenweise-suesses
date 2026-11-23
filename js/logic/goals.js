@@ -21,6 +21,7 @@
         goal.count = 0;
         if (g.type === 'glaze') { goal.target = RS.Obstacles.countGlaze(board); }
         if (g.type === 'choco') { goal.target = RS.Obstacles.countChoco(board); }
+        if (g.type === 'crate') { goal.target = RS.Obstacles.countCrates(board); }
         if (g.type === 'boss') { goal.target = RS.BOSSES[levelDef.boss].hp; }
         return goal;
       })
@@ -45,6 +46,10 @@
       } else if (e.type === 'obstacleHit' && e.kind === 'glaze' && e.remaining === 0) {
         state.goals.forEach(function (g) {
           if (g.type === 'glaze') { g.count = cap(g, g.count + 1); }
+        });
+      } else if (e.type === 'obstacleHit' && e.kind === 'crate' && e.remaining === 0) {
+        state.goals.forEach(function (g) {
+          if (g.type === 'crate') { g.count = cap(g, g.count + 1); }
         });
       } else if (e.type === 'obstacleHit' && e.kind === 'choco') {
         state.goals.forEach(function (g) {

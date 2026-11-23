@@ -117,18 +117,12 @@
 
   var section = null;
 
-  function totalStars(save) {
-    var sum = 0;
-    Object.keys(save.stars).forEach(function (id) { sum += save.stars[id]; });
-    return sum;
-  }
-
   function renderProgress(p) {
     var save = RS.App.save;
-    var max = (RS.LEVELS ? RS.LEVELS.length : 10) * 3;
+    var max = RS.Worlds.levels().length * 3;
     p.innerHTML = '';
     p.appendChild(document.createTextNode('Sterne: '));
-    p.appendChild(el('strong', null, totalStars(save) + ' / ' + max));
+    p.appendChild(el('strong', null, RS.Progress.totalStars(save) + ' / ' + max));
     p.appendChild(document.createTextNode(' · Endlos-Rekord: '));
     p.appendChild(el('strong', null, RS.UI.GameKit.formatNumber(save.endlessHighscore)));
   }
@@ -152,8 +146,10 @@
         {
           label: 'Zurücksetzen',
           onClick: function () {
+            var settings = RS.App.save.settings;   // Musik und Effekte bleiben, wie sie sind
             RS.Save.reset();
             RS.App.save = RS.Save.fresh();
+            RS.App.save.settings = settings;
             RS.App.persist();
             renderProgress(progress);
             notice.textContent = 'Dein Fortschritt wurde zurückgesetzt.';
@@ -164,7 +160,28 @@
     });
   }
 
+  // Schalter für Musik bzw. Effekte: wirkt sofort und wird im Spielstand gespeichert.
+  function soundToggle(key, name) {
+    var b = el('button', 'btn btn--ghost menu-toggle');
+    b.type = 'button';
+    function render() {
+      var on = RS.App.save.settings[key];
+      b.textContent = name + ': ' + (on ? 'an' : 'aus');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    b.addEventListener('click', function () {
+      RS.App.save.settings[key] = !RS.App.save.settings[key];
+      RS.Audio.setSettings(RS.App.save.settings);
+      RS.App.persist();
+      render();
+      RS.Audio.play({ type: 'click' });
+    });
+    render();
+    return b;
+  }
+
   function mount(root) {
+    RS.Audio.music(1);
     section = el('section', 'screen menu');
 
     // Schichten: gezeichnete Ferne (Mond, Hügel), Hintergrundbild, Wolken und Glitzer,
@@ -227,6 +244,7 @@
 
     var adventure = button('Abenteuer', '', function () { RS.UI.show('map'); });
     actions.appendChild(adventure);
+    actions.appendChild(button('Welten', 'btn--ghost', function () { RS.UI.show('atlas'); }));
     actions.appendChild(button('Endlos', 'btn--blue', function () { RS.UI.show('endless'); }));
     renderProgress(progress);
     actions.appendChild(progress);
@@ -236,11 +254,8 @@
       notice.textContent = '';
       askReset(progress, notice);
     }));
-    var sound = el('button', 'btn btn--ghost', 'Sound (bald)');
-    sound.type = 'button';
-    sound.disabled = true;
-    sound.title = 'Sound kommt in einer späteren Version';
-    extras.appendChild(sound);
+    extras.appendChild(soundToggle('music', 'Musik'));
+    extras.appendChild(soundToggle('sfx', 'Effekte'));
     actions.appendChild(extras);
     actions.appendChild(notice);
     section.appendChild(actions);

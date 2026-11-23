@@ -230,6 +230,124 @@
     }
   });
 
+
+  // Bosses with a list of phases and the crate attack
+  function tempBoss(key, d) {
+    RS.BOSSES[key] = d;
+    return RS.Boss.create(key);
+  }
+  function threePhase() {
+    return tempBoss('tPhases', { name: 'T', hp: 100, weak: [0, 1, 2], thresholds: [0.66, 0.33],
+      attacks: [{ kind: 'lock', count: 1, every: 3 }, { kind: 'ice', count: 1, level: 1, every: 2 },
+        { kind: 'crate', count: 2, level: 2, every: 1 }] });
+  }
+
+  t('boss: three phases switch at 66 % and 33 %', function () {
+    var boss = threePhase();
+    eq(boss.phase, 1);
+    eq(boss.weak, 0);
+    eq(ofType(RS.Boss.apply(boss, 33), 'bossPhase').length, 0);
+    var ev = RS.Boss.apply(boss, 1);
+    eq(boss.hp, 66);
+    eq(boss.phase, 2);
+    eq(boss.weak, 1);
+    eq(ofType(ev, 'bossPhase').length, 1);
+    eq(ofType(ev, 'bossPhase')[0].phase, 2);
+    eq(ofType(ev, 'bossPhase')[0].weak, 1);
+    eq(ofType(RS.Boss.apply(boss, 10), 'bossPhase').length, 0);
+    ev = RS.Boss.apply(boss, 23);
+    eq(boss.hp, 33);
+    eq(boss.phase, 3);
+    eq(boss.weak, 2);
+    eq(ofType(ev, 'bossPhase')[0].phase, 3);
+    eq(ofType(RS.Boss.apply(boss, 5), 'bossPhase').length, 0);
+    eq(boss.phase, 3);
+  });
+
+  t('boss: one big hit crosses two thresholds', function () {
+    var boss = threePhase();
+    boss.counter = 1;
+    var ev = RS.Boss.apply(boss, 70);
+    var phases = ofType(ev, 'bossPhase');
+    eq(phases.length, 2);
+    eq(phases[0].phase, 2);
+    eq(phases[0].weak, 1);
+    eq(phases[1].phase, 3);
+    eq(phases[1].weak, 2);
+    eq(boss.phase, 3);
+    eq(boss.weak, 2);
+    eq(boss.counter, 1);
+    ok(indexOfType(ev, 'bossDamaged') < indexOfType(ev, 'bossPhase'));
+    // a killing blow crosses no further phase
+    var dead = threePhase();
+    eq(ofType(RS.Boss.apply(dead, 100), 'bossPhase').length, 0);
+    eq(dead.phase, 1);
+  });
+
+  t('boss: a def without thresholds has two phases at 50 %', function () {
+    var boss = tempBoss('tPlain', { name: 'T', hp: 40, weak: [0, 3],
+      attacks: [{ kind: 'lock', count: 1, every: 3 }, { kind: 'lock', count: 1, every: 2 }] });
+    eq(ofType(RS.Boss.apply(boss, 19), 'bossPhase').length, 0);
+    eq(ofType(RS.Boss.apply(boss, 1), 'bossPhase').length, 1);
+    eq(boss.phase, 2);
+    eq(boss.weak, 3);
+  });
+
+  t('boss: crate attack hits free candies only', function () {
+    var layout = [FULL, 'xLxxIxxx', 'xxxCxxxx', 'xx2xxxLx', FULL, 'xxxxJxxx', 'xCxxxxxx', FULL];
+    for (var i = 0; i < 100; i++) {
+      var board = B.create({ rows: 8, cols: 8, colors: 5, seed: 300 + i, layout: layout });
+      for (var k = 0; k < 6; k++) {
+        var p = P(board.rng.int(8), board.rng.int(8));
+        var candy = board.candies[p.r][p.c];
+        if (candy && !board.choco[p.r][p.c]) { candy.special = k % 2 ? 'stripeH' : 'bomb'; }
+      }
+      var boss = threePhase();
+      RS.Boss.apply(boss, 70);
+      boss.counter = 0;
+      var free = {};
+      for (var r = 0; r < 8; r++) {
+        for (var c = 0; c < 8; c++) { free[r + ',' + c] = RS.Obstacles.isFree(board, P(r, c)); }
+      }
+      var ev = RS.Boss.step(boss, board);
+      var atk = ofType(ev, 'bossAttack')[0];
+      ok(atk, 'attack ' + i);
+      eq(atk.kind, 'crate');
+      eq(atk.level, 2);
+      eq(atk.phase, 3);
+      eq(atk.cells.length, 2);
+      atk.cells.forEach(function (q) {
+        ok(free[q.r + ',' + q.c], 'target free ' + i);
+        eq(board.crate[q.r][q.c], 2);
+        eq(board.candies[q.r][q.c], null);
+      });
+      eq(count(board, 'crate', function (v) { return v > 0; }), 2 + count(B.create({ rows: 8, cols: 8, colors: 5, seed: 1, layout: layout }), 'crate', function (v) { return v > 0; }));
+      ok(B.findPossibleMoves(board).length > 0, 'possible move ' + i);
+    }
+  });
+
+  t('spell: clears crates after locks before glaze', function () {
+    // 2 ice, 2 locks, 2 crates (level 3 and 2), 3 glaze: ice, locks and crates fill the six slots
+    var layout = [FULL, 'xIIxxxxx', 'xxxLLxxx', 'xxxxxxZY', '1x1x1xxx', FULL, FULL, FULL];
+    var s = layoutSession(layout);
+    s.boss.charge = 40;
+    var ev = RS.Session.starSpell(s);
+    eq(ofType(ev, 'spellCast')[0].cells.length, 6);
+    eq(count(s.board, 'ice', function (v) { return v > 0; }), 0);
+    eq(count(s.board, 'lock', Boolean), 0);
+    eq(count(s.board, 'crate', function (v) { return v > 0; }), 0);
+    eq(count(s.board, 'glaze', function (v) { return v > 0; }), 3);
+    eq(count(s.board, 'candies', function (v) { return v === null; }), 0, 'no empty cell left');
+    var crateHits = ofType(ev, 'obstacleHit').filter(function (e) { return e.kind === 'crate'; });
+    eq(crateHits.length, 5);
+    // crates beat glaze when slots run short: 5 ice/lock cells leave one slot
+    var s2 = layoutSession([FULL, 'xIIxxxxx', 'xxxLLLxx', 'xxxxxxZ1', FULL, FULL, FULL, FULL]);
+    s2.boss.charge = 40;
+    RS.Session.starSpell(s2);
+    eq(count(s2.board, 'crate', function (v) { return v > 0; }), 0);
+    eq(count(s2.board, 'glaze', function (v) { return v > 0; }), 1);
+  });
+
   // Spell
   t('spell: charge caps at 40', function () {
     var boss = RS.Boss.create('lakritz');

@@ -47,6 +47,10 @@
 .boss-panel[data-boss="lakritz"][data-phase="2"] { --boss-glow: rgba(77, 195, 255, 0.4); }
 .boss-panel[data-boss="kandara"] { --boss-glow: rgba(127, 208, 242, 0.45); }
 .boss-panel[data-boss="kandara"][data-phase="2"] { --boss-glow: rgba(199, 125, 255, 0.5); }
+.boss-panel[data-boss="koloss"] { --boss-glow: rgba(255, 160, 70, 0.45); }
+.boss-panel[data-boss="koloss"][data-phase="2"] { --boss-glow: rgba(125, 60, 192, 0.5); }
+.boss-panel[data-boss="blubba"] { --boss-glow: rgba(255, 111, 183, 0.45); }
+.boss-panel[data-boss="blubba"][data-phase="2"] { --boss-glow: rgba(180, 90, 230, 0.5); }
 
 /* ---------- Figur ---------- */
 
@@ -111,6 +115,22 @@
 .boss-art[data-phase="2"] .kd-eye { fill: #8a2be2; }
 .boss-art[data-phase="2"] .kd-crack { opacity: 1; }
 .boss-art[data-phase="1"] .kd-brow { opacity: 0; }
+
+/* Karamellkoloss: der Bitterzauber wird in Phase 2 stärker, Risse zeigen sich */
+.boss-art[data-phase="2"] .kl-spell { opacity: 0.55; fill: #4a1a78; }
+.boss-art[data-phase="2"] .kl-rune { stroke: #c38bff; }
+.boss-art[data-phase="2"] .kl-wisp { stroke: #a66bff; }
+.boss-art[data-phase="2"] .kl-crack { opacity: 1; }
+.boss-art[data-phase="2"] .kl-belly { fill: #f5c27a; }
+
+/* Kaugummi-Krake Blubba: in Phase 2 färbt sie sich violett, runzelt die Stirn und bläst die Blase größer */
+.boss-art[data-phase="2"] .bl-body { fill: #c46ae0; }
+.boss-art[data-phase="2"] .bl-belly { fill: #dc9cf0; }
+.boss-art[data-phase="2"] .bl-arms { stroke: #a752cc; }
+.boss-art[data-phase="2"] .bl-spots { fill: #e0b4f5; }
+.boss-art[data-phase="2"] .bl-brow { opacity: 1; }
+.boss-art .bl-bubble { transform-box: fill-box; transform-origin: 20% 60%; transition: transform 0.4s ease; }
+.boss-art[data-phase="2"] .bl-bubble { transform: scale(1.2); }
 
 .boss-flash {
   position: absolute;
@@ -324,6 +344,14 @@
 .boss-shot[data-kind="ice"] {
   clip-path: polygon(50% 0, 78% 36%, 100% 50%, 78% 64%, 50% 100%, 22% 64%, 0 50%, 22% 36%);
   background: linear-gradient(135deg, #fff, #a8e6ff 55%, #4dc3ff);
+}
+
+.boss-shot[data-kind="crate"] {
+  border-radius: 14%;
+  background:
+    repeating-linear-gradient(90deg, rgba(90, 44, 14, 0) 0 22%, rgba(90, 44, 14, 0.35) 22% 25%),
+    linear-gradient(160deg, #d28a4a, #9a5523);
+  box-shadow: 0 0 8px rgba(255, 170, 80, 0.8);
 }
 
 .boss-shot[data-kind="star"] {

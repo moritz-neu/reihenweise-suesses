@@ -20,6 +20,7 @@
     if (g.type === 'collect') { return g.target + '× ' + COLOR_NAMES[g.color]; }
     if (g.type === 'glaze') { return 'alle Glasur lösen'; }
     if (g.type === 'choco') { return 'alle Schokolade entfernen'; }
+    if (g.type === 'crate') { return 'alle Kisten entfernen'; }
     if (g.type === 'boss') { return 'Boss besiegen'; }
     return '';
   }
@@ -32,6 +33,7 @@
     }
     if (g.type === 'glaze') { return el('span', 'hud-glaze-icon'); }
     if (g.type === 'choco') { return el('span', 'hud-choco-icon'); }
+    if (g.type === 'crate') { return el('span', 'hud-crate-icon'); }
     if (g.type === 'boss') { return el('span', 'hud-boss-icon', '⚔'); }
     return el('span', 'hud-score-icon', '★');
   }
@@ -324,7 +326,7 @@
 
   RS.UI.GameKit.rewardLine = rewardLine;
 
-  function showWin(levelId, won, reward) {
+  function showWin(level, won, reward) {
     var stars = el('div', 'result-stars');
     stars.setAttribute('aria-label', won.stars + ' von 3 Sternen');
     stars.setAttribute('role', 'img');
@@ -333,7 +335,6 @@
       star.style.animationDelay = (0.25 + s * 0.3) + 's';
       stars.appendChild(star);
     }
-    var level = RS.LEVELS[levelId - 1];
     var need = RS.Goals.starMoves(level.moves);
     var left = Math.round(won.bonus / RS.Goals.BONUS_PER_MOVE);
     var lines = [stars, scoreLine('Übrige Züge:', left + ' von ' + level.moves)];
@@ -345,40 +346,29 @@
     lines.push(scoreLine('Punkte:', formatNumber(won.score)));
     if (won.bonus > 0) { lines.push(scoreLine('davon Zugbonus:', '+' + formatNumber(won.bonus))); }
     if (reward > 0) { lines.push(rewardLine(reward)); }
-    var story = RS.STORY.levels[levelId] || {};
     RS.UI.dialog({
-      title: 'Level ' + levelId + ' geschafft!',
+      title: 'Level ' + level.num + ' geschafft!',
       className: 'dialog--result dialog--annika',
-      body: resultBody(lines, story.win || ''),
+      body: resultBody(lines, level.win || ''),
+      // Nach dem Bosssieg spielt die Karte das Kapitelende und öffnet das Tor.
       buttons: [{ label: 'Zur Karte', className: 'btn--gold', onClick: function () {
         RS.Audio.play({ type: 'click' });
-        // Nach Level 10 das Zwischenspiel, nach Level 20 das große Finale (je einmal).
-        var flag = levelId === 10 ? 'finaleSeen' : levelId === 20 ? 'grandFinaleSeen' : null;
-        var lines = levelId === 10 ? RS.STORY.interlude : RS.STORY.grandFinale;
-        if (flag && !RS.App.save[flag]) {
-          RS.UI.Dialog.say(lines, { skippable: true }).then(function () {
-            RS.App.save[flag] = true;
-            RS.App.persist();
-            RS.UI.show('map', mapParams(levelId));
-          });
-        } else {
-          RS.UI.show('map', mapParams(levelId));
-        }
+        RS.UI.show('map', mapParams(level));
       } }]
     });
   }
 
   // rescue (optional): { stock, use() } bietet „+5 Züge einsetzen“ an.
-  function showLose(levelId, lost, rescue) {
+  function showLose(level, lost, rescue) {
     var lines = [scoreLine('Punkte:', formatNumber(lost.score))];
     if (rescue) {
       lines.push(el('p', 'result-line', 'Du hast noch ' + rescue.stock + ' × +5 Züge.'));
     }
     var buttons = [
-      { label: 'Zur Karte', className: 'btn--ghost', onClick: function () { RS.UI.show('map', mapParams(levelId)); } },
+      { label: 'Zur Karte', className: 'btn--ghost', onClick: function () { RS.UI.show('map', mapParams(level)); } },
       { label: 'Nochmal', className: rescue ? 'btn--ghost' : 'btn--gold', onClick: function () {
         RS.Audio.play({ type: 'click' });
-        RS.UI.show('game', { levelId: levelId });
+        RS.UI.show('game', { levelId: level.id });
       } }
     ];
     if (rescue) {
@@ -399,47 +389,54 @@
 
   // ---------- Joker-Leiste ----------
 
-  // ctl: { canUse(), useMoves(), toggleHammer() }; liefert { el, update(busy), setHammer(on) }
-  function createJokerBar(ctl) {
+  // Eine Taste je eingeführtem Joker (RS.Jokers.available). Joker mit target 'cell' werden
+  // scharf geschaltet (immer nur einer), danach wählt ein Klick aufs Feld die Zelle.
+  // ctl: { canUse(), useMoves(), toggle(kind) }; liefert { el, update(busy), setArmed(kind) }
+  function createJokerBar(jokers, ctl) {
     var bar = el('div', 'joker-bar');
     bar.setAttribute('role', 'group');
     bar.setAttribute('aria-label', 'Joker');
     var buttons = {};
-    RS.Shop.JOKERS.forEach(function (kind) {
-      var info = RS.UI.Shop.jokerInfo[kind];
+    var armed = null;
+    jokers.forEach(function (j) {
       var btn = el('button', 'btn btn--ghost joker-btn');
       btn.type = 'button';
-      btn.setAttribute('data-joker', kind);
-      btn.title = info.text;
-      btn.appendChild(RS.UI.Shop.jokerIcon(kind));
-      if (kind === 'hammer') { btn.setAttribute('aria-pressed', 'false'); }
-      btn.appendChild(el('span', 'joker-name', info.name));
+      btn.setAttribute('data-joker', j.kind);
+      btn.title = j.text;
+      btn.appendChild(RS.UI.Shop.jokerIcon(j.kind));
+      if (j.target === 'cell') { btn.setAttribute('aria-pressed', 'false'); }
+      btn.appendChild(el('span', 'joker-name', j.name));
       var stock = el('span', 'joker-stock');
       btn.appendChild(stock);
       btn.addEventListener('click', function () {
-        if (kind === 'moves') { ctl.useMoves(); } else { ctl.toggleHammer(); }
+        if (j.target === 'cell') { ctl.toggle(j.kind); } else if (j.kind === 'moves') { ctl.useMoves(); }
       });
       bar.appendChild(btn);
-      buttons[kind] = { btn: btn, stock: stock };
+      buttons[j.kind] = { btn: btn, stock: stock, name: j.name };
     });
 
     function update(busy) {
       var ok = ctl.canUse() && !busy;
-      RS.Shop.JOKERS.forEach(function (kind) {
-        var n = RS.App.save.jokers[kind];
+      Object.keys(buttons).forEach(function (kind) {
+        var n = RS.App.save.jokers[kind] || 0;
         var b = buttons[kind];
         b.stock.textContent = '×' + n;
-        b.btn.setAttribute('aria-label', RS.UI.Shop.jokerInfo[kind].name + ', Vorrat ' + n);
-        b.btn.disabled = n < 1 || !ok;
+        b.btn.setAttribute('aria-label', b.name + ', Vorrat ' + n);
+        // Ein scharfer Joker bleibt bedienbar, damit ein zweiter Klick ihn wieder löst.
+        b.btn.disabled = kind !== armed && (n < 1 || !ok);
       });
     }
 
-    function setHammer(on) {
-      buttons.hammer.btn.classList.toggle('is-active', on);
-      buttons.hammer.btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    function setArmed(kind) {
+      armed = kind || null;
+      Object.keys(buttons).forEach(function (k) {
+        if (!buttons[k].btn.hasAttribute('aria-pressed')) { return; }
+        buttons[k].btn.classList.toggle('is-active', k === armed);
+        buttons[k].btn.setAttribute('aria-pressed', k === armed ? 'true' : 'false');
+      });
     }
 
-    return { el: bar, update: update, setHammer: setHammer };
+    return { el: bar, update: update, setArmed: setArmed };
   }
 
   // ---------- Bildschirm ----------
@@ -447,30 +444,40 @@
   var introSeen = {};   // Boss-Intro nur beim ersten Versuch je Seitenladen
 
   // Karte nach dem Spielen: in der Welt des gespielten Levels.
-  function mapParams(levelId) {
-    var level = RS.LEVELS[levelId - 1];
-    return { world: level ? (level.world || (level.id > 10 ? 2 : 1)) : 1 };
+  function mapParams(level) {
+    return { world: level.world };
   }
 
   var active = null;   // Rückgabe von mountBoard
   var activeBoss = null;   // Boss-Leiste (RS.UI.BossView) in Bosslevels
+  var onKey = null;    // Escape löst einen scharfen Joker
+
+  function has(events, type) {
+    return events.some(function (e) { return e.type === type; });
+  }
+
+  function rejected(events) {
+    return !events.length || has(events, 'smashRejected') || has(events, 'blastRejected');
+  }
 
   function mount(root, params) {
-    var levelId = Number(params.levelId);
-    var level = RS.LEVELS[levelId - 1];
-    if (!level || levelId > RS.App.save.unlocked) {
+    var save = RS.App.save;
+    var levelId = String(params.levelId);
+    var level = RS.Worlds.level(levelId);
+    if (!level || !(RS.Progress.isWon(save, levelId) || RS.Progress.isPlayable(save, levelId))) {
       // Unbekanntes oder gesperrtes Level: zurück zur Karte (nach dem aktuellen Wechsel)
       setTimeout(function () { RS.UI.show('map'); }, 0);
       return;
     }
 
+    RS.Audio.music(level.world, { boss: level.isBoss });
     var session = RS.Session.startLevel(level);
     var hud = createHud(level, session.goals.goals);
 
     // Ein Sieg wird sofort gespeichert, damit er auch bei Verlassen, Neuladen oder
     // Schließen während der Gewinn-Kaskade zählt; der Dialog folgt nach der Animation.
     var reward = 0;
-    var hammerOn = false;
+    var armed = null;   // scharf geschalteter Joker mit Zielfeld
     var bar = null;
     var boss = null;
     if (session.boss) {
@@ -492,16 +499,18 @@
         !RS.UI.isDialogOpen();
     }
 
-    function setHammer(on) {
-      hammerOn = on;
-      if (active) { active.view.setPicker(on ? pick : null); }
-      if (bar) { bar.setHammer(on); }
+    function busy() { return Boolean(active) && active.view.isBusy(); }
+
+    function setArmed(kind) {
+      armed = kind || null;
+      if (active) { active.view.setPicker(armed ? pick : null); }
+      if (bar) { bar.setArmed(armed); }
+      refreshBar();
     }
 
     function refreshBar() {
-      var busy = Boolean(active) && active.view.isBusy();
-      if (bar) { bar.update(busy); }
-      if (boss) { boss.setSpellEnabled(canUse() && !busy && session.boss.charge >= RS.Boss.SPELL_MAX); }
+      if (bar) { bar.update(busy()); }
+      if (boss) { boss.setSpellEnabled(canUse() && !busy() && session.boss.charge >= RS.Boss.SPELL_MAX); }
     }
 
     // Während eine Aktion abläuft, sind Joker und Sternenzauber gesperrt.
@@ -511,44 +520,44 @@
     }
 
     function castSpell() {
-      if (!canUse() || active.view.isBusy()) { return; }
+      if (!canUse() || busy()) { return; }
       var events = RS.Session.starSpell(session);
       if (!events.length) { return; }
       RS.Audio.play({ type: 'click' });
-      setHammer(false);
+      setArmed(null);
       moved(events);
       lockControls();
       active.playEvents(events);
     }
 
     function useMoves() {
-      if (!canUse() || active.view.isBusy() || RS.App.save.jokers.moves < 1) { return; }
+      if (!canUse() || busy() || RS.App.save.jokers.moves < 1) { return; }
       var events = RS.Session.addMoves(session, RS.Shop.EXTRA_MOVES);
       if (!events.length) { return; }
-      RS.Audio.play({ type: 'click' });
+      RS.Audio.play({ type: 'jokerMoves' });
       RS.Shop.use(RS.App.save, 'moves');
       RS.App.persist();
       hud.apply(events);
       refreshBar();
     }
 
-    function toggleHammer() {
-      if (hammerOn) { setHammer(false); return; }
-      if (!canUse() || active.view.isBusy() || RS.App.save.jokers.hammer < 1) { return; }
+    function toggle(kind) {
+      if (armed === kind) { setArmed(null); return; }
+      if (!canUse() || busy() || (RS.App.save.jokers[kind] || 0) < 1) { return; }
       RS.Audio.play({ type: 'click' });
-      setHammer(true);
+      setArmed(kind);
     }
 
+    // Klick aufs Feld mit scharfem Joker: Hammer trifft die Zelle, Besen fegt ihre Reihe.
     function pick(pos) {
-      if (!canUse() || active.view.isBusy() || RS.App.save.jokers.hammer < 1) { return; }
-      var events = RS.Session.smash(session, pos);
-      if (!events.length || events.some(function (e) { return e.type === 'smashRejected'; })) {
-        return;   // Hammer bleibt aktiv, nichts wird verbraucht
-      }
-      RS.Shop.use(RS.App.save, 'hammer');
+      var kind = armed;
+      if (!kind || !canUse() || busy() || (RS.App.save.jokers[kind] || 0) < 1) { return; }
+      var events = RS.Session.useJoker(session, kind, pos);
+      if (rejected(events)) { return; }   // Joker bleibt scharf, nichts wird verbraucht
+      RS.Shop.use(RS.App.save, kind);
       RS.App.persist();
       moved(events);
-      setHammer(false);
+      setArmed(null);
       lockControls();
       active.playEvents(events);
     }
@@ -556,6 +565,7 @@
     function rescue() {
       if (!RS.Shop.use(RS.App.save, 'moves')) { return; }
       var events = RS.Session.addMoves(session, RS.Shop.EXTRA_MOVES);
+      RS.Audio.play({ type: 'jokerMoves' });
       RS.App.persist();
       hud.apply(events);
       refreshBar();
@@ -565,31 +575,29 @@
     function showResult(events) {
       events.forEach(function (e) {
         if (e.type === 'levelWon') {
-          showWin(levelId, e, reward);
+          showWin(level, e, reward);
         } else if (e.type === 'levelLost') {
           var stock = RS.App.save.jokers.moves;
-          showLose(levelId, e, stock >= 1 ? { stock: stock, use: rescue } : null);
+          showLose(level, e, stock >= 1 ? { stock: stock, use: rescue } : null);
         }
       });
       refreshBar();
     }
 
-    function has(events, type) {
-      return events.some(function (e) { return e.type === type; });
-    }
-
-    // Im Bosslevel laufen nach der Animation erst die Szenen (Phase 2, Niederlage),
-    // danach das Ergebnis.
+    // Im Bosslevel laufen nach der Animation erst die Szenen (je Phasenwechsel eine,
+    // dann die Niederlage), danach das Ergebnis.
     function finished(events) {
       hud.apply(events);
-      setHammer(false);
+      setArmed(null);
       var parts = [];
-      if (boss && has(events, 'bossPhase')) { parts.push('phase2'); }
-      if (boss && has(events, 'levelWon')) { parts.push('defeat'); }
+      if (boss) {
+        events.forEach(function (e) { if (e.type === 'bossPhase') { parts.push('phase' + e.phase); } });
+        if (has(events, 'levelWon')) { parts.push('defeat'); }
+      }
       if (!parts.length) { showResult(events); return; }
       var me = active;
       refreshBar();
-      if (boss) { boss.setSpellEnabled(false); }
+      boss.setSpellEnabled(false);
       parts.reduce(function (chain, part) {
         return chain.then(function () { return me.isDead() ? null : RS.UI.BossView.scene(session.boss.id, part); });
       }, Promise.resolve()).then(function () {
@@ -597,10 +605,10 @@
       });
     }
 
-    bar = createJokerBar({ canUse: canUse, useMoves: useMoves, toggleHammer: toggleHammer });
+    bar = createJokerBar(RS.Jokers.available(save), { canUse: canUse, useMoves: useMoves, toggle: toggle });
 
     active = mountBoard(root, {
-      title: 'Level ' + levelId,
+      title: 'Level ' + level.num,
       hud: hud.el,
       session: session,
       back: {
@@ -610,7 +618,7 @@
         stayLabel: 'Weiterspielen',
         leaveLabel: 'Zur Karte',
         target: 'map',
-        params: mapParams(levelId)
+        params: mapParams(level)
       },
       footer: bar.el,
       top: boss ? boss.el : null,
@@ -618,6 +626,10 @@
       onMoved: function (events) { moved(events); lockControls(); },
       onFinished: finished
     });
+    onKey = function (e) {
+      if (e.key === 'Escape' && armed && !RS.UI.isDialogOpen()) { setArmed(null); }
+    };
+    document.addEventListener('keydown', onKey);
     refreshBar();
     if (boss) {
       activeBoss = boss;
@@ -634,8 +646,10 @@
   }
 
   function unmount() {
+    if (onKey) { document.removeEventListener('keydown', onKey); }
     if (active) { active.view.setPicker(null); active.teardown(); }
     if (activeBoss) { activeBoss.destroy(); }
+    onKey = null;
     active = null;
     activeBoss = null;
   }

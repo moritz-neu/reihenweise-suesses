@@ -8,6 +8,9 @@
 
   function def(boss) { return RS.BOSSES[boss.id]; }
 
+  // Hp fractions (descending) at which the next phase starts; a def without them has one at 50 %.
+  function thresholds(boss) { return def(boss).thresholds || [0.5]; }
+
   function create(id) {
     var d = RS.BOSSES[id];
     return { id: id, hp: d.hp, max: d.hp, phase: 1, weak: d.weak[0], counter: 0, charge: 0 };
@@ -27,10 +30,12 @@
     var events = [];
     boss.hp = Math.max(0, boss.hp - damage);
     events.push({ type: 'bossDamaged', damage: damage, hp: boss.hp, max: boss.max });
-    if (boss.phase === 1 && boss.hp > 0 && boss.hp * 2 <= boss.max) {
-      boss.phase = 2;
-      boss.weak = def(boss).weak[1];
-      events.push({ type: 'bossPhase', phase: 2, weak: boss.weak });
+    var limits = thresholds(boss);
+    // One bossPhase per crossed threshold, in order; the boss ends in the last one.
+    while (boss.phase <= limits.length && boss.hp > 0 && boss.hp <= limits[boss.phase - 1] * boss.max) {
+      boss.phase++;
+      boss.weak = def(boss).weak[boss.phase - 1];
+      events.push({ type: 'bossPhase', phase: boss.phase, weak: boss.weak });
     }
     if (boss.hp === 0) { events.push({ type: 'bossDefeated' }); }
     return events;
@@ -102,6 +107,10 @@
     cells.forEach(function (p) {
       if (attack.kind === 'lock') { board.lock[p.r][p.c] = true; }
       else if (attack.kind === 'glaze') { board.glaze[p.r][p.c] = attack.level; }
+      else if (attack.kind === 'crate') {
+        board.candies[p.r][p.c] = null;
+        board.crate[p.r][p.c] = attack.level;
+      }
       else { board.ice[p.r][p.c] = attack.level; }
     });
   }
@@ -121,11 +130,12 @@
     return events;
   }
 
-  // 0 = ice, 1 = lock, 2 = glaze: the obstacle that ranks a cell for the spell.
+  // 0 = ice, 1 = lock, 2 = crate, 3 = glaze: the obstacle that ranks a cell for the spell.
   function spellRank(board, p) {
     if (board.ice[p.r][p.c] > 0) { return 0; }
     if (board.lock[p.r][p.c]) { return 1; }
-    return board.glaze[p.r][p.c] > 0 ? 2 : -1;
+    if (board.crate[p.r][p.c] > 0) { return 2; }
+    return board.glaze[p.r][p.c] > 0 ? 3 : -1;
   }
 
   // Removes every obstacle on the cell, all levels of ice and glaze included.
@@ -133,13 +143,14 @@
     var hit;
     while ((hit = RS.Obstacles.hitIce(board, p))) { events.push(hit); }
     if ((hit = RS.Obstacles.hitLock(board, p))) { events.push(hit); }
+    while ((hit = RS.Obstacles.hitCrate(board, p))) { events.push(hit); }
     while ((hit = RS.Obstacles.hitGlaze(board, p))) { events.push(hit); }
   }
 
-  // Star spell: empties the bar, clears up to 6 obstacle cells (ice, lock, glaze), deals damage.
+  // Star spell: empties the bar, clears up to 6 obstacle cells (ice, lock, crate, glaze), deals damage.
   function castSpell(boss, board) {
     var chosen = [];
-    for (var rank = 0; rank < 3 && chosen.length < SPELL_CLEARS; rank++) {
+    for (var rank = 0; rank < 4 && chosen.length < SPELL_CLEARS; rank++) {
       var cells = cellsWhere(board, function (p) { return spellRank(board, p) === rank; });
       chosen = chosen.concat(pick(cells, SPELL_CLEARS - chosen.length, board.rng));
     }

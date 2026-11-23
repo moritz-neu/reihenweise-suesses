@@ -340,4 +340,100 @@
     RS.Goals.apply(s.goals, [hit]);
     eq(RS.Goals.allDone(s.goals), true);
   });
+
+  // Zuckerbesen (sweep joker): a whole row, no move, no boss attack, no chocolate spread.
+  function useBesen(s, row) { return RS.Session.useJoker(s, 'besen', P(row, 0)); }
+  function hits(ev, kind) { return ofType(ev, 'obstacleHit').filter(function (e) { return e.kind === kind; }); }
+
+  t('besen clears a row', function () {
+    var s = session(NOWIN, 5);
+    var ev = useBesen(s, 3);
+    eq(ev[0].type, 'swept');
+    eq(ev[0].row, 3);
+    var cleared = ofType(ev, 'cleared')[0];
+    eq(cleared.candies.length, 6);
+    ok(cleared.candies.every(function (c) { return c.pos.r === 3; }));
+    ok(ofType(ev, 'scoreChanged')[0].score > 0);
+  });
+
+  t('besen mixed row: lock, ice, crate, stripe', function () {
+    var rows = ['1 2 3 4 5 1', '2 3 4 1v 2 5', '3 4 5 1 4 5', '0 0 2 0 4 3'];
+    var opts = { colors: 5, lock: ['......', 'L.....', '......', '......'],
+      ice: ['......', '.2....', '......', '......'], crate: ['......', '..1...', '......', '......'] };
+    var s = RS.Session._fromBoard(level(NOWIN, 5), B.fromRows(rows, opts));
+    var lockedId = s.board.candies[1][0].id;
+    var ev = useBesen(s, 1);
+    eq(hits(ev, 'lock').length, 1);
+    eq(hits(ev, 'lock')[0].remaining, 0);
+    eq(s.board.lock[1][0], false);
+    eq(s.board.candies[1][0].id, lockedId, 'locked candy stays');
+    eq(hits(ev, 'ice').length, 1);
+    eq(s.board.ice[1][1], 1);
+    eq(hits(ev, 'crate').length, 1);
+    eq(s.board.crate[1][2], 0);
+    var trig = ofType(ev, 'specialTriggered');
+    eq(trig.length, 1);
+    eq(trig[0].special, 'stripeV');
+    eq(s.goals.movesLeft, 5);
+  });
+
+  t('besen costs no move', function () {
+    var s = session(NOWIN, 5);
+    var ev = useBesen(s, 2);
+    eq(s.goals.movesLeft, 5);
+    eq(s.status, 'playing');
+    eq(ofType(ev, 'levelLost').length, 0);
+    var last = session(NOWIN, 1);
+    last.goals.movesLeft = 0;
+    useBesen(last, 2);
+    eq(last.status, 'playing');
+  });
+
+  t('besen no boss attack, no choco spread', function () {
+    var s = RS.Session._fromBoard(
+      { id: 't', colors: 5, seed: 1, moves: 36, layout: [], goals: NOWIN, boss: 'lakritz' },
+      B.fromRows(ROWS, { colors: 5, choco: ['.....C', '......', '......', '......'] }));
+    var counter = s.boss.counter;
+    s.boss.counter = 99;
+    var ev = useBesen(s, 3);
+    eq(ofType(ev, 'bossAttack').length, 0);
+    eq(ofType(ev, 'chocoSpread').length, 0);
+    eq(s.boss.counter, 99);
+    ok(counter === 0);
+    ok(ofType(ev, 'bossDamaged').length === 1);
+    eq(chocoCount(s.board), 1);
+  });
+
+  t('besen can win', function () {
+    var s = session([{ type: 'score', target: 10 }], 5);
+    var ev = useBesen(s, 3);
+    eq(s.status, 'won');
+    eq(ofType(ev, 'levelWon').length, 1);
+    eq(ofType(ev, 'levelWon')[0].bonus, 5 * 250);
+  });
+
+  t('besen rejected in endless, after the end, for unknown kinds', function () {
+    var e = RS.Session._fromBoard(null, B.fromRows(ROWS, { colors: 5 }), 'endless');
+    eq(useBesen(e, 3).length, 0);
+    var s = session([{ type: 'score', target: 10 }], 5);
+    useBesen(s, 3);
+    eq(s.status, 'won');
+    eq(useBesen(s, 2).length, 0);
+    var s2 = session(NOWIN, 5);
+    eq(RS.Session.useJoker(s2, 'moves', P(0, 0)).length, 0);
+    eq(RS.Session.useJoker(s2, 'nope', P(0, 0)).length, 0);
+  });
+
+  t('besen on a row without playable cells is rejected by the engine', function () {
+    var b = B.fromRows(ROWS, { colors: 5 });
+    var res = RS.Engine.blast(b, [P(9, 0), P(9, 1)], { type: 'swept', row: 9 });
+    eq(res.valid, false);
+    eq(res.events[0].type, 'blastRejected');
+  });
+
+  t('hammer via useJoker equals smash', function () {
+    var a = session(NOWIN, 5);
+    var b = session(NOWIN, 5);
+    eq(JSON.stringify(RS.Session.useJoker(a, 'hammer', P(0, 0))), JSON.stringify(RS.Session.smash(b, P(0, 0))));
+  });
 })(window.RS = window.RS || {});
