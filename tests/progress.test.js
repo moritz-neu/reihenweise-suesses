@@ -61,9 +61,9 @@
   });
 
   t('progress: inserted level never blocks', function () {
-    RS.Worlds.register(testWorld(98, ['w98-01']));
-    RS.Worlds.register(testWorld(99, ['w99-01', 'w99-01b', 'w99-02']));
     try {
+      RS.Worlds.register(testWorld(98, ['w98-01']));
+      RS.Worlds.register(testWorld(99, ['w99-01', 'w99-01b', 'w99-02']));
       var s = RS.Save.fresh();
       winWorld(s, 1);
       winWorld(s, 2);
@@ -79,8 +79,8 @@
       s2.stars['w99-01'] = 3;
       eq(RS.Progress.isPlayable(s2, 'w99-01b'), false, 'world 99 closed');
     } finally {
-      RS.Worlds._unregister(99);
-      RS.Worlds._unregister(98);
+      if (RS.Worlds.get(99)) { RS.Worlds._unregister(99); }
+      if (RS.Worlds.get(98)) { RS.Worlds._unregister(98); }
     }
     eq(RS.Worlds.get(99), undefined);
     eq(RS.Worlds.get(98), undefined);
@@ -168,13 +168,15 @@
   // entfernt sie danach wieder.
   function withAllWorlds(fn) {
     var added = [];
-    for (var n = 1; n <= RS.Worlds.FINAL_WORLD; n++) {
-      if (!RS.Worlds.get(n)) {
-        RS.Worlds.register(testWorld(n, ['w' + n + '-01']));
-        added.push(n);
+    try {
+      for (var n = 1; n <= RS.Worlds.FINAL_WORLD; n++) {
+        if (!RS.Worlds.get(n)) {
+          RS.Worlds.register(testWorld(n, ['w' + n + '-01']));
+          added.push(n);
+        }
       }
-    }
-    try { fn(); } finally {
+      fn();
+    } finally {
       added.forEach(function (id) { RS.Worlds._unregister(id); });
     }
   }

@@ -15,8 +15,8 @@
   // A cell that gravity fills: playable, not locked or frozen (those candies stay put) and not
   // chocolate or a crate (candies fall past them).
   function isFallSlot(board, r, c) {
-    return board.mask[r][c] && !board.lock[r][c] && !board.choco[r][c] &&
-      board.crate[r][c] === 0 && board.ice[r][c] === 0;
+    return board.mask[r][c] && !board.lock[r][c] && !RS.Board.isBlockerCell(board, r, c) &&
+      board.ice[r][c] === 0;
   }
 
   function pushObstacleEvent(ctx, event) {
@@ -324,11 +324,9 @@
     resolve(board, ctx);
   }
 
-  function swap(board, a, b) {
-    if (!RS.Board.canSwap(board, a, b)) {
-      return { valid: false, events: [{ type: 'swapRejected', a: a, b: b }] };
-    }
-    var ctx = {
+  // Fresh resolve context for a swap (move or Feentausch).
+  function swapContext(a, b) {
+    return {
       stage: 0,
       events: [],
       swap: { a: a, b: b },
@@ -336,6 +334,13 @@
       toClear: new Map(),
       combo: null
     };
+  }
+
+  function swap(board, a, b) {
+    if (!RS.Board.canSwap(board, a, b)) {
+      return { valid: false, events: [{ type: 'swapRejected', a: a, b: b }] };
+    }
+    var ctx = swapContext(a, b);
     swapCandies(board, a, b);
     ctx.events.push({ type: 'swapped', a: a, b: b });
     // Two specials or a colorball: a combo, valid without a color match.
@@ -357,14 +362,7 @@
     if (!RS.Board.canSwap(board, a, b)) {
       return { valid: false, events: [{ type: 'swapRejected', a: a, b: b }] };
     }
-    var ctx = {
-      stage: 0,
-      events: [],
-      swap: { a: a, b: b },
-      triggered: new Set(),
-      toClear: new Map(),
-      combo: null
-    };
+    var ctx = swapContext(a, b);
     swapCandies(board, a, b);
     ctx.events.push({ type: 'swapped', a: a, b: b });
     var combo = RS.Specials.combo(board, a, b);
@@ -381,7 +379,7 @@
 
   // Hammer joker: hits one cell like a match would (glaze, lock, special), then resolves.
   function smash(board, p) {
-    if (!RS.Board.isPlayable(board, p) || (!RS.Board.get(board, p) && !board.choco[p.r][p.c] && !board.crate[p.r][p.c])) {
+    if (!RS.Board.isPlayable(board, p) || (!RS.Board.get(board, p) && !RS.Board.isBlockerCell(board, p.r, p.c))) {
       return { valid: false, events: [{ type: 'smashRejected', pos: p }] };
     }
     // A plain cherry is never hit away: without glaze or lock the hammer has nothing to do there.

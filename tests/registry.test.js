@@ -20,6 +20,15 @@
     };
   }
 
+  // A test that registers the temporary world 99 always removes it again, even when it fails.
+  function t99(name, fn) {
+    t(name, function () {
+      try { fn(); } finally {
+        if (RS.Worlds.get(99)) { RS.Worlds._unregister(99); }
+      }
+    });
+  }
+
   t('registry: ids unique and well-formed', function () {
     var seen = {};
     RS.Worlds.levels().forEach(function (l) {
@@ -27,6 +36,20 @@
       ok(!seen[l.id], 'duplicate ' + l.id);
       seen[l.id] = true;
     });
+  });
+
+  t('registry: all 100 ids follow w<world>-<two digit position> and the boss is wN-10', function () {
+    var expected = [];
+    for (var w = 1; w <= 10; w++) {
+      for (var p = 1; p <= 10; p++) { expected.push('w' + w + '-' + (p < 10 ? '0' : '') + p); }
+    }
+    RS.assert.deepEqual(RS.Worlds.levels().map(function (l) { return l.id; }), expected);
+    for (var n = 1; n <= 10; n++) {
+      var lv = RS.Worlds.inWorld(n);
+      eq(lv[lv.length - 1].id, 'w' + n + '-10', 'last level of world ' + n);
+      eq(lv[lv.length - 1].isBoss, true, 'boss of world ' + n);
+      eq(RS.Worlds.level('w' + n + '-10').isBoss, true, 'boss flag w' + n + '-10');
+    }
   });
 
   t('registry: boss last in every world', function () {
@@ -75,7 +98,7 @@
     });
   });
 
-  t('registry: inserted level', function () {
+  t99('registry: inserted level', function () {
     var ids = ['w99-01', 'w99-01b', 'w99-02'];
     RS.Worlds.register(testWorld(ids));
     var first = RS.Worlds.inWorld(99).map(function (l) { return [l.pos, l.seed]; });
@@ -167,7 +190,7 @@
     eq(RS.Progress.isPlayable(s, 'w10-01'), true);
   });
 
-  t('registry: register validates', function () {
+  t99('registry: register validates', function () {
     var def = testWorld(['w99-01']);
     delete def.gateLocked;
     RS.assert.throws(function () { RS.Worlds.register(def); });
@@ -186,7 +209,7 @@
     keys.forEach(function (k, i) { eq(keys.indexOf(k), i, 'distinct motif world ' + list[i].id); });
   });
 
-  t('registry: register rejects invalid music', function () {
+  t99('registry: register rejects invalid music', function () {
     var def = testWorld(['w99-01']);
     def.music = { tempo: 300, root: 60, scale: [0, 2, 4, 5, 7], lead: 'bell', bass: null, drums: 'k...............',
       melodies: [[0], [1]] };
@@ -252,7 +275,7 @@
     eq(C.target({ world: 3, pos: 9, isBoss: false }), 73);
     eq(C.target({ world: 10, pos: 10, isBoss: true }), 22);
   });
-  t('registry: register rejects a boss whose phases do not match weak and attacks', function () {
+  t99('registry: register rejects a boss whose phases do not match weak and attacks', function () {
     var def = testWorld(['w99-01']);
     def.boss.thresholds = [0.66, 0.33];
     def.boss.weak = [0, 1, 2];
@@ -266,7 +289,7 @@
     eq(RS.Worlds.get(99), undefined);
   });
 
-  t('registry: a phase may hold an array of attacks, each validated', function () {
+  t99('registry: a phase may hold an array of attacks, each validated', function () {
     function def3(attacks) {
       var d = testWorld(['w99-01']);
       d.boss.thresholds = [0.5];
@@ -280,7 +303,7 @@
     RS.Worlds._unregister(99);
   });
 
-  t('registry: register rejects bad attack entries', function () {
+  t99('registry: register rejects bad attack entries', function () {
     function bad(attacks) {
       var d = testWorld(['w99-01']);
       d.boss.attacks = attacks;

@@ -92,9 +92,45 @@
     eq(s.lostBy, 'moves');
   });
 
+  t('fuses: last move with fuse at 1 is a fuse loss and rescue extends fuses', function () {
+    var s = session(NEVER, 1, NOSPAWN, [[0, 0, 1], [1, 1, 3]]);
+    var ev = play(s);
+    eq(s.goals.movesLeft, 0);
+    eq(s.status, 'lost');
+    eq(s.lostBy, 'fuse');
+    var lost = ofType(ev, 'levelLost');
+    eq(lost.length, 1);
+    eq(lost[0].reason, 'fuse');
+    RS.Session.addMoves(s, 5);
+    eq(s.status, 'playing');
+    deq(values(s.board), [5, 7]);
+  });
+
+  t('fuses: last move without fuse danger stays a moves loss', function () {
+    var s = session(NEVER, 1, NOSPAWN, [[0, 0, 2]]);
+    var ev = play(s);
+    eq(s.status, 'lost');
+    eq(s.lostBy, 'moves');
+    var lost = ofType(ev, 'levelLost');
+    eq(lost.length, 1);
+    eq(lost[0].reason, undefined);
+    deq(values(s.board), [1]);
+  });
+
   t('fuses: win on the same move beats the fuse', function () {
     var s = session([{ type: 'score', target: 60 }], 5, NOSPAWN, [[0, 0, 1]]);
     var ev = play(s);
+    eq(s.status, 'won');
+    eq(ofType(ev, 'levelWon').length, 1);
+    eq(ofType(ev, 'levelLost').length, 0);
+    eq(ofType(ev, 'fuseTick').length, 0);
+    deq(values(s.board), [1]);
+  });
+
+  t('fuses: winning on the last move beats a fuse that would reach 0', function () {
+    var s = session([{ type: 'score', target: 60 }], 1, NOSPAWN, [[0, 0, 1]]);
+    var ev = play(s);
+    eq(s.goals.movesLeft, 0);
     eq(s.status, 'won');
     eq(ofType(ev, 'levelWon').length, 1);
     eq(ofType(ev, 'levelLost').length, 0);
@@ -120,7 +156,7 @@
     eq(s.status, 'lost');
     var ev = RS.Session.addMoves(s, 5);
     eq(s.status, 'playing');
-    deq(values(s.board), [5]);
+    deq(values(s.board), [4]); // ticked on the last move, not extended
     eq(ev.length, 1);
   });
 
@@ -222,5 +258,79 @@
     eq(s2.board.candies[0][0].fuse, 9);
     eq(s2.board.fuseRule, null);
     eq(s2.moveNo, 0);
+  });
+
+  // The same board with a chocolate cell, a chameleon rule and the first boss, all due on this move.
+  function dueSession(fuseValue) {
+    var board = B.fromRows(ROWS, { colors: 5, choco: ['.....C', '......', '......', '......'] });
+    board.candies[1][1].fuse = fuseValue;
+    board.fuseRule = { start: 9, spawnEvery: 1 };
+    board.chameleonRule = { spawnEvery: 1 };
+    var s = RS.Session._fromBoard({ id: 't', colors: 5, seed: 1, moves: 5, layout: [], goals: NEVER,
+      boss: 'lakritz', fuses: board.fuseRule, chameleons: board.chameleonRule }, board);
+    s.boss.counter = 2;
+    return s;
+  }
+
+  t('fuses: a fuse loss ends the step before spawn, chocolate spread and boss step', function () {
+    var control = dueSession(5);
+    var cev = play(control);
+    eq(ofType(cev, 'fuseSpawned').length, 1, 'control: a fuse spawns');
+    eq(ofType(cev, 'chameleonSpawned').length, 1, 'control: a chameleon spawns');
+    eq(ofType(cev, 'chocoSpread').length, 1, 'control: the chocolate spreads');
+    eq(ofType(cev, 'bossAttack').length, 1, 'control: the boss attacks');
+
+    var s = dueSession(1);
+    var ev = play(s);
+    eq(s.status, 'lost');
+    eq(s.lostBy, 'fuse');
+    eq(ofType(ev, 'levelLost')[0].reason, 'fuse');
+    eq(ofType(ev, 'fuseSpawned').length, 0);
+    eq(ofType(ev, 'chameleonSpawned').length, 0);
+    eq(ofType(ev, 'chocoSpread').length, 0);
+    eq(ofType(ev, 'bossAttack').length, 0);
+    eq(s.boss.counter, 2, 'the boss did not count the move');
+    eq(RS.Obstacles.countChoco(s.board), 1);
+  });
+
+  t('fuses: a fuse candy is never a chocolate spread target', function () {
+    // The chocolate sits at (3,5); its only free neighbours (3,4) and (2,5) both hold a fuse.
+    var board = B.fromRows(ROWS, { colors: 5, choco: ['......', '......', '......', '.....C'] });
+    board.candies[3][4].fuse = 9;
+    board.candies[2][5].fuse = 9;
+    var s = RS.Session._fromBoard(level(NEVER, 5, null), board);
+    var ev = play(s);
+    eq(ofType(ev, 'chocoSpread').length, 0);
+    eq(RS.Obstacles.countChoco(s.board), 1);
+    deq(values(s.board), [8, 8]);
+  });
+
+  t('fuses: a fuse candy is never a boss attack target', function () {
+    var board = B.fromRows(ROWS, { colors: 5 });
+    var free = [P(0, 0), P(1, 1), P(2, 2), P(3, 3)];
+    for (var r = 0; r < board.rows; r++) {
+      for (var c = 0; c < board.cols; c++) {
+        var isFree = free.some(function (p) { return p.r === r && p.c === c; });
+        if (!isFree) { board.candies[r][c].fuse = 9; }
+      }
+    }
+    var boss = RS.Boss.create('lakritz');
+    boss.counter = 2;
+    var ev = RS.Boss.step(boss, board);
+    var atk = ofType(ev, 'bossAttack')[0];
+    eq(atk.kind, 'lock');
+    eq(atk.cells.length, 3);
+    atk.cells.forEach(function (q) {
+      ok(free.some(function (p) { return p.r === q.r && p.c === q.c; }), 'target is a plain candy');
+      eq(board.candies[q.r][q.c].fuse, undefined);
+    });
+    eq(fuseCount(board), 20);
+    var locked = 0;
+    board.lock.forEach(function (row, r) {
+      row.forEach(function (v, c) {
+        if (v) { locked++; eq(board.candies[r][c].fuse, undefined, 'no lock on a fuse candy'); }
+      });
+    });
+    eq(locked, 3);
   });
 })(window.RS);

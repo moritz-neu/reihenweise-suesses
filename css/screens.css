@@ -565,6 +565,25 @@ button.atlas-card:hover {
   font-style: italic;
 }
 
+/* Schmale Fenster: lange Namen (Zuckerwattenwolken) werden kleiner statt die Spalte zu
+   sprengen; der Name passt sich der Kartenbreite an (cqi), höchstens 1rem. */
+@media (max-width: 600px) {
+  .atlas-item {
+    min-width: 0;
+  }
+
+  .atlas-card {
+    min-width: 0;
+    container-type: inline-size;
+  }
+
+  .atlas-name {
+    max-width: 100%;
+    font-size: min(1rem, 9.4cqi);
+    overflow-wrap: anywhere;
+  }
+}
+
 /* ---------- Krone im Hauptmenü (Spiel abgeschlossen) ---------- */
 
 .menu-title--crowned {

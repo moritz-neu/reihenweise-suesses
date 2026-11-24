@@ -100,7 +100,10 @@
     s.board = b;
     var ev = [];
     RS.Session._shiftChameleons(s, ev);
-    ok(indexOf(ev, 'chameleonShift') >= 0);
+    var at = indexOf(ev, 'chameleonShift');
+    ok(at >= 0);
+    ok(indexOf(ev, 'shuffled') > at, 'the dead board is reshuffled after the shift');
+    eq(ofType(ev, 'shuffled').length, 1);
     ok(RS.Board.findPossibleMoves(b).length > 0);
     var flagged = 0;
     b.candies.forEach(function (row) { row.forEach(function (c) { if (c.chameleon) { flagged++; } }); });
@@ -143,15 +146,50 @@
     eq(b.candies[7][3].chameleon, true);
     var id = b.candies[7][3].id;
     RS.Board.shuffle(b);
-    var found = null;
+    var found = null, foundPos = null;
     for (var r = 0; r < 8; r++) {
-      for (var c = 0; c < 8; c++) { if (b.candies[r][c].id === id) { found = b.candies[r][c]; } }
+      for (var c = 0; c < 8; c++) { if (b.candies[r][c].id === id) { found = b.candies[r][c]; foundPos = P(r, c); } }
     }
     eq(found.chameleon, true);
     var ctx = { stage: 0, events: [], swap: null, triggered: new Set(), toClear: new Map(), combo: null };
-    var holder = b.candies[7][3];
-    ctx.toClear = new Map([['7,3', P(7, 3)]]);
+    var holder = found;
+    ctx.toClear = new Map([[foundPos.r + ',' + foundPos.c, foundPos]]);
     RS.Engine._resolve(b, ctx);
-    ok(b.candies[7][3] !== holder);
+    ok(b.candies[foundPos.r][foundPos.c] !== holder);
+    eq(b.candies[foundPos.r][foundPos.c].chameleon, undefined, 'the candy that replaces it has no flag');
+    eq(flagCount(b), 0, 'no chameleon left after clearing it');
+  });
+
+  function flagCount(b) {
+    var n = 0;
+    b.candies.forEach(function (row) { row.forEach(function (c) { if (c && c.chameleon) { n++; } }); });
+    return n;
+  }
+
+  t('chameleons: the flag stays on a chameleon that falls and is gone once it is cleared', function () {
+    var b = B.fromRows(['0 1 2 3', '2 3 0 1', '0 1 2 3', '2 3 0 1'], { colors: 4 });
+    b.candies[1][1].chameleon = true;
+    var id = b.candies[1][1].id;
+    var ctx = { stage: 0, events: [], swap: null, triggered: new Set(), toClear: new Map(), combo: null };
+    ctx.toClear = new Map([['2,1', P(2, 1)]]);
+    RS.Engine._resolve(b, ctx);
+    var fell = ofType(ctx.events, 'fell')[0];
+    ok(fell.moves.some(function (m) { return m.id === id && m.from.r === 1 && m.to.r === 2; }), 'the chameleon fell one row');
+    eq(b.candies[2][1].id, id);
+    eq(b.candies[2][1].chameleon, true, 'flag after the fall');
+    var ctx2 = { stage: 0, events: [], swap: null, triggered: new Set(), toClear: new Map([['2,1', P(2, 1)]]), combo: null };
+    RS.Engine._resolve(b, ctx2);
+    eq(flagCount(b), 0, 'flag gone after clearing');
+  });
+  t('chameleons: shift cascade emits one status set', function () {
+    var s = session(NEVER);
+    var ev = play(s);
+    ok(ofType(ev, 'cleared').length >= 2);
+    eq(ofType(ev, 'scoreChanged').length, 1);
+    eq(ofType(ev, 'movesChanged').length, 1);
+    eq(ofType(ev, 'goalProgress').length, 1);
+    eq(ofType(ev, 'scoreChanged')[0].score, s.goals.score);
+    eq(ofType(ev, 'movesChanged')[0].movesLeft, 19);
+    eq(ofType(ev, 'goalProgress')[0].goals[0].current, s.goals.goals[0].current);
   });
 })(window.RS);

@@ -25,6 +25,28 @@
   var lastPlayed = {};
   var pending = {};        // Effekte, die auf resume() warten: höchstens einer je Merge-Schlüssel
   var resuming = false;    // ein resume() läuft noch
+  var PENDING_MAX_AGE = 1500;   // ms: ein wartender Effekt klingt später nicht mehr nach
+  var warned = {};         // Funktionen, die schon eine Warnung geloggt haben
+  var clock = defaultClock;
+
+  function defaultClock() {
+    return window.performance && window.performance.now ? window.performance.now() : Date.now();
+  }
+
+  // Die erste gefangene Störung je Funktion wird einmal gemeldet, weitere bleiben still.
+  function warnOnce(fn, e) {
+    if (warned[fn]) { return; }
+    warned[fn] = true;
+    try { console.warn('Reihenweise Süßes Audio: ' + fn + ': ' + (e && e.message ? e.message : e)); } catch (x) { /* still bleiben */ }
+  }
+
+  // Hält den aktuellen Wert eines Parameters ab now fest, bevor Geplantes verworfen wird.
+  function holdParam(p, now) {
+    if (p.cancelAndHoldAtTime) { p.cancelAndHoldAtTime(now); return; }
+    var held = p.value;
+    p.cancelScheduledValues(now);
+    p.setValueAtTime(held, now);
+  }
 
   function hz(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
 
@@ -338,7 +360,7 @@
         }
       });
       if (!tracks.length) { stopTimer(); }
-    } catch (e) { stopTimer(); }
+    } catch (e) { warnOnce('tick', e); stopTimer(); }
   }
 
   function startTimer() {
@@ -351,8 +373,7 @@
 
   function fadeOut(tr, dur) {
     var now = ctx.currentTime;
-    tr.gain.gain.cancelScheduledValues(now);
-    tr.gain.gain.setValueAtTime(tr.gain.gain.value, now);
+    holdParam(tr.gain.gain, now);
     tr.gain.gain.linearRampToValueAtTime(0.0001, now + dur);
     tr.stopAt = now + dur;
   }
@@ -403,8 +424,7 @@
   function duck() {
     var g = buses.music.gain;
     var now = ctx.currentTime;
-    g.cancelScheduledValues(now);
-    g.setValueAtTime(g.value, now);
+    holdParam(g, now);
     g.linearRampToValueAtTime(MUSIC_GAIN * 0.35, now + 0.08);
     g.setValueAtTime(MUSIC_GAIN * 0.35, now + 1.8);
     g.linearRampToValueAtTime(MUSIC_GAIN, now + 2.6);
@@ -427,7 +447,7 @@
         if (ctx.resume) { ctx.resume().catch(function () {}); }
         startTimer();
       }
-    } catch (e) { /* still bleiben */ }
+    } catch (e) { warnOnce('onVisibility', e); }
   }
 
   // Erzeugt den Kontext beim ersten Mal: Musik- und Effektbus über einen Kompressor.
@@ -469,9 +489,16 @@
     return ctx.state !== 'running' && ctx.state !== 'closed' && !document.hidden;
   }
 
-  function resume() {
+  // Wirft resume() sofort, fällt das Wartende weg und die Sperre fällt, die nächste Geste versucht es neu.
+  function resume(caller) {
     resuming = true;
-    var p = ctx.resume();
+    var p;
+    try { p = ctx.resume(); } catch (e) {
+      resuming = false;
+      pending = {};
+      warnOnce(caller, e);
+      return;
+    }
     var done = function () { resuming = false; flush(); };
     if (p && typeof p.then === 'function') {
       p.then(done, function () { resuming = false; pending = {}; });
@@ -480,13 +507,17 @@
     }
   }
 
+  // Spielt die wartenden Effekte; was länger als 1,5 s wartet, fällt weg.
   function flush() {
     try {
       var list = pending;
       pending = {};
       if (!ctx || ctx.state !== 'running' || !settings.sfx) { return; }
-      Object.keys(list).forEach(function (key) { fire(list[key], key); });
-    } catch (e) { /* still bleiben */ }
+      var now = clock();
+      Object.keys(list).forEach(function (key) {
+        if (now - list[key].at <= PENDING_MAX_AGE) { fire(list[key].event, key); }
+      });
+    } catch (e) { warnOnce('flush', e); }
   }
 
   // Nach einer Nutzeraktion: Kontext erzeugen bzw. fortsetzen, gewünschte Musik starten.
@@ -495,9 +526,9 @@
   function unlock() {
     try {
       if (!ensure()) { return; }
-      if (needsResume()) { resume(); }
+      if (needsResume()) { resume('unlock'); }
       apply();
-    } catch (e) { /* still bleiben */ }
+    } catch (e) { warnOnce('unlock', e); }
   }
 
   function setSettings(s) {
@@ -506,7 +537,7 @@
       if (typeof s.music === 'boolean') { settings.music = s.music; }
       if (typeof s.sfx === 'boolean') { settings.sfx = s.sfx; }
       apply();
-    } catch (e) { /* still bleiben */ }
+    } catch (e) { warnOnce('setSettings', e); }
   }
 
   // music(worldId, { boss, endless }) startet oder blendet über; music(null) blendet aus.
@@ -515,7 +546,7 @@
       opts = opts || {};
       desired = worldId ? { id: worldId, boss: Boolean(opts.boss), endless: Boolean(opts.endless) } : null;
       apply();
-    } catch (e) { /* still bleiben */ }
+    } catch (e) { warnOnce('music', e); }
   }
 
   // Spielt den Effekt jetzt; gleiche Effekte innerhalb von 40 ms klingen einmal.
@@ -536,9 +567,9 @@
       if (!needsResume()) { return; }
       // Der Kontext startet gerade (erster Klick) oder wurde unterbrochen: der neueste
       // Effekt je Schlüssel wartet auf resume(), ältere gleiche fallen weg.
-      pending[key] = event;
-      if (!resuming) { resume(); }
-    } catch (e) { /* still bleiben */ }
+      pending[key] = { event: event, at: clock() };
+      if (!resuming) { resume('play'); }
+    } catch (e) { warnOnce('play', e); }
   }
 
   // Für Tests: vergisst den Kontext samt Stücken, Wartendem und Merk-Zeiten.
@@ -551,6 +582,8 @@
     lastPlayed = {};
     pending = {};
     resuming = false;
+    warned = {};
+    clock = defaultClock;
   }
 
   RS.Audio = {
@@ -568,6 +601,7 @@
     _variant: variant,
     _clearedFreq: clearedFreq,
     _stage: function () { return stage; },
-    _reset: reset
+    _reset: reset,
+    _setClock: function (fn) { clock = typeof fn === 'function' ? fn : defaultClock; }
   };
 })(window.RS = window.RS || {});

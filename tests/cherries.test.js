@@ -66,6 +66,65 @@
     eq(b.choco[4][2], true);
   });
 
+  t('cherry falls from row 0 onto the void, crate and choco columns and is collected there', function () {
+    var none = '........';
+    var b = B.fromRows([
+      'c c c 4 1 2 3 4',
+      '2 3 4 1 2 3 4 1',
+      '3 4 1 2 3 4 1 2',
+      '1 2 3 2 4 1 2 0',
+      '# 1 2 3 1 0 0 2'
+    ], {
+      crate: ['00000000', '00000000', '00000000', '00000000', '01000000'],
+      choco: [none, none, none, none, '..C.....']
+    });
+    var ids = [B.get(b, P(0, 0)).id, B.get(b, P(0, 1)).id, B.get(b, P(0, 2)).id];
+    var ctx = { stage: 0, events: [], swap: null, triggered: new Set(), toClear: new Map(), combo: null };
+    for (var r = 1; r <= 3; r++) {
+      for (var c = 0; c <= 2; c++) { ctx.toClear.set(r + ',' + c, P(r, c)); }
+    }
+    RS.Engine._resolve(b, ctx);
+    var fell = ofType(ctx.events, 'fell')[0];
+    ids.forEach(function (id, i) {
+      ok(fell.moves.some(function (m) { return m.id === id && m.from.r === 0 && m.to.r === 3 && m.to.c === i; }),
+        'cherry ' + i + ' fell from row 0 to row 3');
+    });
+    var collected = ofType(ctx.events, 'cherryCollected');
+    deq(collected.map(function (e) { return e.pos; }), [P(3, 0), P(3, 1), P(3, 2)]);
+    deq(collected.map(function (e) { return e.id; }), ids);
+    deq(cherriesOnBoard(b), []);
+    eq(b.crate[4][1], 1);
+    eq(b.choco[4][2], true);
+  });
+
+  t('cherry is collected in cascade stage 2 when the cascade frees its column', function () {
+    var b = B.fromRows([
+      '2 3 4 0 2',
+      '1 4 3 2 0',
+      '0 1 c 3 4',
+      '4 0 1 2 3'
+    ], { colors: 5 });
+    var id = B.get(b, P(2, 2)).id;
+    var ctx = { stage: 0, events: [], swap: null, triggered: new Set(), toClear: new Map(), combo: null };
+    [P(2, 0), P(3, 0), P(3, 1)].forEach(function (p) { ctx.toClear.set(p.r + ',' + p.c, p); });
+    RS.Engine._resolve(b, ctx);
+    var stageAt = function (n) {
+      for (var i = 0; i < ctx.events.length; i++) {
+        if (ctx.events[i].type === 'cascade' && ctx.events[i].stage === n) { return i; }
+      }
+      return -1;
+    };
+    var collectedAt = -1;
+    ctx.events.forEach(function (e, i) { if (e.type === 'cherryCollected') { collectedAt = i; } });
+    eq(ofType(ctx.events, 'cherryCollected').length, 1);
+    eq(ofType(ctx.events, 'cherryCollected')[0].id, id);
+    deq(ofType(ctx.events, 'cherryCollected')[0].pos, P(3, 2));
+    ok(stageAt(2) > 0, 'a second cascade stage ran');
+    ok(collectedAt > stageAt(2), 'collected after stage 2 started');
+    ok(stageAt(3) < 0 || collectedAt < stageAt(3), 'collected before stage 3');
+    deq(cherriesOnBoard(b), []);
+  });
+
   t('cherry never matches', function () {
     var b = B.fromRows(['c c c 1', '1 2 3 2', '2 3 1 3', '3 1 2 1']);
     eq(B.findMatches(b).length, 0);
@@ -234,5 +293,31 @@
     deq(cherriesOnBoard(session.board), [P(4, 0)]);
     eq(session.goals.goals[0].count, 1);
     eq(session.status, 'playing');
+  });
+
+  t('start cascade counts score and collect goal', function () {
+    var layout = [
+      '00000000', '00000000', '00000000', '00000000',
+      '00000000', '00000000', '00000000', 'R0000000'
+    ];
+    var goals = [{ type: 'score', target: 1000000 }];
+    for (var col = 0; col < 5; col++) { goals.push({ type: 'collect', color: col, target: 1000 }); }
+    var found = null;
+    for (var seed = 1; seed <= 300 && !found; seed++) {
+      var s = RS.Session.startLevel({ id: 'x', moves: 10, colors: 5, seed: seed, layout: layout, goals: goals });
+      if (s.goals.score > 0) { found = s; }
+    }
+    ok(found, 'some seed makes the refill cascade at the start');
+    var collected = 0;
+    found.goals.goals.forEach(function (g) { if (g.type === 'collect') { collected += g.count; } });
+    ok(collected >= 3, 'the cleared candies count for the collect goals');
+    eq(found.goals.movesLeft, 10);
+    eq(found.moveNo, 0);
+    eq(found.status, 'playing');
+    // A start cascade never wins: even with every goal met the level stays playing.
+    var easy = RS.Session.startLevel({ id: 'x', moves: 10, colors: 5, seed: found.level.seed, layout: layout,
+      goals: [{ type: 'score', target: 1 }] });
+    eq(RS.Goals.allDone(easy.goals), true);
+    eq(easy.status, 'playing');
   });
 })(window.RS);

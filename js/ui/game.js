@@ -193,7 +193,7 @@
 
   // ---------- HUD ----------
 
-  function createHud(level, goals) {
+  function createHud(level, goals, startScore) {
     var hud = el('aside', 'hud');
     hud.setAttribute('aria-label', 'Spielstand');
 
@@ -300,7 +300,7 @@
     }
 
     setGoals(goals);
-    setScore(0);
+    setScore(startScore);
     setMoves(level.moves);
     return { el: hud, apply: apply, setSticks: setSticks };
   }
@@ -485,7 +485,7 @@
 
     RS.Audio.music(level.world, { boss: level.isBoss });
     var session = RS.Session.startLevel(level);
-    var hud = createHud(level, session.goals.goals);
+    var hud = createHud(level, session.goals.goals, session.goals.score);
 
     // Ein Sieg wird sofort gespeichert, damit er auch bei Verlassen, Neuladen oder
     // Schließen während der Gewinn-Kaskade zählt; der Dialog folgt nach der Animation.

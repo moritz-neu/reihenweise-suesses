@@ -545,4 +545,48 @@
       eq(s.status, 'playing');
     });
   });
+  t('useJoker with missing target is rejected for every kind', function () {
+    ['hammer', 'regenbogen', 'zauberbombe', 'besen'].forEach(function (kind) {
+      [undefined, null].forEach(function (target) {
+        var s = session(NOWIN, 5);
+        var ev = RS.Session.useJoker(s, kind, target);
+        eq(JSON.stringify(ev), JSON.stringify([{ type: 'jokerRejected', kind: kind }]), kind);
+        eq(s.status, 'playing');
+      });
+    });
+    ['feentausch'].forEach(function (kind) {
+      [undefined, null, {}, { a: P(0, 0) }, { b: P(0, 1) }].forEach(function (target) {
+        var ev = RS.Session.useJoker(session(NOWIN, 5), kind, target);
+        eq(JSON.stringify(ev), JSON.stringify([{ type: 'jokerRejected', kind: kind }]), kind);
+      });
+    });
+  });
+
+  t('feentausch refuses a pair with a cell off the board', function () {
+    var pairs = [[P(0, 5), P(0, 6)], [P(3, 0), P(4, 0)], [P(0, 0), P(-1, 0)], [P(0, 0), P(0, -1)]];
+    pairs.forEach(function (pair) {
+      var s = session(NOWIN, 5);
+      var before = JSON.stringify(B.toRows(s.board));
+      var ev = swapJoker(s, pair[0], pair[1]);
+      eq(ev.length, 1);
+      eq(ev[0].type, 'swapRejected');
+      eq(JSON.stringify(B.toRows(s.board)), before, 'board unchanged');
+      eq(s.goals.movesLeft, 5);
+      eq(s.status, 'playing');
+    });
+  });
+
+  t('besen charges the star spell with the cleared candies', function () {
+    var s = RS.Session._fromBoard({ id: 't', colors: 5, seed: 1, moves: 5, layout: [], goals: NOWIN, boss: 'lakritz' },
+      B.fromRows(ROWS, { colors: 5 }));
+    eq(s.boss.charge, 0);
+    var ev = useBesen(s, 3);
+    var cleared = 0;
+    ofType(ev, 'cleared').forEach(function (e) { cleared += e.candies.length; });
+    ok(cleared >= 6, 'the whole row was cleared');
+    eq(s.boss.charge, Math.min(RS.Boss.SPELL_MAX, cleared));
+    var charge = ofType(ev, 'spellCharge');
+    ok(charge.length >= 1, 'a spellCharge event was emitted');
+    eq(charge[charge.length - 1].charge, s.boss.charge);
+  });
 })(window.RS = window.RS || {});

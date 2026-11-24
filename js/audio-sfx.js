@@ -17,10 +17,11 @@
     k.tone(c, d, t + 0.11, { type: 'triangle', f: 150, lp: 600, dec: 0.11, g: 0.4 });
   }
 
-  function bells(k, c, d, t, freqs, step, g) {
+  function bells(k, c, d, t, freqs, step, g, dec) {
+    dec = dec || 0.5;
     freqs.forEach(function (f, i) {
-      k.tone(c, d, t + i * step, { f: f, dec: 0.5, g: g });
-      k.tone(c, d, t + i * step, { f: f * 2.0, dec: 0.18, g: g * 0.25 });
+      k.tone(c, d, t + i * step, { f: f, dec: dec, g: g });
+      k.tone(c, d, t + i * step, { f: f * 2.0, dec: dec * 0.36, g: g * 0.25 });
     });
   }
 
@@ -195,12 +196,12 @@
       bells(k, c, d, t, [1318.5, 1975.5], 0.09, 0.2);
     },
     spellCast: function (k, c, d, t) {
-      bells(k, c, d, t, semis(1046.5, [0, 4, 7, 11, 12, 16, 19, 23, 24]), 0.035, 0.16);
+      bells(k, c, d, t, semis(1046.5, [0, 4, 7, 11, 12, 16, 19, 23, 24]), 0.03, 0.16, 0.35);
       k.noise(c, d, t, { filter: 'highpass', f: 6000, a: 0.1, dec: 0.4, g: 0.1 });
     },
     bossDefeated: function (k, c, d, t) {
       k.tone(c, d, t, { f: 150, to: 40, glide: 0.4, dec: 0.5, g: 0.8 });
-      k.run(c, d, t + 0.12, semis(261.63, [0, 4, 7, 12, 16, 19, 24]), 0.07, { type: 'triangle', lp: 3500, dec: 0.4, g: 0.2 });
+      k.run(c, d, t + 0.08, semis(261.63, [0, 4, 7, 12, 16, 19, 24]), 0.05, { type: 'triangle', lp: 3500, dec: 0.22, g: 0.2 });
     },
     // Abschluss
     levelWon: function (k, c, d, t) {
@@ -220,8 +221,8 @@
       k.run(c, d, t, semis(C5, [0, 7, 12]), 0.1, { type: 'triangle', lp: 3200, dec: 0.35, g: 0.32 });
     },
     gateOpen: function (k, c, d, t) {
-      k.noise(c, d, t, { filter: 'lowpass', f: 320, a: 0.2, dec: 0.8, g: 0.6 });
-      bells(k, c, d, t + 0.25, semis(C5, [0, 7, 12, 16]), 0.15, 0.22);
+      k.noise(c, d, t, { filter: 'lowpass', f: 320, a: 0.2, dec: 0.4, g: 0.6 });
+      bells(k, c, d, t + 0.1, semis(C5, [0, 7, 12, 16]), 0.08, 0.22, 0.25);
     },
     gift: function (k, c, d, t) {
       bells(k, c, d, t, semis(1318.5, [0, 3, 8, 12]), 0.08, 0.2);

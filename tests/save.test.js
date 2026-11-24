@@ -330,4 +330,32 @@
     RS.assert.equal(RS.Save.load(s).jokers.feentausch, 3);
   });
 
+
+  // A 4.x-format save as 5.0.0 wrote it at the end of the game: stars in all ten worlds, every
+  // joker kind, music off, the final boss won, the credits seen. 5.1.0 must load it unchanged.
+  RS.test('save: 5.0.0 save with all jokers, settings off and completed loads unchanged', function () {
+    var stars = {};
+    RS.Worlds.levels().forEach(function (l, i) { stars[l.id] = (i % 3) + 1; });
+    var seen = ['prolog', 'laden', 'tor:1', 'intro:2', 'geschenk:besen', 'geschenk:feentausch', 'abspann'];
+    for (var w = 1; w <= 10; w++) { seen.push('kapitel:' + w); }
+    var fixture = {
+      version: 4, stars: stars, seen: seen, sticks: 512,
+      jokers: { moves: 3, hammer: 2, besen: 4, feentausch: 1, regenbogen: 0, zauberbombe: 2 },
+      endlessHighscore: 31250, completed: true, settings: { music: false, sfx: true }
+    };
+    RS.assert.equal(Object.keys(stars).length, 100);
+    var s = fakeStorage();
+    putRaw(s, fixture);
+    var loaded = RS.Save.load(s);
+    RS.assert.deepEqual(loaded, fixture);
+    RS.assert.equal(RS.Save.hasSeen(loaded, 'abspann'), true);
+    RS.assert.equal(RS.Save.hasSeen(loaded, 'kapitel:10'), true);
+    RS.assert.equal(loaded.settings.music, false);
+    RS.assert.equal(loaded.completed, true);
+    // Storing the loaded save and loading it again changes nothing either.
+    var s2 = fakeStorage();
+    RS.assert.equal(RS.Save.store(loaded, s2), true);
+    RS.assert.equal(s2.raw[RS.Save.KEY], JSON.stringify(fixture));
+    RS.assert.deepEqual(RS.Save.load(s2), fixture);
+  });
 })(window.RS = window.RS || {});

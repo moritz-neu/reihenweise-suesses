@@ -4,6 +4,10 @@
   // A cherry is a candy {id, color: null, special: null, cherry: true}: it never matches, no hit
   // clears it and it falls with gravity until it stands on the lowest fall slot of its column.
 
+  function newCherry(board) {
+    return { id: board.nextId++, color: null, special: null, cherry: true };
+  }
+
   // Sets cherrySpawned and cherryOnBoard from the cherries currently on the board.
   function recount(board) {
     var n = 0;
@@ -45,5 +49,5 @@
     return candy;
   }
 
-  RS.Cherries = { recount: recount, collect: collect, spawnInto: spawnInto };
+  RS.Cherries = { newCherry: newCherry, recount: recount, collect: collect, spawnInto: spawnInto };
 })(window.RS = window.RS || {});

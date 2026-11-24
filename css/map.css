@@ -1752,7 +1752,12 @@
 
 /* ---------- Schmale Bildschirme ---------- */
 
-/* Kartenkopf zweizeilig: Titel oben, darunter Knöpfe und Vorrat */
+/* Zeichen der Kopfknöpfe (js/ui/map.js): auf breiten Fenstern nur der Text */
+.head-icon {
+  display: none;
+}
+
+/* Weltenübersicht: Kopf zweizeilig, Titel oben, darunter der Knopf */
 @media (max-width: 600px) {
   .map-head {
     grid-template-columns: 1fr 1fr;
@@ -1761,6 +1766,96 @@
   .map-head .screen-title {
     grid-column: 1 / -1;
     grid-row: 1;
+  }
+}
+
+/* Levelkarte bis Tablet hochkant (720 px, wie NARROW in js/ui/map.js): eine Zeile, höchstens
+   56 px hoch, mit Zeichen-Knöpfen, gekürztem Titel und kleinen Vorrats-Chips */
+@media (max-width: 720px) {
+  .map {
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+  }
+
+  .map > .map-head {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+  }
+
+  .map > .map-head .screen-title {
+    grid-column: auto;
+    grid-row: auto;
+    min-width: 0;
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .map > .map-head .map-nav,
+  .map > .map-head .map-side {
+    flex-wrap: nowrap;
+    gap: 0.3rem;
+  }
+
+  .map > .map-head .btn--head {
+    width: 2.5rem;
+    height: 2.5rem;
+    min-width: 0;
+    padding: 0;
+    font-size: 1rem;
+  }
+
+  .map > .map-head .head-icon {
+    display: block;
+    width: 1.35rem;
+    height: 1.35rem;
+  }
+
+  .map > .map-head .head-label {
+    display: none;
+  }
+
+  .map > .map-head .map-total,
+  .map > .map-head .stick-balance {
+    gap: 0.2em;
+    padding: 0.25em 0.5em;
+    font-size: 0.8rem;
+  }
+}
+
+/* Sehr schmal (360 px): etwas kleinere Knöpfe und Chips, damit kurze Weltnamen ganz passen */
+@media (max-width: 400px) {
+  .map > .map-head {
+    gap: 0.3rem;
+  }
+
+  .map > .map-head .map-nav,
+  .map > .map-head .map-side {
+    gap: 0.25rem;
+  }
+
+  .map > .map-head .btn--head {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .map > .map-head .head-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .map > .map-head .screen-title {
+    font-size: 1rem;
+  }
+
+  .map > .map-head .map-total,
+  .map > .map-head .stick-balance {
+    padding: 0.2em 0.4em;
+    font-size: 0.75rem;
   }
 }
 

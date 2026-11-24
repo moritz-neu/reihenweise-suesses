@@ -158,6 +158,120 @@
     });
   });
 
+  // ---- Robustness (5.1.0) ----
+
+  function withWarnings(fn) {
+    var saved = console.warn;
+    var log = [];
+    console.warn = function (m) { log.push(String(m)); };
+    try { fn(log); } finally { console.warn = saved; }
+  }
+
+  t('audio: pending effect older than 1.5 s is dropped', function () {
+    withStub('suspended', function (made) {
+      var now = 1000;
+      RS.Audio._setClock(function () { return now; });
+      try {
+        RS.Audio.unlock();
+        var c = made[0];
+        RS.Audio.play({ type: 'click' });
+        now += 400;
+        RS.Audio.play({ type: 'swapped' });
+        now += 1200;   // click is 1600 ms old, swapped 1200 ms
+        c.finish();
+        eq(c.oscillators, 1, 'only the swapped effect is young enough');
+      } finally { RS.Audio._setClock(null); }
+    });
+  });
+
+  t('audio: sync throw in resume does not block later unlock', function () {
+    withWarnings(function () {
+      withStub('suspended', function (made) {
+        RS.Audio.unlock();
+        var c = made[0];
+        var real = c.resume;
+        c.resume = function () { c.resumes++; throw new Error('boom'); };
+        RS.Audio.unlock();   // the gesture's resume() throws, the flag must not stay set
+        c.resume = real;
+        var before = c.resumes;
+        RS.Audio.play({ type: 'click' });
+        eq(c.resumes, before + 1, 'play is not blocked by a stuck resuming flag');
+        RS.Audio.unlock();
+        eq(c.resumes, before + 2, 'the next gesture reaches resume again');
+        c.finish();
+        eq(RS.Audio.isRunning(), true, 'running after the later resume');
+        eq(c.oscillators, 1, 'only the effect from after the failure plays');
+      });
+    });
+  });
+
+  t('audio: first error warns once', function () {
+    withWarnings(function (log) {
+      withStub('running', function (made) {
+        RS.Audio.unlock();
+        var c = made[0];
+        c.createOscillator = function () { throw new Error('osc broke'); };
+        RS.Audio.play({ type: 'click' });
+        c.currentTime += 1;
+        RS.Audio.play({ type: 'click' });
+        c.currentTime += 1;
+        RS.Audio.play({ type: 'swapped' });
+        eq(log.length, 1, 'one warning for three failures of play');
+        ok(log[0].indexOf('Reihenweise Süßes Audio: play: ') === 0, 'prefix and function name: ' + log[0]);
+        ok(log[0].indexOf('osc broke') !== -1, 'message included');
+      });
+    });
+  });
+
+  function loggedParam(log, hold) {
+    var p = param();
+    Object.defineProperty(p, 'value', { get: function () { log.push('read'); return 0.5; }, set: noop });
+    p.cancelScheduledValues = function () { log.push('cancel'); };
+    p.setValueAtTime = function () { log.push('set'); };
+    if (hold) { p.cancelAndHoldAtTime = function () { log.push('hold'); }; }
+    return p;
+  }
+
+  t('audio: a fade reads the value before it cancels, or holds', function () {
+    [false, true].forEach(function (hold) {
+      withStub('running', function (made) {
+        RS.Audio.unlock();
+        var c = made[0];
+        var log = [];
+        c.createGain = function () { return node({ gain: loggedParam(log, hold) }); };
+        RS.Audio.setSettings({ music: true });
+        RS.Audio.music(1);
+        log.length = 0;
+        RS.Audio.music(2);   // fades the first piece out
+        var s = log.join(' ');
+        if (hold) {
+          ok(s.indexOf('hold') !== -1 && s.indexOf('cancel') === -1, 'cancelAndHoldAtTime used: ' + s);
+        } else {
+          ok(s.indexOf('read') !== -1 && s.indexOf('read') < s.indexOf('cancel'), 'read before cancel: ' + s);
+          ok(s.indexOf('cancel') < s.indexOf('set'), 'held value set after cancel: ' + s);
+        }
+      });
+    });
+  });
+
+  t('audio: gateOpen, bossDefeated and spellCast end within 0.7 s', function () {
+    ['gateOpen', 'bossDefeated', 'spellCast'].forEach(function (type) {
+      withStub('running', function (made) {
+        RS.Audio.unlock();
+        var c = made[0];
+        var last = 0;
+        var rec = function () {
+          return node({ type: '', frequency: param(), detune: param(), buffer: null, start: noop,
+            stop: function (when) { last = Math.max(last, when); } });
+        };
+        c.createOscillator = rec;
+        c.createBufferSource = rec;
+        eq(RS.Audio._effect(c, c.destination, { type: type }, 0), true, type + ' schedules');
+        ok(last > 0 && last <= 0.7, type + ' ends at ' + last);
+      });
+    });
+  });
+
   t('audio: no AudioContext is a silent no-op', function () {
     withoutAudio(function () {
       RS.Audio.unlock();

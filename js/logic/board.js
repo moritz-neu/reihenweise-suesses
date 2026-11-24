@@ -54,6 +54,11 @@
     return inBounds(board, pos) && board.mask[pos.r][pos.c] === true;
   }
 
+  // A playable cell that holds chocolate or a crate: no candy, it absorbs hits.
+  function isBlockerCell(board, r, c) {
+    return board.mask[r][c] === true && (board.choco[r][c] || board.crate[r][c] > 0);
+  }
+
   function get(board, pos) {
     return inBounds(board, pos) ? board.candies[pos.r][pos.c] : null;
   }
@@ -61,7 +66,7 @@
   function parseToken(board, token) {
     if (token === '#') { return { mask: false, candy: null }; }
     if (token === '_') { return { mask: true, candy: null }; }
-    if (token === 'c') { return { mask: true, candy: { id: board.nextId++, color: null, special: null, cherry: true } }; }
+    if (token === 'c') { return { mask: true, candy: RS.Cherries.newCherry(board) }; }
     if (token === '*') { return { mask: true, candy: newCandy(board, null, 'colorball') }; }
     var m = /^([0-5])([hvb]?)$/.exec(token);
     if (!m) { throw new Error('Unknown board token: ' + token); }
@@ -201,8 +206,7 @@
       get(board, a) !== null && get(board, b) !== null &&
       !board.lock[a.r][a.c] && !board.lock[b.r][b.c] &&
       board.ice[a.r][a.c] === 0 && board.ice[b.r][b.c] === 0 &&
-      !board.choco[a.r][a.c] && !board.choco[b.r][b.c] &&
-      !board.crate[a.r][a.c] && !board.crate[b.r][b.c] &&
+      !isBlockerCell(board, a.r, a.c) && !isBlockerCell(board, b.r, b.c) &&
       isAdjacent(a, b);
   }
 
@@ -258,7 +262,7 @@
       for (c = 0; c < board.cols; c++) {
         var candy = board.candies[r][c];
         if (board.mask[r][c] && candy && !candy.special && !candy.cherry && !board.lock[r][c] &&
-            board.ice[r][c] === 0 && !board.choco[r][c] && !board.crate[r][c]) {
+            board.ice[r][c] === 0 && !isBlockerCell(board, r, c)) {
           cells.push({ r: r, c: c });
           originals.push({ candy: candy, color: candy.color });
         }
@@ -300,9 +304,9 @@
   function fillRandom(board) {
     for (var r = 0; r < board.rows; r++) {
       for (var c = 0; c < board.cols; c++) {
-        if (!board.mask[r][c] || board.choco[r][c] || board.crate[r][c]) { continue; }
+        if (!board.mask[r][c] || isBlockerCell(board, r, c)) { continue; }
         if (board.cherryCells.indexOf(r * board.cols + c) >= 0) {
-          board.candies[r][c] = { id: board.nextId++, color: null, special: null, cherry: true };
+          board.candies[r][c] = RS.Cherries.newCherry(board);
           continue;
         }
         var banned = {};
@@ -363,6 +367,7 @@
     get: get,
     inBounds: inBounds,
     isPlayable: isPlayable,
+    isBlockerCell: isBlockerCell,
     findMatches: findMatches,
     toRows: toRows,
     isAdjacent: isAdjacent,

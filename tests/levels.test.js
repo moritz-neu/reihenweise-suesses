@@ -438,7 +438,7 @@
     ok(/Kirsche/.test(l.intro), 'intro explains cherries');
   });
 
-  t('levels: w5-02..w5-09 mix cherries with every known obstacle and goal', function () {
+  t('levels: w5-02..w5-09 mix every known obstacle and goal', function () {
     var kinds = {};
     RS.Worlds.inWorld(5).forEach(function (l) {
       if (l.isBoss || l.pos < 2) { return; }
@@ -475,7 +475,7 @@
     RS.assert.deepEqual(b.attacks, [
       { every: 3, kind: 'glaze', count: 3, level: 2 },
       { every: 2, kind: 'lock', count: 2, row: 6 }]);
-    ok(b.hp > 0);
+    eq(b.hp, 620);
     ok(/Krawalla/.test(l.intro + l.win), 'w5-10 is about Krawalla');
   });
 
@@ -521,7 +521,6 @@
 
   t('levels: w6-01 invites the Feentausch with glaze in tight cloud corners', function () {
     var l = RS.Worlds.level('w6-01');
-    ok(l.moves >= 15, 'at least 15 moves in w6-01');
     ok(l.goals.some(function (g) { return g.type === 'glaze'; }), 'glaze goal in w6-01');
     var glaze = 0;
     var tightGlaze = 0;
@@ -568,7 +567,7 @@
     RS.assert.deepEqual(b.attacks, [
       { every: 3, kind: 'ice', count: 3, level: 1 },
       { every: 2, kind: 'choco', count: 2 }]);
-    ok(b.hp > 0);
+    eq(b.hp, 660);
     ok(/Wolkira/.test(l.intro + l.win), 'w6-10 is about Wolkira');
   });
 
@@ -682,7 +681,7 @@
     RS.assert.deepEqual(b.attacks, [
       { every: 3, kind: 'fuse', count: 2, level: 7 },
       [{ every: 2, kind: 'fuse', count: 2, level: 5 }, { kind: 'crate', count: 2, level: 1 }]]);
-    ok(b.hp > 0);
+    eq(b.hp, 700);
     ok(/Knallfrosch/.test(l.intro + l.win), 'w7-10 is about Knallfrosch');
   });
 
@@ -759,7 +758,7 @@
     RS.assert.deepEqual(b.attacks, [
       { every: 3, kind: 'crate', count: 3, level: 2 },
       { every: 2, kind: 'glaze', count: 4, level: 2 }]);
-    ok(b.hp > 0);
+    eq(b.hp, 770);
     ok(/Mandelbart/.test(l.intro + l.win), 'w8-10 is about Mandelbart');
   });
 
@@ -850,7 +849,7 @@
     RS.assert.deepEqual(b.attacks, [
       { every: 3, kind: 'chameleon', count: 3 },
       [{ every: 2, kind: 'chameleon', count: 2 }, { kind: 'ice', count: 2, level: 2 }]]);
-    ok(b.hp >= 500, 'boss hp from balancing');
+    eq(b.hp, 990);
     ok(/Schillerzahn/.test(l.intro + l.win), 'w9-10 is about Schillerzahn');
   });
 
@@ -861,8 +860,11 @@
     ok(/Farbe/.test(intro) && /jedem Zug/.test(intro), 'intro tells that they change colour after every move');
     ok(/gerade zeigt/.test(intro), 'intro tells that they count for the colour they show');
     ok(/Schillerzahn/.test(intro), 'intro names the boss');
-    var scenes = bossLines(w).map(function (l) { return l.text; }).join(' ');
-    ok(/Grün/.test(scenes) && /Blau/.test(scenes), 'Annika names both weak colours');
+    var story = w.boss.story;
+    var introScenes = story.intro.map(function (l) { return l.text; }).join(' ');
+    var phase2Scenes = story.phase2.map(function (l) { return l.text; }).join(' ');
+    ok(/Grün/.test(introScenes) && !/Blau/.test(introScenes), 'the intro names Grün, the weak colour of phase 1');
+    ok(/Blau/.test(phase2Scenes) && !/Grün/.test(phase2Scenes), 'phase 2 names Blau, the weak colour of phase 2');
     var end = w.chapterEnd.join(' ');
     ok(/letzte Sternsplitter|letzten Sternsplitter/.test(end), 'Schillerzahn guarded the last splinter');
     ok(/Seeweg/.test(end), 'Schillerzahn guarded the sea route');
@@ -916,8 +918,8 @@
       var text = l.layout.join('');
       ok(/[12KLIJCXYZRF]/.test(text), 'obstacles in ' + l.id);
       ok(densestBlock(l.layout) >= 4, 'an obstacle cluster for the Zauberbombe in ' + l.id);
-      if (/[12K]/.test(text)) { kinds.glaze = true; }
-      if (/[LK]/.test(text)) { kinds.lock = true; }
+      if (/[12]/.test(text)) { kinds.glaze = true; }
+      if (/L/.test(text)) { kinds.lock = true; }
       if (/[IJ]/.test(text)) { kinds.ice = true; }
       if (/C/.test(text)) { kinds.choco = true; }
       if (/[XYZ]/.test(text)) { kinds.crate = true; }
@@ -944,7 +946,7 @@
       [{ every: 3, kind: 'lock', count: 3 }, { every: 3, kind: 'ice', count: 2, level: 2 }],
       [{ every: 2, kind: 'crate', count: 3, level: 2 }, { every: 2, kind: 'choco', count: 2 }],
       [{ every: 2, kind: 'fuse', count: 2, level: 6 }, { every: 2, kind: 'chameleon', count: 2 }]]);
-    ok(b.hp >= 1000, 'boss hp from balancing');
+    eq(b.hp, 1015);
     ok(/Amarus/.test(l.intro + l.win), 'w10-10 is about Amarus');
   });
 

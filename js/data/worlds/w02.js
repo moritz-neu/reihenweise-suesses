@@ -5,7 +5,7 @@
   // Seeds: 1000 + alte Level-Nummer (11..20).
   function level(n, colors, moves, goals, layout, intro, win) {
     var p = n - 10;
-    return { id: 'w2-' + (p < 10 ? '0' : '') + p, seed: 1000 + n, colors: colors, moves: moves, goals: goals, layout: layout, intro: intro, win: win };
+    return { id: 'w2-' + ('0' + p).slice(-2), seed: 1000 + n, colors: colors, moves: moves, goals: goals, layout: layout, intro: intro, win: win };
   }
 
   RS.Worlds.register({

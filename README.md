@@ -23,7 +23,7 @@ Neu in Welt 5: Kirschen. Eine Kirsche liegt statt eines Bonbons auf dem Feld und
 
 Sterne gibt es für übrige Züge: Wer ein Level schafft, bekommt einen Stern, zwei Sterne mit mindestens einem Viertel der Züge übrig und drei Sterne mit mindestens der Hälfte (jeweils aufgerundet). Die Punkte zählen nur für die Anzeige und Punkteziele.
 
-Zuckerstangen sind die Währung des Spiels. Wer ein Level zum ersten Mal schafft, bekommt je Stern 5 Zuckerstangen in Welt 1 und 2, 6 in Welt 3 und 7 in Welt 4 (je Welt eine mehr). Beim erneuten Spielen gibt es 5 je neu dazugewonnenem Stern und immer 2 obendrauf. Eine Endlos-Runde bringt 1 Zuckerstange je vollen 1000 Punkten. Neue Spielstände starten mit 0 Zuckerstangen.
+Zuckerstangen sind die Währung des Spiels. Wer ein Level zum ersten Mal schafft, bekommt je Stern 5 Zuckerstangen in Welt 1 und 2, danach je Welt eine mehr: 6 in Welt 3, 7 in Welt 4 und so weiter bis 13 in Welt 10 (also 5, 5, 6, 7, 8, 9, 10, 11, 12, 13). Beim erneuten Spielen gibt es 5 je neu dazugewonnenem Stern und immer 2 obendrauf. Eine Endlos-Runde bringt 1 Zuckerstange je vollen 1000 Punkten. Neue Spielstände starten mit 0 Zuckerstangen.
 
 Dafür gibt es im Laden auf der Levelkarte die Joker „+5 Züge“ für 30 Zuckerstangen, den „Zuckerhammer“ für 20, der ein Bonbon mit einem Schlag entfernt, und den „Zuckerbesen“ für 25, der eine ganze Reihe räumt, den „Feentausch“ für 15, der zwei Nachbarn tauscht, den „Regenbogenstaub“ für 35, der alle Bonbons einer Farbe entfernt, und die „Zauberbombe“ für 30, die ein Feld von drei mal drei sprengt. Alle Joker außer „+5 Züge“ kosten keinen Zug. Der Laden zeigt nur Joker, deren Welt offen ist (der Besen nach dem Sieg über den Karamellkoloss, der Feentausch nach Krawalla, der Regenbogenstaub nach Knallfrosch, die Zauberbombe nach Schillerzahn). Vom Vorrat passen höchstens 10 je Joker. Zum Start liegt von „+5 Züge“ und Hammer je einer bereit, von jedem neuen Joker gibt es zwei geschenkt, sobald seine Einführungswelt (4, 6, 8, 10) betreten wird. Joker gelten nur im Abenteuer-Modus, übrige Züge zählen für die Sterne ganz normal mit. Geht ein Level verloren, bietet der Dialog mit vorhandenem Vorrat eine Rettung an.
 
@@ -60,7 +60,7 @@ Musik und Soundeffekte entstehen zur Laufzeit mit Web Audio, es gibt keine Audio
 
 ## Balancing-Simulator
 
-`tests/balance.html` ist ein Entwicklerwerkzeug und gehört nicht zur Testseite. Ein Bot spielt jedes Level mit 200 Startwerten, jeder Lauf auf einem eigenen Feld. Er probiert jeden möglichen Zug auf einer Kopie der Sitzung aus und spielt wie ein Mensch auf die Ziele: zuerst ein Zug, der das Level gewinnt, dann der meiste Fortschritt auf die offenen Ziele (Glasurschichten, entfernte Schokolade, Bossschaden, Bonbons der gesuchten Farbe, Punkte nur bei offenem Punkteziel), dann die meisten Punkte. In Bosskämpfen löst er den Sternenzauber aus, sobald die Leiste voll ist. Gleichstände entscheidet sein eigener Zufall. Er sieht auch die nachfallenden Bonbons voraus, seine Siegquoten überschätzen deshalb menschliche Spielerinnen und Spieler. Die Seite zeigt je Level die Siegquote, den Median der Punkte, die Sternverteilung und weitere Kennzahlen. Eine Welt mit 200 Startwerten dauert etwa eineinhalb bis zwei Minuten. Tipp für mehr Tempo: Mehrere Welten gleichzeitig messen, jede in einem eigenen Browser-Prozess mit eigenem `--user-data-dir` (zum Beispiel `--user-data-dir="$TMP/bal-w5"`), sonst teilen sich die Prozesse ein Profil.
+`tests/balance.html` ist ein Entwicklerwerkzeug und gehört nicht zur Testseite. Ein Bot spielt jedes Level mit 200 Startwerten, jeder Lauf auf einem eigenen Feld. Er probiert jeden Zug auf einer Kopie der Sitzung aus und nimmt zuerst einen Gewinnzug, dann den meisten Fortschritt auf die offenen Ziele, dann die meisten Punkte; Gleichstände entscheidet sein Zufall, im Bosskampf löst er den Sternenzauber bei voller Leiste aus und Joker nutzt er nie. Für Kirschen (je Zeile Weg 0,2 Fortschritt) und Knallbonbons (Bonus 5 für das Entschärfen bei Zähler 2 oder weniger) gibt es eigene Regeln, die Heuristiken stehen als Kommentare in `tests/balance.js`. Er sieht nachfallende Bonbons voraus, seine Quoten sind deshalb obere Grenzen für Menschen. Eine Welt mit 200 Startwerten dauert etwa eineinhalb bis zwei Minuten; für mehr Tempo lassen sich mehrere Welten in eigenen Browser-Prozessen mit je eigenem `--user-data-dir` messen.
 
 Parameter in der Adresse:
 
@@ -72,7 +72,9 @@ Parameter in der Adresse:
 - `&boards=fixed` fester Level-Startwert wie im Spiel (der Bot spielt dann oft jede Partie gleich, die Quote ist nur 0 oder 100 %)
 - `&bot=greedy` einfacher gieriger Bot, der nur Punkte zählt
 
-Jede Zeile zeigt die Zielquote aus `RS.Curve`, die gemessene Quote und das Urteil: `OK` (Abweichung höchstens 5 Punkte), `ZU LEICHT` (mehr als 5 über dem Ziel) oder `ZU SCHWER` (mehr als 5 darunter). Der Bot zählt jeden Kistentreffer als Fortschritt für ein Kistenziel und nutzt nie Joker. Für die neuen Mechaniken gelten diese Regeln: Bei offenem Kirschenziel zählt jede Zeile, die eine Kirsche nach unten rutscht, 0,2 Fortschritt. Beim Knallbonbon-Ziel bekommt das Entschärfen eines gefährlichen Bonbons (Zähler 2 oder weniger) einen Bonus von 5, ein Zünder auf 0 verliert das Level. Chamäleons brauchen keine eigene Regel, der Bot sieht ihren Farbwechsel in der Kopie der Sitzung.
+Unbekannte Level-Ids, eine unbekannte Welt oder ein unmöglicher Probewert (`hp` ohne Boss, `g0`, ein nicht vorhandenes Ziel) enden mit `BALANCE: ERROR` und der Ursache statt mit einer leeren Tabelle.
+
+Jede Zeile zeigt die Zielquote aus `RS.Curve`, die gemessene Quote und das Urteil: `OK` (Abweichung höchstens 5 Punkte), `ZU LEICHT` (mehr als 5 über dem Ziel) oder `ZU SCHWER` (mehr als 5 darunter).
 
 Headless (Git Bash, Edge), Beispiel eine Welt mit 20 Startwerten:
 
@@ -86,7 +88,7 @@ Voller Lauf (alle registrierten Level, 200 Startwerte) mit demselben Befehl ohne
 "/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless=new --disable-gpu --no-first-run --dump-dom "file:///$(pwd -W)/tests/balance.html" 2>/dev/null | grep -E 'Außerhalb|Laufzeit|w[0-9]+-[0-9]+ |summary"'
 ```
 
-Die Zielquote je Level kommt aus `RS.Curve` (Siegquote des Bots ohne Joker, Toleranz ±5 Punkte). Stand der Welten 1 bis 10 mit 200 Startwerten (Stand 24.11.2026), kein Level der Welten 1 und 2 ist schwerer als in 3.0.1. Level, die schon in 3.0.1 `ZU LEICHT` waren (w1-01, w1-02, w1-03, w1-05), behalten ihre Werte und lesen weiter `ZU LEICHT`, weil der Bot dort bei etwa 100 % sättigt und viel stärker spielt als Menschen. Alle anderen Level liegen auf `OK`. Die Leben der Bosse stehen im `boss`-Block der Weltdatei. Die normalen Level von Welt 5 spielen mit fünf Farben, damit Kirschen oft genug fallen; Kirschen in den mittleren Spalten erreichen den Korb leichter als am Rand. In Welt 6 spielen w6-01 und w6-07 mit fünf Farben; w6-01 ist als Einführungslevel mit 15 Zügen `ZU LEICHT`, weil die Glasur in den engen Wolkenbuchten mit sechs Farben selbst mit 28 Zügen unter der Zielquote blieb. In Welt 7 spielt w7-05 (Kirschen) mit fünf Farben. Dort bestimmen die Knallbonbons die Schwierigkeit oft mehr als die Züge, deshalb sind einige Level über die Dichte von Kisten, Schokolade und Knallbonbons eingestellt. In Welt 8 spielt w8-05 (Kirschen) mit fünf Farben, und w8-06 ist über dichte Schokolade eingestellt, weil dort die Zahl der Züge kaum zählt; der Regenbogenstaub ist wie jeder Joker nicht eingerechnet. In Welt 9 hat jedes Level Chamäleons und ein Sammelziel, der Bot rechnet den Farbwechsel nach jedem Zug mit ein. w9-05 (Kirschen) spielt mit fünf Farben und vier Kirschen, denn mit sechs Farben blieb es selbst mit 18 Zügen weit unter der Zielquote. In Welt 10 verbinden die Level alle Mechaniken des Spiels, w10-05 (Kirschen) spielt mit fünf Farben. w10-01 hat zwei Kistenblöcke von drei mal drei Feldern, die zur Zauberbombe einladen, und liest mit 22 Zügen `OK`. In w10-03 und w10-07 bestimmen die Knallbonbons die Schwierigkeit mehr als die Züge. Das Finale gegen Bitterkönig Amarus hat drei Phasen und 50 Züge; schon 60 Leben mehr oder weniger verschieben die Quote um rund 15 Punkte.
+Die Zielquote je Level kommt aus `RS.Curve` (Siegquote des Bots ohne Joker, Toleranz ±5 Punkte). Stand der Welten 1 bis 10 mit 200 Startwerten (24.11.2026): Alle Level liegen auf `OK`, außer w1-01, w1-02, w1-03, w1-05 (schon in 3.0.1 `ZU LEICHT`, der Bot sättigt dort bei etwa 100 %) und w6-01 (Einführungslevel mit 15 Zügen). Die Leben der Bosse stehen im `boss`-Block der Weltdatei. Die normalen Level der Welt 5 sowie w6-01, w6-07, w7-05, w8-05, w9-05 und w10-05 spielen mit fünf Farben, damit Kirschen oft genug fallen. In Welt 7 und in w10-03 und w10-07 bestimmen die Knallbonbons die Schwierigkeit mehr als die Züge, in w8-06 die Dichte der Schokolade. Das Finale (Amarus, 50 Züge) reagiert stark auf die Leben: 60 mehr oder weniger verschieben die Quote um rund 15 Punkte.
 
 | Level | Züge | Ziele | Zielquote % | Gemessen % |
 |---|---|---|---|---|
@@ -206,7 +208,7 @@ js/logic/           Spiellogik ohne DOM: Zufall, Feld, Spezialsteine, Hinderniss
 js/data/            Welt-Registry (registry.js), Schwierigkeitskurve (curve.js), Story-Texte,
                     worlds/ mit einer Datei je Welt, w01.js bis w10.js (Level, Boss, Musikmotiv, Texte)
 js/ui/              Bildschirme: Startmenü, Welten-Atlas (atlas.js), Abspann (credits.js), Levelkarte (map.js, mapkit.js),
-                    Spielfeld (game.js), Endlos, Dialoge, Laden (shop.js), Effekte, Bossfigur (bossview.js),
+                    Spielfeld (game.js, boardview.js, boardfx.js), Endlos, Dialoge, Laden (shop.js), Effekte, Bossfigur (bossview.js),
                     worlds/ mit Kartenbild und Bossfigur je Welt, w01.js bis w10.js
 js/save.js          Speichern und Laden (localStorage, Format Version 4)
 js/audio.js         Web-Audio-Motor: Sequenzer, Musik je Bildschirm, Einstellungen
@@ -216,3 +218,11 @@ tests/              Testseite, Test-Runner, Tests je Logik-Modul (u. a. boss.tes
 ```
 
 Alle Dateien sind klassische `<script>`-Tags ohne ES-Module und hängen ihre Exporte an den Namensraum `window.RS`. Die Logik liefert zu jedem Zug eine geordnete Liste von Ereignissen, die Darstellung spielt sie als Animation ab.
+
+## Bekannte Grenzen
+
+- Der Bot spielt stärker als Menschen, die Siegquoten sind obere Grenzen.
+- Level mit vielen Zündschnur-Bonbons reagieren kaum auf die Zahl der Züge.
+- Einige Level spielen mit fünf statt sechs Farben.
+- Gespeichert wird nur im Browser, es gibt keinen Abgleich zwischen Geräten.
+- Auf dem Handy gibt es keine eigenen Touch-Gesten, nur Tippen und Ziehen wie bisher.

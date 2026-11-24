@@ -273,9 +273,27 @@
     }, Promise.resolve());
   }
 
+  // Kleine Zeichen für die Kopfknöpfe. Auf breiten Fenstern steht nur der Text; auf
+  // schmalen (css/map.css, bis 720 px) nur das Zeichen, der Name bleibt aria-label und title.
+  var HEAD_ICONS = {
+    'Zurück': '<path d="M14.5 5 L7.5 12 L14.5 19" fill="none" stroke="currentColor" stroke-width="2.8" ' +
+      'stroke-linecap="round" stroke-linejoin="round"/>',
+    'Welten': '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/>' +
+      '<ellipse cx="12" cy="12" rx="3.6" ry="8.5" fill="none" stroke="currentColor" stroke-width="1.7"/>' +
+      '<path d="M3.8 9 H20.2 M3.8 15 H20.2" fill="none" stroke="currentColor" stroke-width="1.7"/>',
+    'Laden': '<path d="M5 9 H19 L17.8 20 H6.2 Z" fill="currentColor" stroke="currentColor" stroke-width="1.4" ' +
+      'stroke-linejoin="round"/>' +
+      '<path d="M9 9 V7 a3 3 0 0 1 6 0 V9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
+  };
+
   function headButton(label, className, onClick) {
-    var b = el('button', 'btn ' + className, label);
+    var b = el('button', 'btn btn--head ' + className);
     b.type = 'button';
+    b.setAttribute('aria-label', label);
+    b.title = label;
+    b.innerHTML = '<svg class="head-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      HEAD_ICONS[label] + '</svg>';
+    b.appendChild(el('span', 'head-label', label));
     b.addEventListener('click', function () {
       RS.Audio.play({ type: 'click' });
       onClick();

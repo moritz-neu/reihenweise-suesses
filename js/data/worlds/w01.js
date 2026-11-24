@@ -5,7 +5,7 @@
 
   // Welt 1 (Kandishain). Seeds: 1000 + alte Level-Nummer.
   function level(n, colors, moves, goals, layout, intro, win) {
-    var id = 'w1-' + (n < 10 ? '0' : '') + n;
+    var id = 'w1-' + ('0' + n).slice(-2);
     return { id: id, seed: 1000 + n, colors: colors, moves: moves, goals: goals, layout: layout, intro: intro, win: win };
   }
 

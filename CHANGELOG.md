@@ -2,6 +2,26 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
+## [5.1.0] – 2026-11-24
+
+Version 5.1.0 ist auf GitHub (Pages) veröffentlicht.
+
+Aufräum-Release ohne neue Level und ohne Änderung der Balancing-Werte. Spielstand-Format bleibt Version 4, Stände aus 4.0.0 und 5.0.0 laden unverändert.
+
+### Behoben
+- Zündschnur im letzten Zug: Der Zünder-Tick läuft auch im letzten Zug. Erreicht ein Zähler im letzten Zug 0, gilt das Level als durch die Zündschnur verloren, und „+5 Züge“ verlängert dann auch die Zünder.
+- Start-Kaskade: Bonbons, die beim Aufbau des Feldes kaskadieren, zählen für Punkte und Ziele mit.
+
+### Verbessert
+- Handy-Layout: Der Kartenkopf ist bis 720 px Breite einzeilig und 40 px hoch, mit Zeichen-Knöpfen für Zurück, Welten und Laden (mit `aria-label` und `title`), gekürztem Titel und kleinen Vorrats-Chips. Die Weltenübersicht läuft bei langen Namen nicht mehr seitlich über; ihr Kopf bleibt bis 600 px zweizeilig. Desktop unverändert.
+- Audio: Wartende Effekte verfallen nach 1,5 s, eine Sperre nach einem synchronen `resume`-Fehler fällt wieder, jede Funktion warnt nur einmal, Fades lesen den Wert vor dem Abbrechen, und die Effekte Tor öffnen, Boss besiegt und Zauber enden binnen 0,7 s.
+- Code-Struktur: Die Spielfeld-Ansicht ist geteilt, `RS.UI.BoardFx` (`js/ui/boardfx.js`) spielt die Effekte der neuen Mechaniken und Boss-Angriffe ab. Die Logik hat gemeinsame Helfer (`isBlockerCell`, `newCherry`, eine Swap-Kontextfabrik, einheitliche Joker-Ablehnung), die Weltdateien bauen Ids mit einem `level()`-Helfer.
+- Stärkere Tests: Temporäre Welten und Bosse werden immer entfernt, Tests für Chamäleons, Kirschen, Zündschnur und Joker prüfen mehr, Boss-Leben und Story sind festgenagelt, ein Spielstand aus 5.0.0 und alle 100 Ids sind abgedeckt.
+
+### Entwicklerwerkzeug
+- Balancing-Simulator: Unbekannte Level-Ids, eine unbekannte Welt und unmögliche Probewerte (`hp` ohne Boss, `g0`, ein nicht vorhandenes Ziel) enden mit `BALANCE: ERROR` und benennen das Problem. Kirschen-Zeilen und gefährliche Zünder werden einmal je Zug statt je Kandidat berechnet, die Kisten-Heuristik ist kommentiert.
+- README: Belohnung je Stern bis Welt 10, gestraffter Balancing-Abschnitt, Abschnitt „Bekannte Grenzen“, `boardfx.js` in der Projektstruktur.
+
 ## [5.0.0] – 2026-11-24
 
 Version 5.0.0 ist auf GitHub (Pages) veröffentlicht.

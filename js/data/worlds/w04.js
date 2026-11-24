@@ -6,7 +6,7 @@
   // jedes Level ohne Joker. Züge und Zielmengen aus dem Balancing-Simulator (README).
   // Seeds: aus der Level-Id (RS.Worlds).
   function level(p, colors, moves, goals, layout, intro, win) {
-    return { id: 'w4-0' + p, colors: colors, moves: moves, goals: goals, layout: layout, intro: intro, win: win };
+    return { id: 'w4-' + ('0' + p).slice(-2), colors: colors, moves: moves, goals: goals, layout: layout, intro: intro, win: win };
   }
 
   RS.Worlds.register({

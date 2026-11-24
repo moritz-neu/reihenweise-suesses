@@ -10,6 +10,7 @@
   // &welt=N spielt eine Welt, &levels=w3-01,w3-02 einzelne Level (Ids).
   // Probewerte ohne die Weltdateien zu ändern: &set=w3-01.moves=30;w1-05.g1=20
   // (gN = Zielmenge des N-ten Ziels, hp = Leben des Bosses im Level: &set=w3-10.hp=500).
+  // Fehler (unbekannte Ids, hp ohne Boss, g0 oder ein nicht vorhandenes Ziel) erscheinen als BALANCE: ERROR.
   // Je Zeile: Zielquote aus RS.Curve, gemessene Quote und Urteil (OK, ZU LEICHT, ZU SCHWER; Toleranz RS.Curve.TOLERANCE).
   // Standard: jeder Lauf bekommt einen eigenen Feld-Startwert (wechselnde Verläufe).
   // &boards=fixed nutzt den festen Level-Startwert; dann spielt der Bot in manchen Leveln
@@ -83,6 +84,10 @@
   // Bossschaden für ein Bossziel, jeder Kistentreffer für ein Kistenziel, jede eingesammelte
   // Kirsche und jedes entschärfte Zündschnur-Bonbon für das jeweilige Ziel (Joker nutzt der Bot nie).
   // Jeweils höchstens bis zum Rest des Ziels. Dazu mechanicBonus (Kirschen-Weg, Gefahrenregel).
+  // Kisten-Heuristik: Eine Kiste hat bis zu drei Stufen und verliert bei jedem Treffer in der
+  // Nachbarschaft eine. Der Bot zählt deshalb jeden obstacleHit auf eine Kiste als einen
+  // Fortschrittspunkt (nicht erst die zerstörte Kiste); er spielt so auf die Nachbarschaft von
+  // Kisten, ohne zu planen, welche Kiste als nächste fällt. Das gilt nur bei offenem Kistenziel.
   function goalProgress(before, events, gain) {
     var progress = 0;
     before.goals.forEach(function (g) {
@@ -130,15 +135,21 @@
     return ids;
   }
 
+  // Werte, die nur vom Feld vor dem Zug abhängen: einmal je Zug berechnet, nicht je Kandidat.
+  function moveContext(s) {
+    return {
+      cherryOpen: s.goals.goals.some(function (g) { return g.type === 'cherry' && g.target - g.count > 0; }),
+      cherryRows: cherryRows(s.board),
+      danger: dangerousFuses(s.board)
+    };
+  }
+
   // Zusatzfortschritt: Kirschen, die im Probezug nach unten rutschen (je Zeile 0,2, nur bei
   // offenem Kirschenziel), und Entschärfen eines Bonbons mit Zähler <= 2 (je 5).
-  function mechanicBonus(before, trial, events) {
+  function mechanicBonus(ctx, trial, events) {
     var bonus = 0;
-    var open = function (type) {
-      return before.goals.goals.some(function (g) { return g.type === type && g.target - g.count > 0; });
-    };
-    if (open('cherry')) {
-      var was = cherryRows(before.board);
+    if (ctx.cherryOpen) {
+      var was = ctx.cherryRows;
       var now = cherryRows(trial.board);
       Object.keys(was).forEach(function (id) {
         if (now[id] !== undefined) { bonus += Math.max(0, now[id] - was[id]) * CHERRY_ROW; }
@@ -147,7 +158,7 @@
         if (e.type === 'cherryCollected' && was[e.id] !== undefined) { bonus += Math.max(0, e.pos.r - was[e.id]) * CHERRY_ROW; }
       });
     }
-    var danger = dangerousFuses(before.board);
+    var danger = ctx.danger;
     events.forEach(function (e) {
       if (e.type === 'fuseDefused' && danger[e.id]) { bonus += DANGER_DEFUSE; }
     });
@@ -172,6 +183,7 @@
       if (!moves.length) { break; }
       var best = [];
       var bestKey = null;
+      var ctx = greedy ? null : moveContext(s);
       moves.forEach(function (m) {
         var trial = cloneSession(s);
         var before = trial.goals.score;
@@ -179,7 +191,7 @@
         var gain = trial.goals.score - before;
         var key = greedy ? [gain] : [
           trial.status === 'won' ? 1 : 0,
-          goalProgress(s.goals, events, gain) + mechanicBonus(s, trial, events),
+          goalProgress(s.goals, events, gain) + mechanicBonus(ctx, trial, events),
           gain
         ];
         var cmp = bestKey ? compareKeys(key, bestKey) : 1;
@@ -244,10 +256,17 @@
       var m = /^(w\d+-\d+)\.(moves|hp|g\d)=(.+)$/.exec(part.trim());
       if (!m) { throw new Error('unbekannter Probewert: ' + part); }
       var level = copy.filter(function (l) { return l.id === m[1]; })[0];
-      if (!level) { throw new Error('unbekanntes Level im Probewert: ' + part); }
+      if (!level) { throw new Error('unknown level in set=: ' + m[1]); }
+      if (isNaN(Number(m[3]))) { throw new Error('not a number in set=: ' + part); }
       if (m[2] === 'moves') { level.moves = Number(m[3]); }
-      else if (m[2] === 'hp') { RS.BOSSES[level.boss].hp = Number(m[3]); }
-      else { level.goals[Number(m[2].slice(1)) - 1].target = Number(m[3]); }
+      else if (m[2] === 'hp') {
+        if (!level.boss) { throw new Error('hp only for boss levels: ' + level.id); }
+        RS.BOSSES[level.boss].hp = Number(m[3]);
+      } else {
+        var n = Number(m[2].slice(1));
+        if (n < 1 || n > level.goals.length) { throw new Error('goal g' + n + ' does not exist in ' + level.id); }
+        level.goals[n - 1].target = Number(m[3]);
+      }
     });
     return copy;
   }
@@ -267,6 +286,13 @@
     var welt = params.get('welt') ? Number(params.get('welt')) : null;
     var out = document.getElementById('out');
     var lines = [];
+    var all = RS.Worlds.levels();
+    (only || []).forEach(function (id) {
+      if (!all.some(function (l) { return l.id === id; })) { throw new Error('unknown level in levels=: ' + id); }
+    });
+    if (welt !== null && !all.some(function (l) { return l.world === welt; })) {
+      throw new Error('unknown world in welt=: ' + params.get('welt'));
+    }
     var started = Date.now();
 
     checkRng();
@@ -276,7 +302,7 @@
       (greedy ? ', Bot: nur Punkte' : ', Bot: zielbewusst'));
     lines.push('Level  Züge Ziele              2★/3★ ab Rest Ziel% Sieg% Urteil     Med.alle  Med.Sieg  1★/2★/3★ (je % aller Läufe)  Med.Restzüge  Sieg-Punkte P10/P50/P90  Med.Zielrest bei Niederlage');
     var verdicts = { 'ZU LEICHT': 0, 'ZU SCHWER': 0 };
-    applyOverrides(RS.Worlds.levels(), params.get('set')).forEach(function (level) {
+    applyOverrides(all, params.get('set')).forEach(function (level) {
       if (only && only.indexOf(level.id) < 0) { return; }
       if (welt !== null && level.world !== welt) { return; }
       var results = [];

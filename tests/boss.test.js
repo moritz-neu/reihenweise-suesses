@@ -242,13 +242,19 @@
     temps.forEach(function (k) { delete RS.BOSSES[k]; });
     temps = [];
   }
+  // A test that registers temporary bosses always removes them again, even when it fails.
+  function tt(name, fn) {
+    t(name, function () {
+      try { fn(); } finally { dropTemps(); }
+    });
+  }
   function threePhase() {
     return tempBoss('tPhases', { name: 'T', hp: 100, weak: [0, 1, 2], thresholds: [0.66, 0.33],
       attacks: [{ kind: 'lock', count: 1, every: 3 }, { kind: 'ice', count: 1, level: 1, every: 2 },
         { kind: 'crate', count: 2, level: 2, every: 1 }] });
   }
 
-  t('boss: three phases switch at 66 % and 33 %', function () {
+  tt('boss: three phases switch at 66 % and 33 %', function () {
     var boss = threePhase();
     eq(boss.phase, 1);
     eq(boss.weak, 0);
@@ -270,7 +276,7 @@
     eq(boss.phase, 3);
   });
 
-  t('boss: one big hit crosses two thresholds', function () {
+  tt('boss: one big hit crosses two thresholds', function () {
     var boss = threePhase();
     boss.counter = 1;
     var ev = RS.Boss.apply(boss, 70);
@@ -290,7 +296,7 @@
     eq(dead.phase, 1);
   });
 
-  t('boss: a def without thresholds has two phases at 50 %', function () {
+  tt('boss: a def without thresholds has two phases at 50 %', function () {
     var boss = tempBoss('tPlain', { name: 'T', hp: 40, weak: [0, 3],
       attacks: [{ kind: 'lock', count: 1, every: 3 }, { kind: 'lock', count: 1, every: 2 }] });
     eq(ofType(RS.Boss.apply(boss, 19), 'bossPhase').length, 0);
@@ -299,7 +305,7 @@
     eq(boss.weak, 3);
   });
 
-  t('boss: crate attack hits free candies only', function () {
+  tt('boss: crate attack hits free candies only', function () {
     var layout = [FULL, 'xLxxIxxx', 'xxxCxxxx', 'xx2xxxLx', FULL, 'xxxxJxxx', 'xCxxxxxx', FULL];
     for (var i = 0; i < 100; i++) {
       var board = B.create({ rows: 8, cols: 8, colors: 5, seed: 300 + i, layout: layout });
@@ -479,7 +485,7 @@
     return boss;
   }
 
-  t('boss: attack array shares counter and runs all', function () {
+  tt('boss: attack array shares counter and runs all', function () {
     var board = freeBoard(501);
     var boss = tempBoss('tArr', { name: 'T', hp: 100, weak: [0, 1], thresholds: [0.5],
       attacks: [{ kind: 'lock', count: 1, every: 9 },
@@ -505,7 +511,7 @@
     });
   });
 
-  t('boss: fuse attack sets the fuse on free candies', function () {
+  tt('boss: fuse attack sets the fuse on free candies', function () {
     var board = freeBoard(502);
     var boss = dueBoss('tFuse', [{ kind: 'fuse', count: 2, level: 6, every: 1 }]);
     var ev = RS.Boss.step(boss, board);
@@ -517,7 +523,7 @@
     eq(count(board, 'candies', function (v) { return v && v.fuse !== undefined; }), 2);
   });
 
-  t('boss: chameleon attack marks free candies', function () {
+  tt('boss: chameleon attack marks free candies', function () {
     var board = freeBoard(503);
     var boss = dueBoss('tCham', [{ kind: 'chameleon', count: 2, every: 1 }]);
     var ev = RS.Boss.step(boss, board);
@@ -528,7 +534,7 @@
     eq(count(board, 'candies', function (v) { return v && v.chameleon; }), 2);
   });
 
-  t('boss: choco attack removes the candy and sets chocolate', function () {
+  tt('boss: choco attack removes the candy and sets chocolate', function () {
     var board = freeBoard(504);
     var boss = dueBoss('tChoco', [{ kind: 'choco', count: 3, every: 1 }]);
     var ev = RS.Boss.step(boss, board);
@@ -569,7 +575,7 @@
     eq(s2.board.lock[3][4], true);
   });
 
-  t('boss: amarus-like three-phase boss walks phases 1-2-3 with matching attacks', function () {
+  tt('boss: amarus-like three-phase boss walks phases 1-2-3 with matching attacks', function () {
     var boss = tempBoss('tAmarus', { name: 'T', hp: 100, weak: [4, 0, 3], thresholds: [0.66, 0.33],
       attacks: [[{ every: 3, kind: 'lock', count: 3 }, { every: 3, kind: 'ice', count: 2, level: 2 }],
         [{ every: 2, kind: 'crate', count: 3, level: 2 }, { every: 2, kind: 'choco', count: 2 }],
@@ -590,8 +596,11 @@
       if (ph === 2) { eq(ofType(RS.Boss.apply(boss, 33), 'bossPhase').length, 1); }
     }
     eq(boss.phase, 3);
-    dropTemps();
-    eq(RS.BOSSES.tAmarus, undefined);
-    eq(RS.BOSSES.tPhases, undefined);
+  });
+
+  t('boss: no temporary boss stays registered', function () {
+    ['tAmarus', 'tPhases', 'tPlain', 'tArr', 'tFuse', 'tCham', 'tChoco'].forEach(function (k) {
+      eq(RS.BOSSES[k], undefined, 'leaked ' + k);
+    });
   });
 })(window.RS = window.RS || {});

@@ -8,7 +8,7 @@
   // Züge und Zielmengen aus dem Balancing-Simulator (README).
   // Seeds: aus der Level-Id (RS.Worlds).
   function level(p, colors, moves, goals, layout, fuses, intro, win, cherries) {
-    var def = { id: 'w7-0' + p, colors: colors, moves: moves, goals: goals, layout: layout, fuses: fuses,
+    var def = { id: 'w7-' + ('0' + p).slice(-2), colors: colors, moves: moves, goals: goals, layout: layout, fuses: fuses,
       intro: intro, win: win };
     if (cherries) { def.cherries = cherries; }
     return def;

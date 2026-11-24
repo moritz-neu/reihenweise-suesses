@@ -2,7 +2,8 @@
   'use strict';
 
   // Spielfeld-Ansicht: zeichnet ein RS.Board, spielt Engine-Ereignisse als Animation ab
-  // und meldet Tausch-Wünsche (Ziehen oder Klick-Klick).
+  // und meldet Tausch-Wünsche (Ziehen oder Klick-Klick). Die Mechanik-Ereignisse (Kirschen,
+  // Knallbonbons, Chamäleons, Schokolade, Joker, Boss-Angriffe) spielt RS.UI.BoardFx ab.
   //
   // Aufbau (Ebenen von unten nach oben): Kacheln, Glasur, Schokolade, Lebkuchenkisten, Bonbons, Eis,
   // Lakritzgitter, Effekte. Kirsche, Knallbonbon und Chamäleon sind Attribute am Bonbon
@@ -14,8 +15,7 @@
 
   var DUR = {
     swap: 150, rejected: 150, matched: 220, cleared: 220, created: 260,
-    beam: 320, shockwave: 320, swirl: 420, fell: 200, spawned: 200, shuffled: 400, spread: 360,
-    cherry: 300, fuse: 220, explode: 560, shift: 360, rainbow: 560, bombed: 360, fairy: 320,
+    beam: 320, shockwave: 320, swirl: 420, fell: 200, spawned: 200, shuffled: 400, fairy: 320,
     stagePause: 70
   };
 
@@ -66,19 +66,10 @@
   function create(container, board) {
     var root = el('div', 'bv-board');
     var tiles = el('div', 'bv-layer bv-tiles');
-    var glazeLayer = el('div', 'bv-layer bv-glazes');
-    var chocoLayer = el('div', 'bv-layer bv-chocos');
-    var crateLayer = el('div', 'bv-layer bv-crates');
     var pieceLayer = el('div', 'bv-layer bv-pieces');
-    var iceLayer = el('div', 'bv-layer bv-ices');
-    var lockLayer = el('div', 'bv-layer bv-locks');
-    root.appendChild(tiles);
-    root.appendChild(glazeLayer);
-    root.appendChild(chocoLayer);
-    root.appendChild(crateLayer);
-    root.appendChild(pieceLayer);
-    root.appendChild(iceLayer);
-    root.appendChild(lockLayer);
+    var layers = {};         // Hindernis-Art -> { el, attr, cells[r][c] }; attr trägt den Stand
+    [tiles, layer('glaze', 'data-strength'), layer('choco', 'data-on'), layer('crate', 'data-level'), pieceLayer,
+      layer('ice', 'data-level'), layer('lock', 'data-on')].forEach(function (n) { root.appendChild(n); });
     root.setAttribute('role', 'group');
     root.setAttribute('aria-label', 'Spielfeld');
     container.appendChild(root);
@@ -91,11 +82,6 @@
     var maskKey = '';
     var ids = [];            // ids[r][c] = Bonbon-id, wie die Ansicht sie gerade zeigt
     var pieces = {};         // id -> { el, body, candy, r, c, color, special }
-    var glazeEls = [];
-    var lockEls = [];
-    var iceEls = [];
-    var chocoEls = [];
-    var crateEls = [];
 
     var busy = false;
     var destroyed = false;   // nach destroy(): laufende Abspielung bricht ab
@@ -108,48 +94,34 @@
 
     // ---------- Aufbau ----------
 
+    function layer(kind, attr) {
+      layers[kind] = { el: el('div', 'bv-layer bv-' + kind + 's'), attr: attr, cells: [] };
+      return layers[kind].el;
+    }
+
+    function cellNode(parent, className, r, c) {
+      var node = el('div', 'bv-cell ' + className);
+      node.style.transform = tf(r, c);
+      parent.appendChild(node);
+      return node;
+    }
+
     function buildStatic(b) {
       rows = b.rows;
       cols = b.cols;
       root.style.setProperty('--bv-rows', rows);
       root.style.setProperty('--bv-cols', cols);
       tiles.innerHTML = '';
-      glazeLayer.innerHTML = '';
-      lockLayer.innerHTML = '';
-      iceLayer.innerHTML = '';
-      chocoLayer.innerHTML = '';
-      crateLayer.innerHTML = '';
-      iceEls = grid(rows, cols, null);
-      chocoEls = grid(rows, cols, null);
-      crateEls = grid(rows, cols, null);
-      glazeEls = grid(rows, cols, null);
-      lockEls = grid(rows, cols, null);
+      var kinds = Object.keys(layers);
+      kinds.forEach(function (k) {
+        layers[k].el.innerHTML = '';
+        layers[k].cells = grid(rows, cols, null);
+      });
       for (var r = 0; r < rows; r++) {
         for (var c = 0; c < cols; c++) {
           if (!b.mask[r][c]) { continue; }
-          var tile = el('div', 'bv-cell bv-tile' + ((r + c) % 2 ? ' bv-tile--alt' : ''));
-          tile.style.transform = tf(r, c);
-          tiles.appendChild(tile);
-          var g = el('div', 'bv-cell bv-glaze');
-          g.style.transform = tf(r, c);
-          glazeLayer.appendChild(g);
-          glazeEls[r][c] = g;
-          var l = el('div', 'bv-cell bv-lock');
-          l.style.transform = tf(r, c);
-          lockLayer.appendChild(l);
-          lockEls[r][c] = l;
-          var ic = el('div', 'bv-cell bv-ice');
-          ic.style.transform = tf(r, c);
-          iceLayer.appendChild(ic);
-          iceEls[r][c] = ic;
-          var cz = el('div', 'bv-cell bv-choco');
-          cz.style.transform = tf(r, c);
-          chocoLayer.appendChild(cz);
-          chocoEls[r][c] = cz;
-          var kx = el('div', 'bv-cell bv-crate');
-          kx.style.transform = tf(r, c);
-          crateLayer.appendChild(kx);
-          crateEls[r][c] = kx;
+          cellNode(tiles, 'bv-tile' + ((r + c) % 2 ? ' bv-tile--alt' : ''), r, c);
+          kinds.forEach(function (k) { layers[k].cells[r][c] = cellNode(layers[k].el, 'bv-' + k, r, c); });
         }
       }
       maskKey = maskSignature(b);
@@ -161,30 +133,13 @@
       }).join('/');
     }
 
-    function setGlaze(r, c, strength) {
-      var g = glazeEls[r] && glazeEls[r][c];
-      if (g) { g.setAttribute('data-strength', String(strength || 0)); }
-    }
-
-    function setLock(r, c, locked) {
-      var l = lockEls[r] && lockEls[r][c];
-      if (l) { l.setAttribute('data-on', locked ? '1' : '0'); }
-    }
-
-    function setIce(r, c, level) {
-      var n = iceEls[r] && iceEls[r][c];
-      if (n) { n.setAttribute('data-level', String(level || 0)); }
-    }
-
-    function setChoco(r, c, on) {
-      var n = chocoEls[r] && chocoEls[r][c];
-      if (n) { n.setAttribute('data-on', on ? '1' : '0'); }
-    }
-
-    // Lebkuchenkiste: Stufe 0 (keine) bis 3.
-    function setCrate(r, c, level) {
-      var n = crateEls[r] && crateEls[r][c];
-      if (n) { n.setAttribute('data-level', String(level || 0)); }
+    // Stand eines Hindernisses an einer Zelle: Stufe (Glasur, Eis, Lebkuchenkiste 0 bis 3) oder
+    // an/aus (Gitter, Schokolade). Gibt das Element der Zelle zurück (null außerhalb des Felds).
+    function setObstacle(kind, pos, value) {
+      var cells = layers[kind].cells;
+      var node = (cells[pos.r] && cells[pos.r][pos.c]) || null;
+      if (node) { node.setAttribute(layers[kind].attr, value === true ? '1' : String(value || 0)); }
+      return node;
     }
 
     // cd: Bonbon oder Ereignis-Eintrag { color, special, cherry?, fuse?, chameleon? }
@@ -277,7 +232,26 @@
       return id === null || id === undefined ? null : pieces[id] || null;
     }
 
+    // Das Bonbon eines Ereignis-Eintrags { id, pos }: erst über die id, sonst über die Zelle.
+    function pieceOf(x) {
+      return pieces[x.id] || pieceAt(x.pos);
+    }
+
+    // Die Zelle gilt ab jetzt als leer; mit id nur, wenn dort dieses Bonbon liegt.
+    // Gibt die id zurück, die dort lag, sonst null. Das Bonbon selbst bleibt (removePiece).
+    function releaseCell(pos, id) {
+      var here = ids[pos.r] ? ids[pos.r][pos.c] : null;
+      if (here === null || here === undefined || (arguments.length > 1 && here !== id)) { return null; }
+      ids[pos.r][pos.c] = null;
+      return here;
+    }
+
     // ---------- render: vollständiger Abgleich mit dem Brett ----------
+
+    function syncObstacles(b, r, c) {
+      var pos = { r: r, c: c };
+      Object.keys(layers).forEach(function (k) { setObstacle(k, pos, b[k] ? b[k][r][c] : 0); });
+    }
 
     function render(b) {
       current = b || current;
@@ -287,11 +261,7 @@
       var seen = {};
       for (var r = 0; r < rows; r++) {
         for (var c = 0; c < cols; c++) {
-          setGlaze(r, c, b.glaze[r][c]);
-          setLock(r, c, b.lock[r][c]);
-          setIce(r, c, b.ice ? b.ice[r][c] : 0);
-          setChoco(r, c, b.choco ? b.choco[r][c] : false);
-          setCrate(r, c, b.crate ? b.crate[r][c] : 0);
+          syncObstacles(b, r, c);
           var candy = b.mask[r][c] ? b.candies[r][c] : null;
           if (!candy) { continue; }
           var p = pieces[candy.id] || makePiece(candy.id, candy);
@@ -320,6 +290,14 @@
     }
 
     // ---------- Animationen je Ereignis ----------
+
+    // Mechanik-Ereignisse spielt RS.UI.BoardFx ab; der Kontext reicht ihm nur, was es dafür braucht.
+    var fx = RS.UI.BoardFx.create({
+      get pieces() { return pieces; },
+      pieceAt: pieceAt, pieceOf: pieceOf, cellRect: cellRect, removePiece: removePiece, setFuse: setFuse,
+      setChameleon: setChameleon, animate: animate, effects: effects,
+      el: root, setLook: setLook, releaseCell: releaseCell, setObstacle: setObstacle
+    });
 
     function moveAnim(p, from, to, ms, easing) {
       place(p, to.r, to.c);
@@ -390,7 +368,7 @@
       e.candies.forEach(function (cd) {
         var p = pieces[cd.id];
         effects.burst(cd.pos, cd.special === 'colorball' ? null : cd.color, cd.special ? 14 : 8);
-        if (ids[cd.pos.r] && ids[cd.pos.r][cd.pos.c] === cd.id) { ids[cd.pos.r][cd.pos.c] = null; }
+        releaseCell(cd.pos, cd.id);
         if (!p) { return; }
         p.el.style.opacity = '0';
         jobs.push(animate(p.el, [{ opacity: 1 }, { opacity: 1, offset: 0.4 }, { opacity: 0 }], DUR.cleared)
@@ -405,7 +383,7 @@
     function playCreated(group) {
       var jobs = [];
       group.forEach(function (e) {
-        var p = pieces[e.id] || pieceAt(e.pos);
+        var p = pieceOf(e);
         if (!p) { return; }
         setLook(p, e.color, e.special);
         effects.sparkle(e.pos);
@@ -481,53 +459,36 @@
     function playObstacles(group) {
       group.forEach(function (e) {
         var node;
+        // animate() übergeht eine fehlende Zelle von selbst.
+        var at = tf(e.pos.r, e.pos.c);
+        var gone = e.remaining === 0;
         if (e.kind === 'glaze') {
-          node = glazeEls[e.pos.r] && glazeEls[e.pos.r][e.pos.c];
-          setGlaze(e.pos.r, e.pos.c, e.remaining);
+          node = setObstacle('glaze', e.pos, e.remaining);
           burstWhite(e.pos);
-          if (node) { animate(node, [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1.08)' },
-            { opacity: 1, transform: tf(e.pos.r, e.pos.c) }], 200); }
+          animate(node, [{ opacity: 1, transform: at + ' scale(1.08)' }, { opacity: 1, transform: at }], 200);
         } else if (e.kind === 'ice') {
-          node = iceEls[e.pos.r] && iceEls[e.pos.r][e.pos.c];
-          setIce(e.pos.r, e.pos.c, e.remaining);
-          effects.splinter(e.pos, e.remaining === 0 ? 12 : 6);
-          if (node) {
-            animate(node, e.remaining === 0
-              ? [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1)' },
-                 { opacity: 0, transform: tf(e.pos.r, e.pos.c) + ' scale(1.25)' }]
-              : [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1.1)' },
-                 { opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1)' }], 240);
-          }
+          node = setObstacle('ice', e.pos, e.remaining);
+          effects.splinter(e.pos, gone ? 12 : 6);
+          animate(node, gone
+            ? [{ opacity: 1, transform: at + ' scale(1)' }, { opacity: 0, transform: at + ' scale(1.25)' }]
+            : [{ opacity: 1, transform: at + ' scale(1.1)' }, { opacity: 1, transform: at + ' scale(1)' }], 240);
         } else if (e.kind === 'crate') {
-          node = crateEls[e.pos.r] && crateEls[e.pos.r][e.pos.c];
-          setCrate(e.pos.r, e.pos.c, e.remaining);
-          effects.crumble(e.pos, e.remaining === 0 ? 14 : 7);
-          if (node) {
-            animate(node, e.remaining === 0
-              ? [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1)' },
-                 { opacity: 0, transform: tf(e.pos.r, e.pos.c) + ' scale(0.6) rotate(8deg)' }]
-              : [{ opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' rotate(-6deg) scale(1.06)' },
-                 { opacity: 1, transform: tf(e.pos.r, e.pos.c) }], 240);
-          }
+          node = setObstacle('crate', e.pos, e.remaining);
+          effects.crumble(e.pos, gone ? 14 : 7);
+          animate(node, gone
+            ? [{ opacity: 1, transform: at + ' scale(1)' }, { opacity: 0, transform: at + ' scale(0.6) rotate(8deg)' }]
+            : [{ opacity: 1, transform: at + ' rotate(-6deg) scale(1.06)' }, { opacity: 1, transform: at }], 240);
         } else if (e.kind === 'choco') {
-          node = chocoEls[e.pos.r] && chocoEls[e.pos.r][e.pos.c];
-          setChoco(e.pos.r, e.pos.c, false);
+          node = setObstacle('choco', e.pos, false);
           effects.crumble(e.pos, 12);
-          if (node) {
-            animate(node, [
-              { opacity: 1, transform: tf(e.pos.r, e.pos.c) + ' scale(1)' },
-              { opacity: 0, transform: tf(e.pos.r, e.pos.c) + ' scale(0.5) rotate(-10deg)' }
-            ], 260);
-          }
+          animate(node, [{ opacity: 1, transform: at + ' scale(1)' },
+            { opacity: 0, transform: at + ' scale(0.5) rotate(-10deg)' }], 260);
         } else {
-          node = lockEls[e.pos.r] && lockEls[e.pos.r][e.pos.c];
-          setLock(e.pos.r, e.pos.c, e.remaining > 0);
+          node = setObstacle('lock', e.pos, e.remaining > 0);
           burstWhite(e.pos);
-          if (node && e.remaining === 0) {
-            animate(node, [
-              { opacity: 1, transform: tf(e.pos.r, e.pos.c) },
-              { opacity: 0, transform: tf(e.pos.r, e.pos.c) + ' scale(1.4) rotate(12deg)' }
-            ], 260);
+          if (gone) {
+            animate(node, [{ opacity: 1, transform: at }, { opacity: 0, transform: at + ' scale(1.4) rotate(12deg)' }],
+              260);
           }
         }
       });
@@ -535,71 +496,13 @@
       return Promise.resolve();
     }
 
-    // Boss-Angriff: Der Wurf ist gelandet (eventHook), jetzt erscheinen die neuen Hindernisse.
-    var ATTACK_COLORS = { lock: '#6b4a5c', crate: '#c98a4b', choco: '#8a4a22', fuse: '#ff6a00', chameleon: null };
-
-    function showAttack(e) {
-      e.cells.forEach(function (p) {
-        var node;
-        var piece = pieceAt(p);
-        var color = ATTACK_COLORS.hasOwnProperty(e.kind) ? ATTACK_COLORS[e.kind] : '#bfeaff';
-        effects.burst(p, color, 8);
-        if (e.kind === 'fuse' || e.kind === 'chameleon') {
-          // Das Bonbon bleibt; es bekommt Zündschnur und Zähler oder den Chamäleon-Rand.
-          if (!piece) { return; }
-          if (e.kind === 'fuse') { setFuse(piece, e.level); } else { setChameleon(piece, true); }
-          animate(piece.body, [{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], 220,
-            'cubic-bezier(.3,1.5,.5,1)');
-          return;
-        }
-        if (e.kind === 'crate' || e.kind === 'choco') {
-          // Kiste oder Schokolade ersetzt das Bonbon der Zelle.
-          var gone = ids[p.r] && ids[p.r][p.c];
-          if (gone !== null && gone !== undefined) { ids[p.r][p.c] = null; removePiece(gone); }
-        }
-        if (e.kind === 'lock') { setLock(p.r, p.c, true); node = lockEls[p.r] && lockEls[p.r][p.c]; }
-        else if (e.kind === 'glaze') { setGlaze(p.r, p.c, e.level); node = glazeEls[p.r] && glazeEls[p.r][p.c]; }
-        else if (e.kind === 'crate') { setCrate(p.r, p.c, e.level); node = crateEls[p.r] && crateEls[p.r][p.c]; }
-        else if (e.kind === 'choco') { setChoco(p.r, p.c, true); node = chocoEls[p.r] && chocoEls[p.r][p.c]; }
-        else { setIce(p.r, p.c, e.level); node = iceEls[p.r] && iceEls[p.r][p.c]; }
-        if (node) {
-          animate(node, [{ opacity: 0, transform: tf(p.r, p.c) + ' scale(1.5)' },
-            { opacity: 1, transform: tf(p.r, p.c) + ' scale(1)' }], 220, 'cubic-bezier(.3,1.5,.5,1)');
-        }
-      });
-      return wait(dur(160));
-    }
-
     function burstWhite(pos) {
       effects.burst(pos, '#ffffff', 6);
     }
 
-    // Schokolade breitet sich aus: Strang von Zelle zu Zelle, das Bonbon dort verschwindet.
-    function playChocoSpread(e) {
-      effects.flow(e.from, e.to, DUR.spread);
-      var p = pieces[e.candyId] || pieceAt(e.to);
-      if (p && ids[e.to.r] && ids[e.to.r][e.to.c] === e.candyId) { ids[e.to.r][e.to.c] = null; }
-      var jobs = [];
-      if (p) {
-        jobs.push(animate(p.body, [{ transform: 'scale(1)' }, { transform: 'scale(0.1)' }], DUR.spread, 'ease-in')
-          .then(function () { removePiece(e.candyId); }));
-      }
-      var node = chocoEls[e.to.r] && chocoEls[e.to.r][e.to.c];
-      setChoco(e.to.r, e.to.c, true);
-      if (node) {
-        jobs.push(animate(node, [
-          { opacity: 0, transform: tf(e.to.r, e.to.c) + ' scale(0.2)' },
-          { opacity: 1, transform: tf(e.to.r, e.to.c) + ' scale(1)' }
-        ], DUR.spread, 'ease-out'));
-      }
-      return Promise.all(jobs);
-    }
-
     function playFell(e) {
       var jobs = [];
-      e.moves.forEach(function (m) {
-        if (ids[m.from.r][m.from.c] === m.id) { ids[m.from.r][m.from.c] = null; }
-      });
+      e.moves.forEach(function (m) { releaseCell(m.from, m.id); });
       e.moves.forEach(function (m) {
         ids[m.to.r][m.to.c] = m.id;
         var p = pieces[m.id];
@@ -631,7 +534,7 @@
         return { cd: cd, p: p, from: p ? { r: p.r, c: p.c } : null };
       });
       moved.forEach(function (m) {
-        if (m.from && ids[m.from.r][m.from.c] === m.cd.id) { ids[m.from.r][m.from.c] = null; }
+        if (m.from) { releaseCell(m.from, m.cd.id); }
       });
       moved.forEach(function (m) {
         ids[m.cd.pos.r][m.cd.pos.c] = m.cd.id;
@@ -650,135 +553,6 @@
         ], DUR.shuffled, 'ease-in-out'));
       });
       return Promise.all(jobs);
-    }
-
-    // Kirsche eingesammelt: sie fällt unten aus dem Feld.
-    function playCherry(e) {
-      // Nur die Kirsche selbst: liegt ihre id nicht vor, bleibt das Bonbon der Zelle unberührt.
-      var p = pieces[e.id];
-      if (ids[e.pos.r] && ids[e.pos.r][e.pos.c] === e.id) { ids[e.pos.r][e.pos.c] = null; }
-      effects.burst(e.pos, '#ff4d7a', 10);
-      if (!p) { return Promise.resolve(); }
-      var from = tf(e.pos.r, e.pos.c);
-      var to = tf(e.pos.r + 1.3, e.pos.c);
-      p.el.style.transform = to;
-      p.el.style.opacity = '0';
-      return animate(p.el, [{ transform: from, opacity: 1 }, { transform: to, opacity: 0 }], DUR.cherry, 'ease-in')
-        .then(function () { removePiece(e.id); });
-    }
-
-    // Neue Zählerstände; ein Zähler, der sich ändert, hüpft kurz.
-    function playFuseTick(e) {
-      e.cells.forEach(function (x) {
-        var p = pieces[x.id] || pieceAt(x.pos);
-        if (!p) { return; }
-        setFuse(p, x.fuse);
-        animate(p.fuseNum, [{ transform: 'scale(1.6)' }, { transform: 'scale(1)' }], DUR.fuse,
-          'cubic-bezier(.3,1.5,.5,1)');
-      });
-      return wait(dur(DUR.fuse * 0.6));
-    }
-
-    function playFuseSpawned(e) {
-      var p = pieces[e.id] || pieceAt(e.pos);
-      effects.burst(e.pos, '#ff9f43', 8);
-      if (!p) { return Promise.resolve(); }
-      setFuse(p, e.fuse);
-      return animate(p.body, [{ transform: 'scale(0.7)' }, { transform: 'scale(1.2)' }, { transform: 'scale(1)' }],
-        DUR.fuse, 'ease-out');
-    }
-
-    // Entschärft: Das Bonbon ist meist schon aufgelöst; Rauchwölkchen an der Zelle.
-    function playFuseDefused(e) {
-      effects.burst(e.pos, '#d8d0e8', 10);
-      effects.sparkle(e.pos);
-      var p = pieces[e.id];
-      if (p) { setFuse(p, undefined); }
-      return Promise.resolve();
-    }
-
-    // Verloren durch ein Knallbonbon: jedes Bonbon mit Zähler 0 explodiert, das Feld wackelt.
-    function playFuseExplosion() {
-      var hits = Object.keys(pieces).map(function (id) { return pieces[id]; })
-        .filter(function (p) { return p.fuse === 0; });
-      var jobs = [];
-      hits.forEach(function (p) {
-        var pos = { r: p.r, c: p.c };
-        effects.shockwave(pos, 2.2, dur(DUR.explode));
-        effects.burst(pos, '#ff6a00', 24);
-        effects.burst(pos, '#ffd24d', 16);
-        jobs.push(animate(p.body, [
-          { transform: 'scale(1)' }, { transform: 'scale(1.7)', offset: 0.3 }, { transform: 'scale(1)' }
-        ], DUR.explode, 'ease-out'));
-      });
-      if (hits.length) {
-        jobs.push(animate(root, [
-          { transform: 'translate(0,0)' }, { transform: 'translate(-1.5%,0.8%)' }, { transform: 'translate(1.5%,-0.8%)' },
-          { transform: 'translate(-1%,0)' }, { transform: 'translate(0,0)' }
-        ], DUR.explode, 'linear'));
-      }
-      return Promise.all(jobs);
-    }
-
-    // Chamäleon wechselt die Farbe: die alte Farbe blendet über der neuen aus.
-    function playChameleonShift(e) {
-      var jobs = [];
-      e.changes.forEach(function (x) {
-        var p = pieces[x.id] || pieceAt(x.pos);
-        if (!p) { return; }
-        var ghost = null;
-        if (p.color !== null && p.color !== undefined && p.color !== x.color) {
-          ghost = el('div', 'candy bv-ghost');
-          ghost.setAttribute('data-color', String(p.color));
-          p.body.insertBefore(ghost, p.candy.nextSibling);
-        }
-        setLook(p, x.color, p.special);
-        effects.burst(x.pos, x.color, 4);
-        jobs.push(animate(p.candy, [{ opacity: 0 }, { opacity: 1 }], DUR.shift, 'ease-in-out'));
-        if (ghost) {
-          jobs.push(animate(ghost, [{ opacity: 1 }, { opacity: 0 }], DUR.shift, 'ease-in-out')
-            .then(function () { if (ghost.parentNode) { ghost.parentNode.removeChild(ghost); } }));
-        }
-      });
-      return Promise.all(jobs);
-    }
-
-    function playChameleonSpawned(e) {
-      var p = pieces[e.id] || pieceAt(e.pos);
-      effects.sparkle(e.pos);
-      if (!p) { return Promise.resolve(); }
-      setChameleon(p, true);
-      return animate(p.body, [{ transform: 'scale(0.7)' }, { transform: 'scale(1.2)' }, { transform: 'scale(1)' }],
-        DUR.fuse, 'ease-out');
-    }
-
-    // Regenbogenstaub: ein Regenbogenband zieht über das Feld, die Bonbons der Farbe leuchten auf.
-    function playRainbow(e) {
-      var cells = [];
-      Object.keys(pieces).forEach(function (id) {
-        var p = pieces[id];
-        if (p.color === e.color && pieceAt({ r: p.r, c: p.c }) === p) { cells.push({ r: p.r, c: p.c }); }
-      });
-      effects.sweep(cells, dur(DUR.rainbow));
-      cells.forEach(function (q) {
-        var t = pieceAt(q);
-        if (t) { animate(t.body.firstChild, [{ opacity: 0 }, { opacity: 1 }, { opacity: 0.3 }], DUR.rainbow); }
-      });
-      return wait(dur(DUR.rainbow * 0.8));
-    }
-
-    // Zauberbombe: Druckwelle mit Glitzer über das 3×3-Feld.
-    function playBombed(e) {
-      effects.shockwave(e.pos, 1.8, dur(DUR.bombed));
-      effects.glitter(e.pos, 40);
-      return wait(dur(DUR.bombed * 0.7));
-    }
-
-    // Feentausch: Sternchen an beiden Zellen; der folgende Tausch läuft langsamer und federt.
-    function playFairy(e) {
-      effects.sparkle(e.a);
-      effects.sparkle(e.b);
-      return wait(dur(80));
     }
 
     // Spielt alle Ereignisse der Reihe nach. Gleichzeitig laufen nur Ereignisse, die im
@@ -812,7 +586,7 @@
           i++;
           if (e.type === 'fairySwap') {
             fairyPending = true;
-            job = playFairy(e);
+            job = fx.fairySwap(e);
           } else if (e.type === 'swapped') {
             swapPending = e;
             job = fairyPending ? playSwap(e.a, e.b, DUR.fairy, true) : playSwap(e.a, e.b, DUR.swap);
@@ -827,25 +601,12 @@
           else if (e.type === 'fell') { job = playFell(e); }
           else if (e.type === 'spawned') { job = playSpawned(e); }
           else if (e.type === 'shuffled') { job = playShuffled(e); }
-          else if (e.type === 'chocoSpread') { job = playChocoSpread(e); }
-          else if (e.type === 'cherryCollected') { job = playCherry(e); }
-          else if (e.type === 'fuseTick') { job = playFuseTick(e); }
-          else if (e.type === 'fuseSpawned') { job = playFuseSpawned(e); }
-          else if (e.type === 'fuseDefused') { job = playFuseDefused(e); }
-          else if (e.type === 'chameleonShift') { job = playChameleonShift(e); }
-          else if (e.type === 'chameleonSpawned') { job = playChameleonSpawned(e); }
-          else if (e.type === 'rainbow') { job = playRainbow(e); }
-          else if (e.type === 'bombed') { job = playBombed(e); }
-          else if (e.type === 'levelLost' && e.reason === 'fuse') { job = playFuseExplosion(); }
-          else if (e.type === 'swept') {
-            // Zuckerbesen: ein Strahl fegt über die ganze Reihe.
-            effects.beam('h', e.row, null, dur(DUR.beam));
-            job = wait(dur(DUR.beam * 0.75));
-          }
+          else if (e.type === 'levelLost' && e.reason === 'fuse') { job = fx.fuseLost(); }
+          else if (fx.hasOwnProperty(e.type)) { job = fx[e.type](e); }
           else {
             // Sitzungs-Ereignisse: Ton, dazu ggf. der eventHook (Boss-Anzeige)
             job = eventHook ? Promise.resolve(eventHook(e)) : Promise.resolve();
-            if (e.type === 'bossAttack') { job = job.then(function () { return showAttack(e); }); }
+            if (e.type === 'bossAttack') { job = job.then(function () { return fx.attackLanded(e); }); }
           }
         }
         return job.then(step);

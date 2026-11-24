@@ -36,7 +36,9 @@
     if (RS.Cherries.collect(board, events) > 0) {
       var ctx = { stage: 0, events: events, swap: null, triggered: new Set(), toClear: new Map(), combo: null };
       RS.Engine._settle(board, ctx);
-      RS.Goals.apply(session.goals, events.filter(function (e) { return e.type === 'cherryCollected'; }));
+      // The start cascade counts for score and goals like any other. It spends no move and cannot
+      // lose; it cannot win either: the status stays 'playing' even if every goal is met by it.
+      RS.Goals.apply(session.goals, events);
     }
     return session;
   }
@@ -115,11 +117,15 @@
       session.status = 'won';
       events.push({ type: 'levelWon', stars: RS.Goals.starsFor(state), score: state.score, bonus: bonus });
     } else if (!noLoss && state.movesLeft === 0) {
-      session.status = 'lost';
-      session.lostBy = 'moves';
-      events.push({ type: 'levelLost', score: state.score });
+      loseByMoves(session, events);
     }
     return events;
+  }
+
+  function loseByMoves(session, events) {
+    session.status = 'lost';
+    session.lostBy = 'moves';
+    events.push({ type: 'levelLost', score: session.goals.score });
   }
 
   var DIRS = [{ r: -1, c: 0 }, { r: 1, c: 0 }, { r: 0, c: -1 }, { r: 0, c: 1 }];
@@ -170,6 +176,8 @@
     return true;
   }
 
+  var STATUS_TYPES = ['scoreChanged', 'movesChanged', 'goalProgress'];
+
   // Chameleon shift: matches it creates resolve at once, without a move, and count for goals and
   // boss damage; a dead board is reshuffled. Returns true if the level is no longer playing (won).
   function shiftChameleons(session, events) {
@@ -183,6 +191,11 @@
     }
     own = own.concat(cascade);
     finishLevelAction(session, own, true);
+    // The move already emitted a status set: the cascade's set carries the final values, so the
+    // earlier one goes. Splice in place, the caller holds this array.
+    for (var i = events.length - 1; i >= 0; i--) {
+      if (STATUS_TYPES.indexOf(events[i].type) >= 0) { events.splice(i, 1); }
+    }
     events.push.apply(events, own);
     return session.status !== 'playing';
   }
@@ -209,8 +222,17 @@
     session.moveNo++;
     session.goals.movesLeft--;
     bossHit(session, events, wasCombo);
-    finishLevelAction(session, events, false);
-    if (session.status === 'playing') { afterSwapMove(session, events); }
+    // On the last move the moves loss waits for the fuse tick: a fuse at 0 makes it a fuse loss.
+    var lastMove = session.goals.movesLeft === 0;
+    finishLevelAction(session, events, lastMove);
+    if (session.status !== 'playing') { return events; }
+    // On the last move only the fuse tick runs: chameleon shift, spawns, chocolate spread and
+    // the boss step are skipped because the level ends here, as intended.
+    if (!lastMove) {
+      afterSwapMove(session, events);
+    } else if (!tickFuses(session, events)) {
+      loseByMoves(session, events);
+    }
     return events;
   }
 
@@ -227,7 +249,12 @@
     return jokerAction(session, RS.Engine.smash(session.board, p));
   }
 
-  function rejectJoker(kind, p) { return [{ type: 'jokerRejected', kind: kind, pos: p }]; }
+  // p is left out of the event when the target is missing.
+  function rejectJoker(kind, p) {
+    var event = { type: 'jokerRejected', kind: kind };
+    if (p) { event.pos = p; }
+    return [event];
+  }
 
   // Regenbogenstaub: every cell whose candy has the colour of the candy at p.
   function rainbow(session, p) {
@@ -250,9 +277,13 @@
   function useJoker(session, kind, target) {
     if (session.mode !== 'level' || session.status !== 'playing') { return []; }
     var board = session.board;
+    var boardKinds = ['hammer', 'feentausch', 'regenbogen', 'zauberbombe', 'besen'];
+    if (boardKinds.indexOf(kind) >= 0) {
+      var missing = kind === 'feentausch' ? !target || !target.a || !target.b : !target;
+      if (missing) { return rejectJoker(kind); }
+    }
     if (kind === 'hammer') { return smash(session, target); }
     if (kind === 'feentausch') {
-      if (!target || !target.a || !target.b) { return []; }
       return jokerAction(session, RS.Engine.forceSwap(board, target.a, target.b));
     }
     if (kind === 'regenbogen') { return rainbow(session, target); }
@@ -294,6 +325,8 @@
 
   RS.Session = {
     ENDLESS: ENDLESS, startLevel: startLevel, startEndless: startEndless,
-    move: move, smash: smash, useJoker: useJoker, starSpell: starSpell, addMoves: addMoves, tick: tick, _shiftChameleons: shiftChameleons, _fromBoard: fromBoard
+    move: move, smash: smash, useJoker: useJoker, starSpell: starSpell, addMoves: addMoves, tick: tick,
+    // Test hook: runs the chameleon shift step on its own.
+    _shiftChameleons: shiftChameleons, _fromBoard: fromBoard
   };
 })(window.RS = window.RS || {});
