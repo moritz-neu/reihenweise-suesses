@@ -4,11 +4,14 @@
   var GIFT = 2;
   var MAX_STOCK = 10;
 
-  // target: 'none' wirkt sofort, 'cell' braucht ein Feld auf dem Brett.
+  // target: 'none' wirkt sofort, 'cell' braucht ein Feld auf dem Brett, 'pair' zwei Nachbarfelder.
   var LIST = [
     { kind: 'moves', name: '+5 Züge', price: 30, world: 1, target: 'none', text: 'Fünf Züge mehr im laufenden Level.' },
     { kind: 'hammer', name: 'Zuckerhammer', price: 20, world: 1, target: 'cell', text: 'Zerschlägt ein Bonbon deiner Wahl – samt Glasur und Gitter.' },
-    { kind: 'besen', name: 'Zuckerbesen', price: 25, world: 4, target: 'cell', text: 'Räumt eine ganze Reihe ab.' }
+    { kind: 'besen', name: 'Zuckerbesen', price: 25, world: 4, target: 'cell', text: 'Räumt eine ganze Reihe ab.' },
+    { kind: 'feentausch', name: 'Feentausch', price: 15, world: 6, target: 'pair', text: 'Tauscht zwei Nachbarn, auch ohne Reihe.' },
+    { kind: 'regenbogen', name: 'Regenbogenstaub', price: 35, world: 8, target: 'cell', text: 'Entfernt alle Bonbons einer Farbe.' },
+    { kind: 'zauberbombe', name: 'Zauberbombe', price: 30, world: 10, target: 'cell', text: 'Sprengt ein Feld von drei mal drei.' }
   ];
   var KINDS = LIST.map(function (j) { return j.kind; });
 

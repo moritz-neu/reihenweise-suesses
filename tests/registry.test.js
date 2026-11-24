@@ -92,6 +92,81 @@
     RS.assert.deepEqual(second, first);
   });
 
+  t('registry: world 5 follows world 4 and opens after w4-10', function () {
+    var ids = RS.Worlds.list().map(function (w) { return w.id; });
+    ok(ids.indexOf(4) >= 0 && ids.indexOf(5) === ids.indexOf(4) + 1, 'world 5 right after world 4');
+    eq(RS.Worlds.level('w5-01').num, RS.Worlds.level('w4-10').num + 1);
+    var s = RS.Save.fresh();
+    RS.Worlds.levels().forEach(function (l) { if (l.world <= 4 && !l.isBoss) { s.stars[l.id] = 1; } });
+    eq(RS.Progress.isWorldOpen(s, 5), false, 'world 5 waits for w4-10');
+    s.stars['w4-10'] = 1;
+    eq(RS.Progress.isWorldOpen(s, 5), true);
+    eq(RS.Progress.isPlayable(s, 'w5-01'), true);
+  });
+
+  t('registry: world 6 follows world 5 and opens after w5-10', function () {
+    var ids = RS.Worlds.list().map(function (w) { return w.id; });
+    ok(ids.indexOf(5) >= 0 && ids.indexOf(6) === ids.indexOf(5) + 1, 'world 6 right after world 5');
+    eq(RS.Worlds.level('w6-01').num, RS.Worlds.level('w5-10').num + 1);
+    var s = RS.Save.fresh();
+    RS.Worlds.levels().forEach(function (l) { if (l.world <= 5 && !l.isBoss) { s.stars[l.id] = 1; } });
+    ['w1-10', 'w2-10', 'w3-10', 'w4-10'].forEach(function (id) { s.stars[id] = 1; });
+    eq(RS.Progress.isWorldOpen(s, 6), false, 'world 6 waits for w5-10');
+    s.stars['w5-10'] = 1;
+    eq(RS.Progress.isWorldOpen(s, 6), true);
+    eq(RS.Progress.isPlayable(s, 'w6-01'), true);
+  });
+
+  t('registry: world 7 follows world 6 and opens after w6-10', function () {
+    var ids = RS.Worlds.list().map(function (w) { return w.id; });
+    ok(ids.indexOf(6) >= 0 && ids.indexOf(7) === ids.indexOf(6) + 1, 'world 7 right after world 6');
+    eq(RS.Worlds.level('w7-01').num, RS.Worlds.level('w6-10').num + 1);
+    var s = RS.Save.fresh();
+    RS.Worlds.levels().forEach(function (l) { if (l.world <= 6 && l.id !== 'w6-10') { s.stars[l.id] = 1; } });
+    eq(RS.Progress.isWorldOpen(s, 7), false, 'world 7 waits for w6-10');
+    s.stars['w6-10'] = 1;
+    eq(RS.Progress.isWorldOpen(s, 7), true);
+    eq(RS.Progress.isPlayable(s, 'w7-01'), true);
+  });
+
+  t('registry: world 8 follows world 7 and opens after w7-10', function () {
+    var ids = RS.Worlds.list().map(function (w) { return w.id; });
+    ok(ids.indexOf(7) >= 0 && ids.indexOf(8) === ids.indexOf(7) + 1, 'world 8 right after world 7');
+    eq(RS.Worlds.level('w8-01').num, RS.Worlds.level('w7-10').num + 1);
+    var s = RS.Save.fresh();
+    RS.Worlds.levels().forEach(function (l) { if (l.world <= 7 && l.id !== 'w7-10') { s.stars[l.id] = 1; } });
+    eq(RS.Progress.isWorldOpen(s, 8), false, 'world 8 waits for w7-10');
+    s.stars['w7-10'] = 1;
+    eq(RS.Progress.isWorldOpen(s, 8), true);
+    eq(RS.Progress.isPlayable(s, 'w8-01'), true);
+  });
+
+  t('registry: world 9 follows world 8 and opens after w8-10', function () {
+    var ids = RS.Worlds.list().map(function (w) { return w.id; });
+    ok(ids.indexOf(8) >= 0 && ids.indexOf(9) === ids.indexOf(8) + 1, 'world 9 right after world 8');
+    eq(RS.Worlds.level('w9-01').num, RS.Worlds.level('w8-10').num + 1);
+    var s = RS.Save.fresh();
+    RS.Worlds.levels().forEach(function (l) { if (l.world <= 8 && l.id !== 'w8-10') { s.stars[l.id] = 1; } });
+    eq(RS.Progress.isWorldOpen(s, 9), false, 'world 9 waits for w8-10');
+    s.stars['w8-10'] = 1;
+    eq(RS.Progress.isWorldOpen(s, 9), true);
+    eq(RS.Progress.isPlayable(s, 'w9-01'), true);
+  });
+
+  t('registry: world 10 follows world 9, opens after w9-10 and is the final world', function () {
+    var ids = RS.Worlds.list().map(function (w) { return w.id; });
+    ok(ids.indexOf(9) >= 0 && ids.indexOf(10) === ids.indexOf(9) + 1, 'world 10 right after world 9');
+    eq(ids[ids.length - 1], RS.Worlds.FINAL_WORLD, 'no world after the final one');
+    eq(RS.Worlds.level('w10-01').num, RS.Worlds.level('w9-10').num + 1);
+    eq(RS.Worlds.levels().length, 100, 'ten worlds of ten levels');
+    var s = RS.Save.fresh();
+    RS.Worlds.levels().forEach(function (l) { if (l.world <= 9 && l.id !== 'w9-10') { s.stars[l.id] = 1; } });
+    eq(RS.Progress.isWorldOpen(s, 10), false, 'world 10 waits for w9-10');
+    s.stars['w9-10'] = 1;
+    eq(RS.Progress.isWorldOpen(s, 10), true);
+    eq(RS.Progress.isPlayable(s, 'w10-01'), true);
+  });
+
   t('registry: register validates', function () {
     var def = testWorld(['w99-01']);
     delete def.gateLocked;
@@ -189,6 +264,37 @@
     def.boss.weak = [0, 1];
     RS.assert.throws(function () { RS.Worlds.register(def); });
     eq(RS.Worlds.get(99), undefined);
+  });
+
+  t('registry: a phase may hold an array of attacks, each validated', function () {
+    function def3(attacks) {
+      var d = testWorld(['w99-01']);
+      d.boss.thresholds = [0.5];
+      d.boss.attacks = attacks;
+      return d;
+    }
+    var good = [{ kind: 'lock', count: 1, every: 3 },
+      [{ kind: 'fuse', count: 2, level: 6, every: 2 }, { kind: 'chameleon', count: 2 }]];
+    RS.Worlds.register(def3(good));
+    ok(RS.Worlds.get(99), 'array phase accepted');
+    RS.Worlds._unregister(99);
+  });
+
+  t('registry: register rejects bad attack entries', function () {
+    function bad(attacks) {
+      var d = testWorld(['w99-01']);
+      d.boss.attacks = attacks;
+      RS.assert.throws(function () { RS.Worlds.register(d); });
+      eq(RS.Worlds.get(99), undefined);
+    }
+    var ok1 = { kind: 'lock', count: 1, every: 3 };
+    bad([ok1, []]);
+    bad([ok1, [{ kind: 'lock', count: 1, every: 0 }]]);
+    bad([ok1, { kind: 'lock', count: 1, every: 0 }]);
+    bad([ok1, [{ kind: 'zap', count: 1, every: 2 }]]);
+    bad([ok1, [{ kind: 'lock', count: 0, every: 2 }]]);
+    bad([ok1, [{ kind: 'lock', count: 1.5, every: 2 }]]);
+    bad([ok1, [{ kind: 'lock', count: 1, every: 2 }, { kind: 'zap', count: 1 }]]);
   });
 
 })(window.RS = window.RS || {});

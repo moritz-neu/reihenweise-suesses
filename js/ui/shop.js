@@ -30,11 +30,45 @@
     return svg;
   }
 
-  // Eigene kleine Zeichnungen für die Joker: Hammer, Besen und "+5"-Abzeichen.
+  function star(cx, cy, s, fill) {
+    var d = 'M' + cx + ' ' + (cy - s) + ' L' + (cx + s * 0.3) + ' ' + (cy - s * 0.3) + ' L' + (cx + s) + ' ' + cy +
+      ' L' + (cx + s * 0.3) + ' ' + (cy + s * 0.3) + ' L' + cx + ' ' + (cy + s) + ' L' + (cx - s * 0.3) + ' ' +
+      (cy + s * 0.3) + ' L' + (cx - s) + ' ' + cy + ' L' + (cx - s * 0.3) + ' ' + (cy - s * 0.3) + ' Z';
+    return svgEl('path', { d: d, fill: fill });
+  }
+
+  // Eigene kleine Zeichnungen für die Joker: Hammer, Besen, Feenstab, Regenbogen, Zauberbombe
+  // und "+5"-Abzeichen.
   function jokerIcon(kind) {
     var svg = svgEl('svg', { 'class': 'joker-icon', viewBox: '0 0 24 24',
       'aria-hidden': 'true', focusable: 'false' });
-    if (kind === 'besen') {
+    if (kind === 'feentausch') {
+      // Zwei Bonbons, die per Bogenpfeil die Plätze tauschen, darüber ein Feenstern
+      svg.appendChild(svgEl('circle', { cx: '6', cy: '16', r: '4.2', fill: '#4dc3ff', stroke: '#fff', 'stroke-width': '1' }));
+      svg.appendChild(svgEl('circle', { cx: '18', cy: '16', r: '4.2', fill: '#ff4d7a', stroke: '#fff', 'stroke-width': '1' }));
+      svg.appendChild(svgEl('path', { d: 'M7 10.5 Q12 4.5 17 10.5', fill: 'none', stroke: '#ffd78c',
+        'stroke-width': '1.6', 'stroke-linecap': 'round' }));
+      svg.appendChild(svgEl('path', { d: 'M17 10.5 l-2.6 -0.4 M17 10.5 l0.2 -2.6', stroke: '#ffd78c',
+        'stroke-width': '1.6', 'stroke-linecap': 'round' }));
+      svg.appendChild(star(12, 3.6, 3, '#fff6dc'));
+    } else if (kind === 'regenbogen') {
+      // Regenbogenbogen mit Glitzerstaub
+      ['#ff4d7a', '#ff9f43', '#ffd24d', '#4dffb0', '#4dc3ff', '#c77dff'].forEach(function (color, i) {
+        var r = 10 - i * 1.4;
+        svg.appendChild(svgEl('path', { d: 'M' + (12 - r) + ' 18 A' + r + ' ' + r + ' 0 0 1 ' + (12 + r) + ' 18',
+          fill: 'none', stroke: color, 'stroke-width': '1.5' }));
+      });
+      svg.appendChild(star(4, 21, 2, '#fff'));
+      svg.appendChild(star(20, 21.4, 1.6, '#fff'));
+      svg.appendChild(star(12, 21.6, 1.4, '#ffd78c'));
+    } else if (kind === 'zauberbombe') {
+      // Violette Bombe mit Stern und funkelnder Zündschnur
+      svg.appendChild(svgEl('path', { d: 'M15 7 Q17 3 20.5 3.5', fill: 'none', stroke: '#c98a4b',
+        'stroke-width': '1.6', 'stroke-linecap': 'round' }));
+      svg.appendChild(star(20.8, 3.4, 2.6, '#ffd24d'));
+      svg.appendChild(svgEl('circle', { cx: '11', cy: '14', r: '8', fill: '#8b5aff', stroke: '#ffd78c', 'stroke-width': '1.4' }));
+      svg.appendChild(star(11, 14, 4, '#fff6dc'));
+    } else if (kind === 'besen') {
       svg.appendChild(svgEl('rect', { x: '10.8', y: '1.5', width: '2.4', height: '12', rx: '1.2', fill: '#fff',
         stroke: '#e0204f', 'stroke-width': '0.8', 'stroke-dasharray': '1.6 1.6' }));
       svg.appendChild(svgEl('path', { d: 'M8 13 h8 l3 9 H5 Z', fill: '#ffd24d', stroke: '#fff', 'stroke-width': '1.1',

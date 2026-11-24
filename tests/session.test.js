@@ -436,4 +436,113 @@
     var b = session(NOWIN, 5);
     eq(JSON.stringify(RS.Session.useJoker(a, 'hammer', P(0, 0))), JSON.stringify(RS.Session.smash(b, P(0, 0))));
   });
+
+  // Feentausch, Regenbogenstaub, Zauberbombe.
+  function swapJoker(s, a, b) { return RS.Session.useJoker(s, 'feentausch', { a: a, b: b }); }
+  function firstCleared(ev) { return ofType(ev, 'cleared')[0]; }
+  function rejected(ev, kind) { return ev.length === 1 && ev[0].type === 'jokerRejected' && ev[0].kind === kind; }
+
+  t('feentausch swaps without match', function () {
+    var s = session(NOWIN, 5);
+    var idA = s.board.candies[0][0].id;
+    var ev = swapJoker(s, P(0, 0), P(0, 1));
+    eq(ev[0].type, 'swapped');
+    eq(ofType(ev, 'swapRejected').length, 0);
+    eq(ofType(ev, 'cleared').length, 0);
+    eq(s.board.candies[0][1].id, idA);
+    eq(s.goals.movesLeft, 5);
+  });
+
+  t('feentausch combo resolves', function () {
+    var rows = ['1h 2v 3 4 5 1', '2 3 4 1 2 5', '3 4 5 1 4 5', '0 0 2 0 4 3'];
+    var s = RS.Session._fromBoard(level(NOWIN, 5), B.fromRows(rows, { colors: 5 }));
+    var ev = swapJoker(s, P(0, 0), P(0, 1));
+    eq(ev[0].type, 'swapped');
+    ok(ofType(ev, 'cleared').length > 0, 'combo cleared candies');
+    ok(firstCleared(ev).candies.length >= 9, 'cross of both stripes');
+    eq(s.goals.movesLeft, 5);
+  });
+
+  t('feentausch refuses locked, frozen and far cells', function () {
+    var s = RS.Session._fromBoard(level(NOWIN, 5), B.fromRows(ROWS, { colors: 5, lock: ['L.....', '......', '......', '......'],
+      ice: ['......', '.1....', '......', '......'] }));
+    eq(swapJoker(s, P(0, 0), P(0, 1))[0].type, 'swapRejected');
+    eq(swapJoker(s, P(1, 1), P(1, 2))[0].type, 'swapRejected');
+    var far = swapJoker(s, P(2, 2), P(2, 4));
+    eq(far[0].type, 'swapRejected');
+    eq(ofType(far, 'movesChanged').length, 0);
+  });
+
+  t('feentausch with a cherry onto the bottom collects it', function () {
+    var rows = ['1 2 3 4 5 1', '2 3 4 1 2 5', '3 4 5 1 4 5', '0 c 2 0 4 3'];
+    var s = RS.Session._fromBoard(level(NOWIN, 5), B.fromRows(rows, { colors: 5 }));
+    s.board.cherryOnBoard = 1;
+    var ev = swapJoker(s, P(3, 1), P(2, 1));
+    eq(ofType(ev, 'cherryCollected').length, 0, 'cherry moved up');
+    var ev2 = swapJoker(s, P(2, 1), P(3, 1));
+    eq(ofType(ev2, 'cherryCollected').length, 1);
+    eq(s.board.cherryOnBoard, 0);
+  });
+
+  t('regenbogen clears one colour and hits obstacles under it', function () {
+    var s = RS.Session._fromBoard(level(NOWIN, 5), B.fromRows(ROWS, { colors: 5,
+      lock: ['......', '.....L', '......', '......'], ice: ['......', '......', '.....2', '......'] }));
+    var ev = RS.Session.useJoker(s, 'regenbogen', P(0, 4));
+    eq(ev[0].type, 'rainbow');
+    eq(ev[0].color, 5);
+    eq(firstCleared(ev).candies.length, 2, 'locked and frozen candies of the colour stay');
+    eq(s.board.lock[1][5], false);
+    eq(s.board.ice[2][5], 1);
+    eq(s.goals.movesLeft, 5);
+  });
+
+  t('regenbogen refuses cherry, colourball, frozen, empty', function () {
+    var s = RS.Session._fromBoard(level(NOWIN, 5), B.fromRows(['c * 3 4 5 1', '2 3 4 1 2 5', '3 4 5 1 4 5', '0 0 2 0 4 3'],
+      { colors: 5, ice: ['....1.', '......', '......', '......'] }));
+    ok(rejected(RS.Session.useJoker(s, 'regenbogen', P(0, 0)), 'regenbogen'), 'cherry');
+    ok(rejected(RS.Session.useJoker(s, 'regenbogen', P(0, 1)), 'regenbogen'), 'colourball');
+    ok(rejected(RS.Session.useJoker(s, 'regenbogen', P(0, 4)), 'regenbogen'), 'frozen');
+    ok(rejected(RS.Session.useJoker(s, 'regenbogen', P(9, 9)), 'regenbogen'), 'off board');
+    eq(s.board.ice[0][4], 1);
+  });
+
+  t('zauberbombe clears 3x3 at edge', function () {
+    var s = session(NOWIN, 5);
+    var ev = RS.Session.useJoker(s, 'zauberbombe', P(0, 0));
+    eq(ev[0].type, 'bombed');
+    eq(firstCleared(ev).candies.length, 4);
+    var mid = session(NOWIN, 5);
+    eq(firstCleared(RS.Session.useJoker(mid, 'zauberbombe', P(1, 1))).candies.length, 9);
+    ok(rejected(RS.Session.useJoker(session(NOWIN, 5), 'zauberbombe', P(9, 9)), 'zauberbombe'));
+  });
+
+  t('no joker spends a move or ticks fuses or shifts chameleons', function () {
+    var kinds = [
+      function (s) { return swapJoker(s, P(0, 0), P(0, 1)); },
+      function (s) { return RS.Session.useJoker(s, 'regenbogen', P(0, 4)); },
+      function (s) { return RS.Session.useJoker(s, 'zauberbombe', P(0, 0)); }
+    ];
+    kinds.forEach(function (run) {
+      var s = RS.Session._fromBoard(
+        { id: 't', colors: 5, seed: 1, moves: 36, layout: [], goals: NOWIN, boss: 'lakritz' },
+        B.fromRows(ROWS, { colors: 5, choco: ['.....C', '......', '......', '......'] }));
+      var fuseCandy = s.board.candies[3][5];
+      fuseCandy.fuse = 3;
+      var cham = s.board.candies[1][0];
+      cham.chameleon = true;
+      var chamColor = cham.color;
+      s.boss.counter = 99;
+      var ev = run(s);
+      eq(s.goals.movesLeft, 36);
+      eq(s.moveNo, 0);
+      eq(fuseCandy.fuse, 3);
+      eq(cham.color, chamColor);
+      eq(ofType(ev, 'fuseTick').length, 0);
+      eq(ofType(ev, 'chameleonShift').length, 0);
+      eq(ofType(ev, 'bossAttack').length, 0);
+      eq(ofType(ev, 'chocoSpread').length, 0);
+      eq(s.boss.counter, 99);
+      eq(s.status, 'playing');
+    });
+  });
 })(window.RS = window.RS || {});

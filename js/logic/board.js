@@ -28,6 +28,15 @@
       ice: grid(rows, cols, 0),
       choco: grid(rows, cols, false),
       crate: grid(rows, cols, 0),
+      cherryRule: null,
+      cherrySpawned: 0,
+      cherryOnBoard: 0,
+      cherryCells: [],
+      fuseRule: null,
+      fuseStart: 9,
+      fuseCells: [],
+      chameleonRule: null,
+      chameleonCells: [],
       rng: RS.createRng(seed),
       nextId: 1
     };
@@ -52,6 +61,7 @@
   function parseToken(board, token) {
     if (token === '#') { return { mask: false, candy: null }; }
     if (token === '_') { return { mask: true, candy: null }; }
+    if (token === 'c') { return { mask: true, candy: { id: board.nextId++, color: null, special: null, cherry: true } }; }
     if (token === '*') { return { mask: true, candy: newCandy(board, null, 'colorball') }; }
     var m = /^([0-5])([hvb]?)$/.exec(token);
     if (!m) { throw new Error('Unknown board token: ' + token); }
@@ -85,6 +95,7 @@
         }
       }
     }
+    RS.Cherries.recount(board);
     return board;
   }
 
@@ -96,6 +107,7 @@
         var candy = board.candies[r][c];
         if (!board.mask[r][c]) { tokens.push('#'); }
         else if (!candy) { tokens.push('_'); }
+        else if (candy.cherry) { tokens.push('c'); }
         else if (candy.special === 'colorball') { tokens.push('*'); }
         else { tokens.push(String(candy.color) + (SUFFIX_BY_SPECIAL[candy.special] || '')); }
       }
@@ -203,6 +215,12 @@
   function isValuableMove(board, a, b) {
     var ca = get(board, a);
     var cb = get(board, b);
+    if (ca.cherry || cb.cherry) {
+      swapCandies(board, a, b);
+      var cherryMatch = findMatches(board).length > 0;
+      swapCandies(board, a, b);
+      return cherryMatch;
+    }
     if (ca.special && cb.special) { return true; }
     if (ca.special === 'colorball' || cb.special === 'colorball') { return true; }
     swapCandies(board, a, b);
@@ -239,7 +257,7 @@
     for (r = 0; r < board.rows; r++) {
       for (c = 0; c < board.cols; c++) {
         var candy = board.candies[r][c];
-        if (board.mask[r][c] && candy && !candy.special && !board.lock[r][c] &&
+        if (board.mask[r][c] && candy && !candy.special && !candy.cherry && !board.lock[r][c] &&
             board.ice[r][c] === 0 && !board.choco[r][c] && !board.crate[r][c]) {
           cells.push({ r: r, c: c });
           originals.push({ candy: candy, color: candy.color });
@@ -283,6 +301,10 @@
     for (var r = 0; r < board.rows; r++) {
       for (var c = 0; c < board.cols; c++) {
         if (!board.mask[r][c] || board.choco[r][c] || board.crate[r][c]) { continue; }
+        if (board.cherryCells.indexOf(r * board.cols + c) >= 0) {
+          board.candies[r][c] = { id: board.nextId++, color: null, special: null, cherry: true };
+          continue;
+        }
         var banned = {};
         if (c >= 2 && colorAt(board, r, c - 1) !== null &&
             colorAt(board, r, c - 1) === colorAt(board, r, c - 2)) {
@@ -295,11 +317,16 @@
         var allowed = [];
         for (var k = 0; k < board.colors; k++) { if (!banned[k]) { allowed.push(k); } }
         board.candies[r][c] = newCandy(board, allowed[board.rng.int(allowed.length)], null);
+        if (board.fuseCells.indexOf(r * board.cols + c) >= 0) { board.candies[r][c].fuse = board.fuseStart; }
+        if (board.chameleonCells.indexOf(r * board.cols + c) >= 0) { board.candies[r][c].chameleon = true; }
       }
     }
   }
 
   function applyLayout(board, layout) {
+    board.cherryCells = [];
+    board.fuseCells = [];
+    board.chameleonCells = [];
     for (var r = 0; r < board.rows; r++) {
       for (var c = 0; c < board.cols; c++) {
         var ch = layout[r].charAt(c);
@@ -308,6 +335,9 @@
         board.lock[r][c] = ch === 'L' || ch === 'K';
         board.ice[r][c] = ch === 'I' ? 1 : ch === 'J' ? 2 : 0;
         board.choco[r][c] = ch === 'C';
+        if (ch === 'R') { board.cherryCells.push(r * board.cols + c); }
+        if (ch === 'F') { board.fuseCells.push(r * board.cols + c); }
+        if (ch === 'H') { board.chameleonCells.push(r * board.cols + c); }
         board.crate[r][c] = ch === 'X' ? 1 : ch === 'Y' ? 2 : ch === 'Z' ? 3 : 0;
       }
     }
@@ -315,13 +345,15 @@
 
   function create(opts) {
     var board = emptyBoard(opts.rows, opts.cols, opts.colors, opts.seed);
+    if (opts.fuseStart) { board.fuseStart = opts.fuseStart; }
     if (opts.layout) { applyLayout(board, opts.layout); }
     for (var attempt = 0; attempt < MAX_CREATE_TRIES; attempt++) {
       board.candies = grid(board.rows, board.cols, null);
       fillRandom(board);
-      if (RS.Board.findPossibleMoves(board).length > 0) { return board; }
+      if (RS.Board.findPossibleMoves(board).length > 0) { RS.Cherries.recount(board); return board; }
     }
     RS.Board.shuffle(board);
+    RS.Cherries.recount(board);
     return board;
   }
 

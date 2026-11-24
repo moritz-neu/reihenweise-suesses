@@ -21,6 +21,8 @@
     if (g.type === 'glaze') { return 'alle Glasur lösen'; }
     if (g.type === 'choco') { return 'alle Schokolade entfernen'; }
     if (g.type === 'crate') { return 'alle Kisten entfernen'; }
+    if (g.type === 'cherry') { return g.target + '× Kirschen einsammeln'; }
+    if (g.type === 'fuse') { return g.target + '× Knallbonbons entschärfen'; }
     if (g.type === 'boss') { return 'Boss besiegen'; }
     return '';
   }
@@ -34,6 +36,8 @@
     if (g.type === 'glaze') { return el('span', 'hud-glaze-icon'); }
     if (g.type === 'choco') { return el('span', 'hud-choco-icon'); }
     if (g.type === 'crate') { return el('span', 'hud-crate-icon'); }
+    if (g.type === 'cherry') { return el('span', 'hud-cherry-icon'); }
+    if (g.type === 'fuse') { return el('span', 'hud-fuse-icon'); }
     if (g.type === 'boss') { return el('span', 'hud-boss-icon', '⚔'); }
     return el('span', 'hud-score-icon', '★');
   }
@@ -359,10 +363,13 @@
   }
 
   // rescue (optional): { stock, use() } bietet „+5 Züge einsetzen“ an.
+  // lost.reason 'fuse': ein Knallbonbon ist explodiert; die Rettung setzt auch alle Zähler hoch.
   function showLose(level, lost, rescue) {
+    var fuse = lost.reason === 'fuse';
     var lines = [scoreLine('Punkte:', formatNumber(lost.score))];
     if (rescue) {
       lines.push(el('p', 'result-line', 'Du hast noch ' + rescue.stock + ' × +5 Züge.'));
+      if (fuse) { lines.push(el('p', 'result-line result-rule', 'Dazu bekommt jedes Knallbonbon 5 Züge mehr.')); }
     }
     var buttons = [
       { label: 'Zur Karte', className: 'btn--ghost', onClick: function () { RS.UI.show('map', mapParams(level)); } },
@@ -378,10 +385,11 @@
       } });
     }
     RS.UI.dialog({
-      title: 'Keine Züge mehr',
+      title: fuse ? 'Ein Knallbonbon ist explodiert!' : 'Keine Züge mehr',
       className: 'dialog--result dialog--annika',
-      body: resultBody(lines,
-        'Oh, so knapp! Atme kurz durch, dann klappt es beim nächsten Versuch.'),
+      body: resultBody(lines, fuse
+        ? 'Bumm, entschärfe die Knallbonbons, bevor ihr Zähler auf null fällt.'
+        : 'Oh, so knapp! Atme kurz durch, dann klappt es beim nächsten Versuch.'),
       buttons: buttons,
       focus: buttons.length - 1
     });
@@ -389,8 +397,9 @@
 
   // ---------- Joker-Leiste ----------
 
-  // Eine Taste je eingeführtem Joker (RS.Jokers.available). Joker mit target 'cell' werden
-  // scharf geschaltet (immer nur einer), danach wählt ein Klick aufs Feld die Zelle.
+  // Eine Taste je eingeführtem Joker (RS.Jokers.available). Joker mit target 'cell' oder 'pair'
+  // werden scharf geschaltet (immer nur einer), danach wählt ein Klick aufs Feld die Zelle
+  // (beim Paar: erst eine Zelle, dann ihren Nachbarn).
   // ctl: { canUse(), useMoves(), toggle(kind) }; liefert { el, update(busy), setArmed(kind) }
   function createJokerBar(jokers, ctl) {
     var bar = el('div', 'joker-bar');
@@ -404,12 +413,13 @@
       btn.setAttribute('data-joker', j.kind);
       btn.title = j.text;
       btn.appendChild(RS.UI.Shop.jokerIcon(j.kind));
-      if (j.target === 'cell') { btn.setAttribute('aria-pressed', 'false'); }
+      var aimed = j.target === 'cell' || j.target === 'pair';
+      if (aimed) { btn.setAttribute('aria-pressed', 'false'); }
       btn.appendChild(el('span', 'joker-name', j.name));
       var stock = el('span', 'joker-stock');
       btn.appendChild(stock);
       btn.addEventListener('click', function () {
-        if (j.target === 'cell') { ctl.toggle(j.kind); } else if (j.kind === 'moves') { ctl.useMoves(); }
+        if (aimed) { ctl.toggle(j.kind); } else if (j.kind === 'moves') { ctl.useMoves(); }
       });
       bar.appendChild(btn);
       buttons[j.kind] = { btn: btn, stock: stock, name: j.name };
@@ -456,8 +466,11 @@
     return events.some(function (e) { return e.type === type; });
   }
 
+  var REJECTIONS = ['smashRejected', 'blastRejected', 'jokerRejected', 'swapRejected'];
+
+  // Ein abgelehnter Joker liefert nur das Ablehnungs-Ereignis (Feentausch: swapRejected).
   function rejected(events) {
-    return !events.length || has(events, 'smashRejected') || has(events, 'blastRejected');
+    return !events.length || REJECTIONS.some(function (type) { return has(events, type); });
   }
 
   function mount(root, params) {
@@ -478,6 +491,7 @@
     // Schließen während der Gewinn-Kaskade zählt; der Dialog folgt nach der Animation.
     var reward = 0;
     var armed = null;   // scharf geschalteter Joker mit Zielfeld
+    var pairFirst = null;   // Feentausch: erste gewählte Zelle
     var bar = null;
     var boss = null;
     if (session.boss) {
@@ -489,6 +503,8 @@
       var res = RS.Save.recordWin(RS.App.save, levelId, events);
       if (res) {
         reward = res.reward;
+        // Sieg über den Boss der letzten Welt: die Krone gilt sofort (idempotent).
+        RS.Progress.markComplete(RS.App.save);
         RS.App.persist();
         hud.setSticks();
       }
@@ -503,6 +519,7 @@
 
     function setArmed(kind) {
       armed = kind || null;
+      pairFirst = null;
       if (active) { active.view.setPicker(armed ? pick : null); }
       if (bar) { bar.setArmed(armed); }
       refreshBar();
@@ -548,18 +565,37 @@
       setArmed(kind);
     }
 
-    // Klick aufs Feld mit scharfem Joker: Hammer trifft die Zelle, Besen fegt ihre Reihe.
+    function adjacent(a, b) {
+      return Math.abs(a.r - b.r) + Math.abs(a.c - b.c) === 1;
+    }
+
+    // Klick aufs Feld mit scharfem Joker: Hammer trifft die Zelle, Besen fegt ihre Reihe,
+    // Regenbogenstaub nimmt die Farbe, Zauberbombe sprengt 3 × 3. Beim Feentausch wählt der
+    // erste Klick eine Zelle, ein Klick auf ihren Nachbarn tauscht, jeder andere wählt neu.
     function pick(pos) {
       var kind = armed;
       if (!kind || !canUse() || busy() || (RS.App.save.jokers[kind] || 0) < 1) { return; }
-      var events = RS.Session.useJoker(session, kind, pos);
-      if (rejected(events)) { return; }   // Joker bleibt scharf, nichts wird verbraucht
+      var target = pos;
+      if (RS.Jokers.get(kind).target === 'pair') {
+        if (pairFirst && pairFirst.r === pos.r && pairFirst.c === pos.c) { pairFirst = null; }
+        else if (!pairFirst || !adjacent(pairFirst, pos)) { pairFirst = pos; }
+        else { target = { a: pairFirst, b: pos }; pairFirst = null; }
+        active.view.markPick(pairFirst);
+        if (target === pos) { return; }
+      }
+      var events = RS.Session.useJoker(session, kind, target);
+      if (rejected(events)) {
+        // Joker bleibt scharf, nichts wird verbraucht
+        if (events.length) { RS.Audio.play(events[0]); }
+        return;
+      }
       RS.Shop.use(RS.App.save, kind);
       RS.App.persist();
       moved(events);
       setArmed(null);
       lockControls();
-      active.playEvents(events);
+      // Der Feentausch bekommt vorab sein eigenes Glitzern und seinen Ton.
+      active.playEvents(target.a ? [{ type: 'fairySwap', a: target.a, b: target.b }].concat(events) : events);
     }
 
     function rescue() {
@@ -567,6 +603,12 @@
       var events = RS.Session.addMoves(session, RS.Shop.EXTRA_MOVES);
       RS.Audio.play({ type: 'jokerMoves' });
       RS.App.persist();
+      // Nach einem Knallbonbon-Verlust zeigt das Feld die hochgesetzten Zähler (fuseTick).
+      if (has(events, 'fuseTick')) {
+        lockControls();
+        active.playEvents(events);
+        return;
+      }
       hud.apply(events);
       refreshBar();
       active.hint.restart();

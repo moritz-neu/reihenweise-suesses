@@ -219,6 +219,140 @@
   to { transform: rotate(360deg); }
 }
 
+/* ---------- Kirsche (Welt 5): zwei rote Kirschen am grünen Stiel, keine Farbe ---------- */
+
+:root {
+  --cherry-art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M10 17 C11 11 14 7 18 4 M22.5 18 C21.5 12 20 8 18 4' fill='none' stroke='%232f7a22' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M18 4 C21 1 27 1.5 29 4.5 C25.5 7 20.5 7 18 4 Z' fill='%235fcf4a' stroke='%232f7a22' stroke-width='1'/%3E%3Ccircle cx='10' cy='22' r='7' fill='%23e0204f' stroke='%237a0820' stroke-width='1.3'/%3E%3Ccircle cx='22.5' cy='23' r='6.5' fill='%23ff2e5f' stroke='%237a0820' stroke-width='1.3'/%3E%3Cellipse cx='7.6' cy='19.2' rx='2.3' ry='1.4' fill='%23fff' opacity='.8' transform='rotate(-30 7.6 19.2)'/%3E%3Cellipse cx='20.3' cy='20.5' rx='2' ry='1.3' fill='%23fff' opacity='.8' transform='rotate(-30 20.3 20.5)'/%3E%3C/svg%3E");
+  --fuse-art: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 9 C17 5 20 4 23 3' fill='none' stroke='%23f3e2c0' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='24' cy='3' r='2.4' fill='%23ffd24d'/%3E%3Ccircle cx='16' cy='19' r='10' fill='%23e0204f' stroke='%237a0820' stroke-width='1.3'/%3E%3Ccircle cx='24' cy='26' r='5.2' fill='%23241433' stroke='%23fff' stroke-width='1.3'/%3E%3Ctext x='24' y='28.6' font-size='7' font-family='sans-serif' font-weight='700' fill='%23fff' text-anchor='middle'%3E3%3C/text%3E%3Cellipse cx='12' cy='15' rx='3' ry='1.8' fill='%23fff' opacity='.7' transform='rotate(-30 12 15)'/%3E%3C/svg%3E");
+}
+
+.bv-piece[data-cherry] .candy {
+  border-radius: 0;
+  clip-path: none;
+  transform: none;
+  background: var(--cherry-art) center / contain no-repeat;
+  box-shadow: none;
+  filter: drop-shadow(0 0 4px rgba(255, 77, 122, 0.7));
+}
+
+.bv-piece[data-cherry] .candy::after,
+.bv-piece[data-cherry] .candy::before {
+  display: none;
+}
+
+/* Kopie der alten Farbe beim Chamäleon-Wechsel (blendet aus) */
+.bv-piece .candy.bv-ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+/* ---------- Knallbonbon (Welt 7): Zündschnur oben, runder Zähler unten rechts ---------- */
+
+.bv-fuse {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bv-piece[data-fuse] .bv-fuse {
+  display: block;
+}
+
+/* Zündschnur: kurzer heller Strang mit glimmendem Funken an der Spitze */
+.bv-wick {
+  position: absolute;
+  top: -8%;
+  right: 2%;
+  width: 30%;
+  height: 32%;
+  border-top: 4px solid #6b4423;
+  border-right: 4px solid #6b4423;
+  border-radius: 0 90% 0 0;
+  filter: drop-shadow(0 0 1px #fff3e0) drop-shadow(0 0 1px #fff3e0);
+  transform: rotate(-10deg);
+}
+
+.bv-wick::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  right: -8px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 20%, #ffd24d 45%, rgba(255, 106, 0, 0) 75%);
+  box-shadow: 0 0 8px #ff9f43;
+  animation: bv-spark 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes bv-spark {
+  from { transform: scale(0.8); opacity: 0.8; }
+  to { transform: scale(1.25); opacity: 1; }
+}
+
+.bv-fuse-num {
+  position: absolute;
+  right: -10%;
+  bottom: -10%;
+  min-width: 46%;
+  height: 46%;
+  padding: 0 4%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #241433;
+  border: 2px solid #fff;
+  color: #fff;
+  font-weight: 800;
+  font-size: clamp(0.6rem, 2.2vmin, 1rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Zähler bei 3 oder weniger: rot und pulsierend */
+.bv-piece.is-fuse-low .bv-fuse-num {
+  background: #e0204f;
+  animation: bv-fuse-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes bv-fuse-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 122, 0.85); }
+  50% { box-shadow: 0 0 0 6px rgba(255, 77, 122, 0); }
+}
+
+/* ---------- Chamäleon (Welt 9): schimmernder Regenbogenrand ---------- */
+
+.bv-piece[data-chameleon] .bv-body::before {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  border-radius: 50%;
+  background: conic-gradient(var(--candy-0), var(--candy-5), var(--candy-1), var(--candy-2), var(--candy-3), var(--candy-4), var(--candy-0));
+  -webkit-mask: radial-gradient(closest-side, transparent 0 80%, #000 83% 99%, transparent 100%);
+  mask: radial-gradient(closest-side, transparent 0 80%, #000 83% 99%, transparent 100%);
+  opacity: 0.95;
+  animation: bv-spin 2.4s linear infinite;
+}
+
+/* HUD-Ziele Kirsche und Knallbonbon */
+.hud-cherry-icon,
+.hud-fuse-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1.7rem;
+  height: 1.7rem;
+  background: var(--cherry-art) center / contain no-repeat;
+}
+
+.hud-fuse-icon {
+  background-image: var(--fuse-art);
+}
+
 /* ---------- Lakritzgitter (über dem Bonbon) ---------- */
 
 .bv-lock {

@@ -14,6 +14,9 @@
   // Standard: jeder Lauf bekommt einen eigenen Feld-Startwert (wechselnde Verläufe).
   // &boards=fixed nutzt den festen Level-Startwert; dann spielt der Bot in manchen Leveln
   // jede Partie gleich und die Siegquote ist nur 0 oder 100 %.
+  // Kirschen, Zündschnur-Bonbons und Chamäleons: Kirschziel und Kirschen-Weg nach unten sowie
+  // entschärfte Bonbons zählen als Fortschritt, Zähler <= 2 werden vorrangig entschärft; Chamäleons
+  // braucht keine Sonderbehandlung.
   // &bot=greedy: einfacher gieriger Bot, der nur Punkte zählt.
 
   // ---------- kopierbarer Zufallsgenerator ----------
@@ -62,16 +65,24 @@
       board: cloneBoard(s.board),
       goals: JSON.parse(JSON.stringify(s.goals)),
       boss: s.boss ? JSON.parse(JSON.stringify(s.boss)) : null,
+      moveNo: s.moveNo,
+      lostBy: s.lostBy,
       status: s.status
     };
   }
 
   // ---------- Bot ----------
 
+  var CHERRY_ROW = 0.2;    // Fortschritt je Zeile, die eine Kirsche nach unten rutscht
+  var DANGER = 2;          // Zähler, ab dem ein Zündschnur-Bonbon als gefährlich gilt
+  var DANGER_DEFUSE = 5;   // Fortschritt für das Entschärfen eines gefährlichen Bonbons
+
   // Fortschritt eines Zugs auf die noch offenen Ziele (wie ein Mensch, der auf die Ziele
   // spielt): Glasurschichten für ein Glasurziel, Bonbons der Farbe für ein Sammelziel,
   // Punkte nur für ein offenes Punkteziel, entfernte Schokolade für ein Schokoladenziel,
-  // Bossschaden für ein Bossziel, jeder Kistentreffer für ein Kistenziel (Joker nutzt der Bot nie). Jeweils höchstens bis zum Rest des Ziels.
+  // Bossschaden für ein Bossziel, jeder Kistentreffer für ein Kistenziel, jede eingesammelte
+  // Kirsche und jedes entschärfte Zündschnur-Bonbon für das jeweilige Ziel (Joker nutzt der Bot nie).
+  // Jeweils höchstens bis zum Rest des Ziels. Dazu mechanicBonus (Kirschen-Weg, Gefahrenregel).
   function goalProgress(before, events, gain) {
     var progress = 0;
     before.goals.forEach(function (g) {
@@ -82,6 +93,8 @@
         if (g.type === 'glaze' && e.type === 'obstacleHit' && e.kind === 'glaze') { n++; }
         if (g.type === 'choco' && e.type === 'obstacleHit' && e.kind === 'choco') { n++; }
         if (g.type === 'crate' && e.type === 'obstacleHit' && e.kind === 'crate') { n++; }
+        if (g.type === 'cherry' && e.type === 'cherryCollected') { n++; }
+        if (g.type === 'fuse' && e.type === 'fuseDefused') { n++; }
         if (g.type === 'boss' && e.type === 'bossDamaged') { n += e.damage; }
         if (g.type === 'collect' && e.type === 'cleared') {
           n += e.candies.filter(function (c) { return c.color === g.color; }).length;
@@ -91,6 +104,54 @@
       progress += Math.min(rest, n);
     });
     return progress;
+  }
+
+  // Zeile jedes Kirschen-Bonbons (Id -> Zeile) auf dem Feld.
+  function cherryRows(board) {
+    var rows = {};
+    for (var r = 0; r < board.rows; r++) {
+      for (var c = 0; c < board.cols; c++) {
+        var candy = board.candies[r][c];
+        if (candy && candy.cherry) { rows[candy.id] = r; }
+      }
+    }
+    return rows;
+  }
+
+  // Ids der Bonbons mit Zündschnur-Zähler <= DANGER auf dem Feld.
+  function dangerousFuses(board) {
+    var ids = {};
+    for (var r = 0; r < board.rows; r++) {
+      for (var c = 0; c < board.cols; c++) {
+        var candy = board.candies[r][c];
+        if (candy && candy.fuse !== undefined && candy.fuse <= DANGER) { ids[candy.id] = true; }
+      }
+    }
+    return ids;
+  }
+
+  // Zusatzfortschritt: Kirschen, die im Probezug nach unten rutschen (je Zeile 0,2, nur bei
+  // offenem Kirschenziel), und Entschärfen eines Bonbons mit Zähler <= 2 (je 5).
+  function mechanicBonus(before, trial, events) {
+    var bonus = 0;
+    var open = function (type) {
+      return before.goals.goals.some(function (g) { return g.type === type && g.target - g.count > 0; });
+    };
+    if (open('cherry')) {
+      var was = cherryRows(before.board);
+      var now = cherryRows(trial.board);
+      Object.keys(was).forEach(function (id) {
+        if (now[id] !== undefined) { bonus += Math.max(0, now[id] - was[id]) * CHERRY_ROW; }
+      });
+      events.forEach(function (e) {
+        if (e.type === 'cherryCollected' && was[e.id] !== undefined) { bonus += Math.max(0, e.pos.r - was[e.id]) * CHERRY_ROW; }
+      });
+    }
+    var danger = dangerousFuses(before.board);
+    events.forEach(function (e) {
+      if (e.type === 'fuseDefused' && danger[e.id]) { bonus += DANGER_DEFUSE; }
+    });
+    return bonus;
   }
 
   // greedy = true: nur die Punkte zählen (einfacher gieriger Bot).
@@ -118,7 +179,7 @@
         var gain = trial.goals.score - before;
         var key = greedy ? [gain] : [
           trial.status === 'won' ? 1 : 0,
-          goalProgress(s.goals, events, gain),
+          goalProgress(s.goals, events, gain) + mechanicBonus(s, trial, events),
           gain
         ];
         var cmp = bestKey ? compareKeys(key, bestKey) : 1;
@@ -163,6 +224,8 @@
     if (g.type === 'collect') { return g.target + '×F' + g.color; }
     if (g.type === 'choco') { return 'Schoko'; }
     if (g.type === 'crate') { return 'Kisten'; }
+    if (g.type === 'cherry') { return g.target + ' Kirschen'; }
+    if (g.type === 'fuse') { return g.target + ' Zündschn.'; }
     if (g.type === 'boss') { return 'Boss ' + RS.BOSSES[level.boss].hp + ' LP'; }
     return 'Glasur';
   }

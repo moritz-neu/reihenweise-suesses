@@ -472,6 +472,30 @@ button.atlas-card:hover {
   background: linear-gradient(180deg, rgba(63, 168, 94, 0.5), rgba(120, 30, 80, 0.65));
 }
 
+.atlas-card--w5 {
+  background: linear-gradient(180deg, rgba(244, 140, 186, 0.5), rgba(120, 20, 50, 0.65));
+}
+
+.atlas-card--w6 {
+  background: linear-gradient(180deg, rgba(160, 200, 255, 0.5), rgba(90, 70, 160, 0.65));
+}
+
+.atlas-card--w7 {
+  background: linear-gradient(180deg, rgba(255, 160, 80, 0.5), rgba(30, 60, 120, 0.65));
+}
+
+.atlas-card--w8 {
+  background: linear-gradient(180deg, rgba(242, 154, 192, 0.5), rgba(90, 42, 106, 0.65));
+}
+
+.atlas-card--w9 {
+  background: linear-gradient(180deg, rgba(90, 220, 200, 0.5), rgba(40, 58, 120, 0.65));
+}
+
+.atlas-card--w10 {
+  background: linear-gradient(180deg, rgba(176, 106, 255, 0.5), rgba(36, 22, 52, 0.75));
+}
+
 .atlas-num {
   font-size: 0.75rem;
   font-weight: 700;
@@ -539,4 +563,175 @@ button.atlas-card:hover {
 .atlas-locked {
   font-size: 0.85rem;
   font-style: italic;
+}
+
+/* ---------- Krone im Hauptmenü (Spiel abgeschlossen) ---------- */
+
+.menu-title--crowned {
+  position: relative;
+  display: inline-block;
+}
+
+.menu-crown {
+  position: absolute;
+  top: -0.22em;
+  right: -0.48em;
+  width: 0.62em;
+  height: 0.46em;
+  transform: rotate(16deg);
+  animation: rs-crown-glow 3.2s ease-in-out infinite;
+}
+
+.menu-crown-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.menu-crown-body { fill: var(--gold-strong); stroke: #fff6dc; stroke-width: 1.4; stroke-linejoin: round; }
+.menu-crown-band { fill: var(--gold-deep); stroke: #fff6dc; stroke-width: 1.2; }
+.menu-crown-shine { fill: #fff6dc; opacity: 0.45; }
+.menu-crown-gem { stroke: #fff6dc; stroke-width: 0.8; }
+.menu-crown-gem[data-color="0"] { fill: var(--candy-0-glow); }
+.menu-crown-gem[data-color="1"] { fill: var(--candy-1-glow); }
+.menu-crown-gem[data-color="2"] { fill: var(--candy-2-glow); }
+.menu-crown-gem[data-color="3"] { fill: var(--candy-3-glow); }
+.menu-crown-gem[data-color="4"] { fill: var(--candy-4-glow); }
+.menu-crown-gem[data-color="5"] { fill: var(--candy-5-glow); }
+
+@keyframes rs-crown-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(255, 215, 140, 0.6)); }
+  50% { filter: drop-shadow(0 0 12px rgba(255, 230, 160, 1)); }
+}
+
+/* ---------- Abspann ---------- */
+
+.credits {
+  justify-content: center;
+  gap: 1rem;
+}
+
+.credits-title {
+  margin: 0;
+}
+
+.credits-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 34rem;
+  min-height: 23rem;
+}
+
+.credits-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 1.2rem 1rem 1.4rem;
+  border: 2px solid var(--gold-line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(90, 58, 170, 0.45), rgba(30, 18, 70, 0.6));
+  text-align: center;
+  animation: rs-credits-in 0.7s ease-out both;
+}
+
+.credits-kicker {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.credits-name {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  color: var(--gold);
+  text-shadow: 0 0 12px rgba(255, 215, 140, 0.5);
+}
+
+/* doppelte Klasse: .boss-art aus boss.css setzt sonst 100 % */
+.credits-scene .credits-figure {
+  width: 10rem;
+  height: 8.5rem;
+}
+
+.credits-boss {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.credits-line {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.credits-scene--farewell .annika {
+  width: 7rem;
+}
+
+.credits-farewell {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.credits-farewell .credits-line {
+  animation: rs-credits-in 0.8s ease-out both;
+}
+
+.credits-scene--end {
+  border-color: transparent;
+  background: none;
+}
+
+.credits-end {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: clamp(3rem, 10vw, 5rem);
+  color: var(--gold);
+  text-shadow: 0 0 22px rgba(255, 215, 140, 0.75);
+}
+
+.credits-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.credits-actions .btn[hidden] {
+  display: none;
+}
+
+/* Ruhige Fassung bei reduzierter Bewegung: alles untereinander */
+.credits-list {
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  max-width: 34rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.credits--static .credits-scene .credits-figure {
+  width: 7rem;
+  height: 6rem;
+}
+
+@keyframes rs-credits-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
 }

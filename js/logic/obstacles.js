@@ -59,11 +59,11 @@
     return n;
   }
 
-  // A playable cell with a normal candy and no lock, ice, chocolate or crate.
+  // A playable cell with a normal candy (no cherry, fuse or chameleon) and no lock, ice, chocolate or crate.
   function isFree(board, p) {
     if (!RS.Board.isPlayable(board, p)) { return false; }
     var candy = board.candies[p.r][p.c];
-    return Boolean(candy) && !candy.special && !board.lock[p.r][p.c] &&
+    return Boolean(candy) && !candy.special && !candy.cherry && candy.fuse === undefined && !candy.chameleon && !board.lock[p.r][p.c] &&
       board.ice[p.r][p.c] === 0 && !board.choco[p.r][p.c] && board.crate[p.r][p.c] === 0;
   }
 

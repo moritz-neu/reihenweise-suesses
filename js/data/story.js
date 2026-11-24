@@ -16,6 +16,30 @@
       shard: 'Sternsplitter gefunden'
     },
     gift: 'Annika schenkt dir {n} × {name}!',
-    toBeContinued: 'Fortsetzung folgt …'
+    toBeContinued: 'Fortsetzung folgt …',
+    // Abspann nach dem Finale: je Welt ein Dank (Schlüssel = Welt-Id), für Welten ohne
+    // eigenen Satz die allgemeine Zeile mit {name}; danach Annikas Abschied und „Ende“.
+    credits: {
+      title: 'Abspann',
+      worlds: {
+        1: 'Danke, Kandishain, dass in deinen Lebkuchenhäusern wieder alle Fenster leuchten.',
+        2: 'Danke, Frostzuckerberge, dass euer Eis jetzt nur noch auf Sorbets glitzert.',
+        3: 'Danke, Karamellwüste, dass der sanfte Koloss wieder frei durch warmen Sand stapft.',
+        4: 'Danke, Kaugummi-Dschungel, dass Blubba nur noch zum Spaß rosa Blasen pustet.',
+        5: 'Danke, Kirschgarten Morellia, dass deine Bäume wieder voller roter Kirschen hängen.',
+        6: 'Danke, Zuckerwattenwolken, dass über euch wieder Regenbogen statt Gewitter stehen.',
+        7: 'Danke, Knallhafen, dass deine Knallbonbons jetzt nur noch zum Feiern krachen.',
+        8: 'Danke, Marzipanschloss, dass Ritter Mandelbart seine Tore wieder für alle öffnet.',
+        9: 'Danke, Schillerbucht, dass deine Wellen wieder in allen Farben schimmern.',
+        10: 'Danke, Bitterburg, dass Amarus seine Süße wiedergefunden hat und nun mit uns feiert.'
+      },
+      fallback: 'Danke, {name}, dass du wieder süß und hell leuchtest.',
+      farewell: [
+        'Du hast alle Welten zum Leuchten gebracht, und die Sternenkrone strahlt heller als je zuvor.',
+        'Ohne dich wäre Kandishain heute noch bitter und grau.',
+        'Komm jederzeit wieder, ich hebe dir ein Bonbon auf!'
+      ],
+      end: 'Ende'
+    }
   };
 })(window.RS = window.RS || {});

@@ -193,6 +193,33 @@
     });
   });
 
+  // Worlds 5 to 10: cherries, fuses, chameleons and the three new jokers.
+  var NEW_EFFECTS = [
+    { type: 'cherryCollected', pos: { r: 7, c: 0 }, id: 1 },
+    { type: 'fuseTick', cells: [{ pos: { r: 0, c: 0 }, id: 2, fuse: 3 }] },
+    { type: 'fuseDefused', pos: { r: 0, c: 0 }, id: 2 },
+    { type: 'fuseExplode' },
+    { type: 'chameleonShift', changes: [{ id: 3, pos: { r: 1, c: 1 }, color: 2 }] },
+    { type: 'rainbow', color: 1 },
+    { type: 'bombed', pos: { r: 3, c: 3 } },
+    { type: 'fairySwap', a: { r: 0, c: 0 }, b: { r: 0, c: 1 } },
+    { type: 'jokerRejected', kind: 'regenbogen', pos: { r: 0, c: 0 } }
+  ];
+
+  t('audio: new effect types exist', function () {
+    NEW_EFFECTS.forEach(function (e) { ok(RS.Audio.hasEffect(e.type), 'effect ' + e.type); });
+    var ctx = offline();
+    if (!ctx) { return; }
+    NEW_EFFECTS.forEach(function (e, i) {
+      eq(RS.Audio._effect(ctx, ctx.destination, e, 0.02 * i), true, 'scheduled ' + e.type);
+    });
+    eq(RS.Audio._effect(ctx, ctx.destination,
+      { type: 'fuseTick', cells: [{ pos: { r: 0, c: 0 }, id: 2, fuse: 4 }, { pos: { r: 0, c: 1 }, id: 4, fuse: 9 }] }, 0.3),
+      false, 'fuseTick stays quiet while every counter is above 3');
+    eq(RS.Audio._effect(ctx, ctx.destination, { type: 'levelLost', score: 10, reason: 'fuse' }, 0.4), true,
+      'a fuse loss schedules the explosion and the lose jingle');
+  });
+
   t('audio: cleared pitch rises with the cascade stage', function () {
     var A = RS.Audio;
     ok(A._clearedFreq(1) < A._clearedFreq(2) && A._clearedFreq(2) < A._clearedFreq(4), 'rising pitch');

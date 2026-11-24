@@ -51,10 +51,13 @@
 
   // ---------- Szenen ----------
 
-  function speakers(id, phase) {
+  // Die Figur trägt die Szene als data-scene, damit eine Welt etwa die Niederlage eigens
+  // zeichnen kann (Amarus bekommt dort seine Süße zurück).
+  function speakers(id, phase, part) {
     return { boss: { name: RS.BOSSES[id].name, figure: function () {
       var f = figure(id, phase);
       f.className += ' boss-say-figure';
+      if (part) { f.setAttribute('data-scene', part); }
       return f;
     } } };
   }
@@ -72,7 +75,7 @@
     var world = worldOf(id);
     var lines = world && world.boss.story[part];
     if (!lines || !lines.length) { return Promise.resolve(); }
-    return RS.UI.Dialog.say(lines, { skippable: true, speakers: speakers(id, scenePhase(world, part)) });
+    return RS.UI.Dialog.say(lines, { skippable: true, speakers: speakers(id, scenePhase(world, part), part) });
   }
 
   // ---------- Boss-Leiste ----------

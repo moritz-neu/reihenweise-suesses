@@ -72,8 +72,17 @@
     return !!boss && won(save, boss.id);
   }
 
+  // Setzt save.completed, sobald der Boss der letzten Welt besiegt ist; true, wenn sich
+  // dabei etwas geändert hat. Ein abgeschlossenes Spiel bleibt abgeschlossen.
+  function markComplete(save) {
+    if (save.completed || !isComplete(save)) { return false; }
+    save.completed = true;
+    return true;
+  }
+
   RS.Progress = {
     isWon: isWon, isWorldOpen: isWorldOpen, isPlayable: isPlayable, startWorld: startWorld,
-    nextLevel: nextLevel, worldStars: worldStars, totalStars: totalStars, isComplete: isComplete
+    nextLevel: nextLevel, worldStars: worldStars, totalStars: totalStars, isComplete: isComplete,
+    markComplete: markComplete
   };
 })(window.RS = window.RS || {});

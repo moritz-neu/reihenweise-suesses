@@ -1,31 +1,33 @@
 # Reihenweise Süßes
 
-Ein eigenständiges Match-3-Spiel im Browser: Tausche benachbarte Bonbons, bilde Reihen und bring mit der Zuckerfee Annika die Welten Kandishain, Frostzuckerberge, Karamellwüste und Kaugummi-Dschungel wieder zum Leuchten. Es gibt vierzig Level in vier Welten im Abenteuer-Modus, vier Bosskämpfe, Musik und Soundeffekte und einen Endlos-Modus gegen die Zeit.
+Ein eigenständiges Match-3-Spiel im Browser: Tausche benachbarte Bonbons, bilde Reihen und bring mit der Zuckerfee Annika zehn Welten wieder zum Leuchten, von Kandishain bis zur Bitterburg. Es gibt hundert Level in zehn Welten im Abenteuer-Modus, zehn Bosskämpfe mit einem Finale in drei Phasen gegen Bitterkönig Amarus, Musik und Soundeffekte und einen Endlos-Modus gegen die Zeit. Wer das Finale schafft, sieht einen Abspann und bekommt eine Krone im Hauptmenü.
 
 ## Spielen (lokal)
 
 `index.html` per Doppelklick öffnen. Das Spiel läuft direkt unter `file://`, ohne Installation, Server oder Internetverbindung. Unterstützt werden aktuelle Versionen von Chrome, Edge und Firefox.
 
-Das Abenteuer hat vier Welten mit je zehn Leveln: Kandishain (Welt 1), Frostzuckerberge (2), Karamellwüste (3) und Kaugummi-Dschungel (4). Der Welten-Atlas zeigt sie alle, die kommenden als Silhouetten. Am Ende jeder Welt steht ein Tor, das verschlossen bleibt, bis der Boss der Welt besiegt ist („Besiege Graf Lakritz, um das Tor zu öffnen.“). Danach öffnet es sich und führt in die nächste Welt; dort bringt ein Tor zurück. Hinter Welt 4 endet die Geschichte vorerst mit „Fortsetzung folgt“.
+Das Abenteuer hat zehn Welten mit je zehn Leveln: Kandishain (Welt 1), Frostzuckerberge (2), Karamellwüste (3), Kaugummi-Dschungel (4), Kirschgarten Morellia (5), Zuckerwattenwolken (6), Knallhafen (7), Marzipanschloss (8), Schillerbucht (9) und Bitterburg (10). Der Welten-Atlas zeigt sie alle, die noch verschlossenen als Silhouetten. Am Ende jeder Welt steht ein Tor, das verschlossen bleibt, bis der Boss der Welt besiegt ist („Besiege Graf Lakritz, um das Tor zu öffnen.“). Danach öffnet es sich und führt in die nächste Welt; dort bringt ein Tor zurück. Nach dem Sieg über Bitterkönig Amarus in Welt 10 folgen das Kapitelende, ein einmaliger Abspann mit einer Szene je Welt und Annikas Abschied. Danach trägt das Hauptmenü eine Krone und einen Knopf, mit dem sich der Abspann wiederholen lässt; alle Level bleiben spielbar.
 
-Das jeweils zehnte Level einer Welt ist ein Bosskampf: Graf Lakritz (Welt 1), Eiskönigin Kandara (2), Karamellkoloss (3) und Kaugummi-Krake Blubba (4). Das Ziel ist, die Lebensleiste des Bosses auf 0 zu bringen:
+Das jeweils zehnte Level einer Welt ist ein Bosskampf: Graf Lakritz (Welt 1), Eiskönigin Kandara (2), Karamellkoloss (3), Kaugummi-Krake Blubba (4), Krähe Krawalla (5), Gewitterhexe Wolkira (6), Kapitän Knallfrosch (7), Ritter Mandelbart (8), Seeschlange Schillerzahn (9) und Bitterkönig Amarus (10). Das Ziel ist, die Lebensleiste des Bosses auf 0 zu bringen:
 
 - Jedes aufgelöste Bonbon macht 1 Schaden, ein Bonbon in der Schwachstellen-Farbe des Bosses 2 (Farbkugeln zählen 1). Eine Kombination aus zwei Spezialsteinen oder mit einer Farbkugel gibt einmalig +10. Der Zuckerhammer macht ebenfalls Schaden.
-- Die vier Bosse haben zwei Phasen, die Boss-Logik kann auch drei. Sinkt das Leben auf die Hälfte, wechseln die Schwachstelle (Graf Lakritz: Rot, dann Blau; Kandara: Gelb, dann Violett; Koloss: Orange, dann Gelb; Blubba: Grün, dann Violett) und der Angriffsrhythmus.
-- Er greift nach jedem 3. Zug an, in Phase 2 nach jedem 2. Graf Lakritz sperrt Bonbons mit Lakritzgittern (in Phase 2 zusätzlich eine halbe Reihe), Kandara legt dicke Glasur, später dickes Eis auf Bonbons, der Koloss setzt Kisten, Blubba dicke Glasur und Gitter. Hammer, Sternenzauber und „+5 Züge“ zählen nicht als Zug.
+- Die Bosse der Welten 1 bis 9 haben zwei Phasen, Amarus hat drei. Sinkt das Leben auf die Hälfte (bei Amarus auf zwei Drittel und ein Drittel), wechseln die Schwachstelle (Graf Lakritz: Rot, dann Blau; Kandara: Gelb, dann Violett; Koloss: Orange, dann Gelb; Blubba: Grün, dann Violett; Krawalla: Rot, dann Grün; Wolkira: Blau, dann Orange; Knallfrosch: Orange, dann Gelb; Mandelbart: Gelb, dann Violett; Schillerzahn: Grün, dann Blau; Amarus: Violett, Rot, Blau) und der Angriffsrhythmus.
+- Er greift nach jedem 3. Zug an, in Phase 2 nach jedem 2. Jeder Boss hat dafür ein Angriffs-Array mit einem Eintrag je Phase; ein Eintrag kann auch mehrere Angriffe verbinden, die einen gemeinsamen Zähler teilen. Graf Lakritz sperrt Bonbons mit Lakritzgittern (in Phase 2 zusätzlich eine halbe Reihe), Kandara legt dicke Glasur, später dickes Eis auf Bonbons, der Koloss setzt Kisten, Blubba dicke Glasur und Gitter, Krawalla Glasur und Gitter, Wolkira Eis und Schokolade, Knallfrosch Knallbonbons (später zusätzlich Kisten), Mandelbart Kisten und Glasur, Schillerzahn Chamäleons (später zusätzlich Eis) und Amarus Gitter und Eis, dann Kisten und Schokolade, zuletzt Knallbonbons und Chamäleons. Hammer, Sternenzauber und „+5 Züge“ zählen nicht als Zug.
 - Der Sternenzauber lädt sich mit jedem aufgelösten Bonbon auf und ist bei 40 voll. Per Knopf macht er 25 Schaden (unabhängig von der Schwachstelle) und entfernt bis zu 6 Hindernisse. Er kostet keinen Zug und löst keinen Angriff aus.
 
 Neue Hindernisse in Welt 2: Eis liegt auf einem Bonbon (Stufe 1 oder 2). Es lässt sich nicht tauschen und fällt nicht, taut aber durch Reihen in der Nachbarschaft sowie durch Spezialsteine und Hammer. Schokolade belegt ein Feld und wächst nach einem Zug, in dem keine Schokolade entfernt wurde, auf ein Nachbarbonbon. Das neue Ziel „Schokolade entfernen“ verlangt, alle Schokolade zu beseitigen.
 
 Neu in Welt 3: Lebkuchenkisten (Stufe 1 bis 3). Sie liegen statt eines Bonbons auf dem Feld, lassen sich nicht tauschen und verlieren bei Treffern in der Nachbarschaft eine Stufe. Das Ziel „Kisten“ verlangt, alle zu beseitigen. In Welt 4 gibt es den neuen Joker Zuckerbesen, der eine ganze Reihe abräumt.
 
+Neu in Welt 5: Kirschen. Eine Kirsche liegt statt eines Bonbons auf dem Feld und gehört nie zu einer Reihe. Reihen unter ihr lassen sie nach unten fallen; erreicht sie den untersten Platz ihrer Spalte, landet sie im Korb. Das Ziel „Kirschen“ verlangt, alle einzusammeln. In Welt 6 kommt der Joker Feentausch dazu (tauscht zwei Nachbarn auch ohne Reihe). Neu in Welt 7: Knallbonbons mit Zündschnur. Ihr Zähler sinkt nach jedem Zug; steht er auf 0, ist das Level verloren. Sie werden entschärft, indem sie in einer Reihe aufgelöst werden (Ziel „Knallbonbons entschärfen“), und eine Rettung verlängert alle Zünder. In Welt 8 kommt der Regenbogenstaub (entfernt alle Bonbons einer Farbe). Neu in Welt 9: Chamäleons, Bonbons, die nach jedem Zug die Farbe wechseln. In Welt 10 kommt die Zauberbombe (sprengt ein Feld von drei mal drei), und die Level verbinden alle Mechaniken des Spiels.
+
 Sterne gibt es für übrige Züge: Wer ein Level schafft, bekommt einen Stern, zwei Sterne mit mindestens einem Viertel der Züge übrig und drei Sterne mit mindestens der Hälfte (jeweils aufgerundet). Die Punkte zählen nur für die Anzeige und Punkteziele.
 
 Zuckerstangen sind die Währung des Spiels. Wer ein Level zum ersten Mal schafft, bekommt je Stern 5 Zuckerstangen in Welt 1 und 2, 6 in Welt 3 und 7 in Welt 4 (je Welt eine mehr). Beim erneuten Spielen gibt es 5 je neu dazugewonnenem Stern und immer 2 obendrauf. Eine Endlos-Runde bringt 1 Zuckerstange je vollen 1000 Punkten. Neue Spielstände starten mit 0 Zuckerstangen.
 
-Dafür gibt es im Laden auf der Levelkarte die Joker „+5 Züge“ für 30 Zuckerstangen, den „Zuckerhammer“ für 20, der ein Bonbon mit einem Schlag entfernt, und den „Zuckerbesen“ für 25, der eine ganze Reihe räumt. Hammer und Besen kosten keinen Zug. Der Laden zeigt nur Joker, deren Welt offen ist (der Besen nach dem Sieg über den Karamellkoloss). Vom Vorrat passen höchstens 10 je Joker. Zum Start liegt von „+5 Züge“ und Hammer je einer bereit, vom Besen gibt es zwei geschenkt, sobald Welt 4 betreten wird. Joker gelten nur im Abenteuer-Modus, übrige Züge zählen für die Sterne ganz normal mit. Geht ein Level verloren, bietet der Dialog mit vorhandenem Vorrat eine Rettung an.
+Dafür gibt es im Laden auf der Levelkarte die Joker „+5 Züge“ für 30 Zuckerstangen, den „Zuckerhammer“ für 20, der ein Bonbon mit einem Schlag entfernt, und den „Zuckerbesen“ für 25, der eine ganze Reihe räumt, den „Feentausch“ für 15, der zwei Nachbarn tauscht, den „Regenbogenstaub“ für 35, der alle Bonbons einer Farbe entfernt, und die „Zauberbombe“ für 30, die ein Feld von drei mal drei sprengt. Alle Joker außer „+5 Züge“ kosten keinen Zug. Der Laden zeigt nur Joker, deren Welt offen ist (der Besen nach dem Sieg über den Karamellkoloss, der Feentausch nach Krawalla, der Regenbogenstaub nach Knallfrosch, die Zauberbombe nach Schillerzahn). Vom Vorrat passen höchstens 10 je Joker. Zum Start liegt von „+5 Züge“ und Hammer je einer bereit, von jedem neuen Joker gibt es zwei geschenkt, sobald seine Einführungswelt (4, 6, 8, 10) betreten wird. Joker gelten nur im Abenteuer-Modus, übrige Züge zählen für die Sterne ganz normal mit. Geht ein Level verloren, bietet der Dialog mit vorhandenem Vorrat eine Rettung an.
 
-Der Fortschritt (freigeschaltete Level, Sterne, Tor- und Story-Stand, Endlos-Rekord, Zuckerstangen, Joker-Vorrat, Einstellungen für Musik und Effekte) liegt im `localStorage` des Browsers. Der Spielstand hat das Format Version 4; ältere Stände (Version 1 bis 3) werden beim Laden umgewandelt, ohne dass Fortschritt verloren geht. Ist kein Speicher verfügbar, läuft das Spiel ohne Speichern weiter.
+Der Fortschritt (freigeschaltete Level, Abschluss des Spiels, Sterne, Tor- und Story-Stand, Endlos-Rekord, Zuckerstangen, Joker-Vorrat, Einstellungen für Musik und Effekte) liegt im `localStorage` des Browsers. Der Spielstand hat das Format Version 4; ältere Stände (Version 1 bis 3) werden beim Laden umgewandelt, ohne dass Fortschritt verloren geht. Ist kein Speicher verfügbar, läuft das Spiel ohne Speichern weiter.
 
 ## Musik und Effekte
 
@@ -58,7 +60,7 @@ Musik und Soundeffekte entstehen zur Laufzeit mit Web Audio, es gibt keine Audio
 
 ## Balancing-Simulator
 
-`tests/balance.html` ist ein Entwicklerwerkzeug und gehört nicht zur Testseite. Ein Bot spielt jedes Level mit 200 Startwerten, jeder Lauf auf einem eigenen Feld. Er probiert jeden möglichen Zug auf einer Kopie der Sitzung aus und spielt wie ein Mensch auf die Ziele: zuerst ein Zug, der das Level gewinnt, dann der meiste Fortschritt auf die offenen Ziele (Glasurschichten, entfernte Schokolade, Bossschaden, Bonbons der gesuchten Farbe, Punkte nur bei offenem Punkteziel), dann die meisten Punkte. In Bosskämpfen löst er den Sternenzauber aus, sobald die Leiste voll ist. Gleichstände entscheidet sein eigener Zufall. Er sieht auch die nachfallenden Bonbons voraus, seine Siegquoten überschätzen deshalb menschliche Spielerinnen und Spieler. Die Seite zeigt je Level die Siegquote, den Median der Punkte, die Sternverteilung und weitere Kennzahlen. Eine Welt mit 200 Startwerten dauert etwa eineinhalb bis zwei Minuten.
+`tests/balance.html` ist ein Entwicklerwerkzeug und gehört nicht zur Testseite. Ein Bot spielt jedes Level mit 200 Startwerten, jeder Lauf auf einem eigenen Feld. Er probiert jeden möglichen Zug auf einer Kopie der Sitzung aus und spielt wie ein Mensch auf die Ziele: zuerst ein Zug, der das Level gewinnt, dann der meiste Fortschritt auf die offenen Ziele (Glasurschichten, entfernte Schokolade, Bossschaden, Bonbons der gesuchten Farbe, Punkte nur bei offenem Punkteziel), dann die meisten Punkte. In Bosskämpfen löst er den Sternenzauber aus, sobald die Leiste voll ist. Gleichstände entscheidet sein eigener Zufall. Er sieht auch die nachfallenden Bonbons voraus, seine Siegquoten überschätzen deshalb menschliche Spielerinnen und Spieler. Die Seite zeigt je Level die Siegquote, den Median der Punkte, die Sternverteilung und weitere Kennzahlen. Eine Welt mit 200 Startwerten dauert etwa eineinhalb bis zwei Minuten. Tipp für mehr Tempo: Mehrere Welten gleichzeitig messen, jede in einem eigenen Browser-Prozess mit eigenem `--user-data-dir` (zum Beispiel `--user-data-dir="$TMP/bal-w5"`), sonst teilen sich die Prozesse ein Profil.
 
 Parameter in der Adresse:
 
@@ -70,7 +72,7 @@ Parameter in der Adresse:
 - `&boards=fixed` fester Level-Startwert wie im Spiel (der Bot spielt dann oft jede Partie gleich, die Quote ist nur 0 oder 100 %)
 - `&bot=greedy` einfacher gieriger Bot, der nur Punkte zählt
 
-Jede Zeile zeigt die Zielquote aus `RS.Curve`, die gemessene Quote und das Urteil: `OK` (Abweichung höchstens 5 Punkte), `ZU LEICHT` (mehr als 5 über dem Ziel) oder `ZU SCHWER` (mehr als 5 darunter). Der Bot zählt jeden Kistentreffer als Fortschritt für ein Kistenziel und nutzt nie Joker.
+Jede Zeile zeigt die Zielquote aus `RS.Curve`, die gemessene Quote und das Urteil: `OK` (Abweichung höchstens 5 Punkte), `ZU LEICHT` (mehr als 5 über dem Ziel) oder `ZU SCHWER` (mehr als 5 darunter). Der Bot zählt jeden Kistentreffer als Fortschritt für ein Kistenziel und nutzt nie Joker. Für die neuen Mechaniken gelten diese Regeln: Bei offenem Kirschenziel zählt jede Zeile, die eine Kirsche nach unten rutscht, 0,2 Fortschritt. Beim Knallbonbon-Ziel bekommt das Entschärfen eines gefährlichen Bonbons (Zähler 2 oder weniger) einen Bonus von 5, ein Zünder auf 0 verliert das Level. Chamäleons brauchen keine eigene Regel, der Bot sieht ihren Farbwechsel in der Kopie der Sitzung.
 
 Headless (Git Bash, Edge), Beispiel eine Welt mit 20 Startwerten:
 
@@ -84,7 +86,7 @@ Voller Lauf (alle registrierten Level, 200 Startwerte) mit demselben Befehl ohne
 "/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless=new --disable-gpu --no-first-run --dump-dom "file:///$(pwd -W)/tests/balance.html" 2>/dev/null | grep -E 'Außerhalb|Laufzeit|w[0-9]+-[0-9]+ |summary"'
 ```
 
-Die Zielquote je Level kommt aus `RS.Curve` (Siegquote des Bots ohne Joker, Toleranz ±5 Punkte). Stand der Welten 1 bis 4 mit 200 Startwerten (Stand 23.11.2026), kein Level der Welten 1 und 2 ist schwerer als in 3.0.1. Level, die schon in 3.0.1 `ZU LEICHT` waren (w1-01, w1-02, w1-03, w1-05), behalten ihre Werte und lesen weiter `ZU LEICHT`, weil der Bot dort bei etwa 100 % sättigt und viel stärker spielt als Menschen. Alle anderen Level liegen auf `OK`. Die Leben der Bosse stehen im `boss`-Block der Weltdatei.
+Die Zielquote je Level kommt aus `RS.Curve` (Siegquote des Bots ohne Joker, Toleranz ±5 Punkte). Stand der Welten 1 bis 10 mit 200 Startwerten (Stand 24.11.2026), kein Level der Welten 1 und 2 ist schwerer als in 3.0.1. Level, die schon in 3.0.1 `ZU LEICHT` waren (w1-01, w1-02, w1-03, w1-05), behalten ihre Werte und lesen weiter `ZU LEICHT`, weil der Bot dort bei etwa 100 % sättigt und viel stärker spielt als Menschen. Alle anderen Level liegen auf `OK`. Die Leben der Bosse stehen im `boss`-Block der Weltdatei. Die normalen Level von Welt 5 spielen mit fünf Farben, damit Kirschen oft genug fallen; Kirschen in den mittleren Spalten erreichen den Korb leichter als am Rand. In Welt 6 spielen w6-01 und w6-07 mit fünf Farben; w6-01 ist als Einführungslevel mit 15 Zügen `ZU LEICHT`, weil die Glasur in den engen Wolkenbuchten mit sechs Farben selbst mit 28 Zügen unter der Zielquote blieb. In Welt 7 spielt w7-05 (Kirschen) mit fünf Farben. Dort bestimmen die Knallbonbons die Schwierigkeit oft mehr als die Züge, deshalb sind einige Level über die Dichte von Kisten, Schokolade und Knallbonbons eingestellt. In Welt 8 spielt w8-05 (Kirschen) mit fünf Farben, und w8-06 ist über dichte Schokolade eingestellt, weil dort die Zahl der Züge kaum zählt; der Regenbogenstaub ist wie jeder Joker nicht eingerechnet. In Welt 9 hat jedes Level Chamäleons und ein Sammelziel, der Bot rechnet den Farbwechsel nach jedem Zug mit ein. w9-05 (Kirschen) spielt mit fünf Farben und vier Kirschen, denn mit sechs Farben blieb es selbst mit 18 Zügen weit unter der Zielquote. In Welt 10 verbinden die Level alle Mechaniken des Spiels, w10-05 (Kirschen) spielt mit fünf Farben. w10-01 hat zwei Kistenblöcke von drei mal drei Feldern, die zur Zauberbombe einladen, und liest mit 22 Zügen `OK`. In w10-03 und w10-07 bestimmen die Knallbonbons die Schwierigkeit mehr als die Züge. Das Finale gegen Bitterkönig Amarus hat drei Phasen und 50 Züge; schon 60 Leben mehr oder weniger verschieben die Quote um rund 15 Punkte.
 
 | Level | Züge | Ziele | Zielquote % | Gemessen % |
 |---|---|---|---|---|
@@ -128,6 +130,66 @@ Die Zielquote je Level kommt aus `RS.Curve` (Siegquote des Bots ohne Joker, Tole
 | w4-08 | 22 | Glasur + 26 Violett | 67 | 66 |
 | w4-09 | 26 | Kisten + Glasur | 66,5 | 64 |
 | w4-10 | 40 | Boss, 615 Leben | 59 | 60 |
+| w5-01 | 16 | 3 Kirschen | 69 | 70 |
+| w5-02 | 18 | 3 Kirschen + 22 Rot | 63,5 | 60 |
+| w5-03 | 19 | 3 Kirschen + Glasur | 63 | 68 |
+| w5-04 | 21 | 3 Kirschen + Kisten | 62,5 | 64 |
+| w5-05 | 25 | 4 Kirschen + 5000 Punkte | 62 | 63 |
+| w5-06 | 20 | 3 Kirschen + Schokolade | 61,5 | 64 |
+| w5-07 | 22 | 4 Kirschen + 24 Gelb | 61 | 59 |
+| w5-08 | 24 | 4 Kirschen + Glasur | 60,5 | 62 |
+| w5-09 | 26 | 4 Kirschen + Kisten + Glasur | 60 | 64 |
+| w5-10 | 40 | Boss, 620 Leben | 52 | 52 |
+| w6-01 | 15 | Glasur in engen Wolkenbuchten | 62,5 | 69 |
+| w6-02 | 22 | 26 Blau | 57 | 54 |
+| w6-03 | 18 | Glasur + 6500 Punkte | 56,5 | 56 |
+| w6-04 | 24 | Kisten | 56 | 57 |
+| w6-05 | 22 | 34 Orange | 55,5 | 55 |
+| w6-06 | 16 | Schokolade | 55 | 56 |
+| w6-07 | 20 | 3 Kirschen + 18 Gelb | 54,5 | 53 |
+| w6-08 | 18 | Glasur + Kisten | 54 | 53 |
+| w6-09 | 25 | Kisten + Glasur | 53,5 | 57 |
+| w6-10 | 40 | Boss, 660 Leben | 46 | 47 |
+| w7-01 | 15 | 6 Knallbonbons entschärfen | 56 | 56 |
+| w7-02 | 19 | 30 Rot, Knallbonbons als Gefahr | 50,5 | 49 |
+| w7-03 | 22 | Glasur + 5 Knallbonbons | 50 | 48 |
+| w7-04 | 28 | Kisten, Knallbonbons als Gefahr | 49,5 | 52 |
+| w7-05 | 16 | 3 Kirschen + 4 Knallbonbons | 49 | 51 |
+| w7-06 | 16 | Schokolade, Knallbonbons als Gefahr | 48,5 | 48 |
+| w7-07 | 19 | 6000 Punkte + 4 Knallbonbons | 48 | 47 |
+| w7-08 | 23 | Glasur + Kisten, Knallbonbons als Gefahr | 47,5 | 46 |
+| w7-09 | 24 | 20 Orange + 5 Knallbonbons | 47 | 45 |
+| w7-10 | 40 | Boss, 700 Leben | 39 | 40 |
+| w8-01 | 15 | 27 Violett | 49,5 | 52 |
+| w8-02 | 17 | 34 Rot | 44 | 41 |
+| w8-03 | 16 | Glasur + 6000 Punkte | 43,5 | 46 |
+| w8-04 | 17 | Kisten | 43 | 44 |
+| w8-05 | 14 | 3 Kirschen + 18 Grün | 42,5 | 42 |
+| w8-06 | 15 | Schokolade | 42 | 45 |
+| w8-07 | 18 | 24 Blau + 5 Knallbonbons | 41,5 | 41 |
+| w8-08 | 18 | Glasur + Kisten | 41 | 41 |
+| w8-09 | 20 | 29 Gelb + Kisten | 40,5 | 41 |
+| w8-10 | 40 | Boss, 770 Leben | 33 | 32 |
+| w9-01 | 15 | 32 Blau | 43 | 44 |
+| w9-02 | 13 | 29 Rot + 29 Gelb | 37,5 | 37 |
+| w9-03 | 15 | Glasur + 25 Grün | 37 | 42 |
+| w9-04 | 18 | Kisten + 23 Orange | 36,5 | 39 |
+| w9-05 | 15 | 4 Kirschen + 26 Violett (5 Farben) | 36 | 40 |
+| w9-06 | 14 | Schokolade + 27 Blau | 35,5 | 34 |
+| w9-07 | 15 | 32 Rot + 4 Knallbonbons | 35 | 38 |
+| w9-08 | 14 | 7000 Punkte + 32 Gelb | 34,5 | 37 |
+| w9-09 | 17 | Glasur + Kisten + 28 Grün | 34 | 38 |
+| w9-10 | 40 | Boss, 990 Leben | 26 | 28 |
+| w10-01 | 22 | Kisten (zwei Blöcke 3 × 3) | 36,5 | 36 |
+| w10-02 | 14 | 30 Violett | 31 | 34 |
+| w10-03 | 16 | Glasur + 4 Knallbonbons | 30,5 | 30 |
+| w10-04 | 19 | Kisten + 22 Orange | 30 | 33 |
+| w10-05 | 13 | 3 Kirschen + 27 Grün (5 Farben) | 29,5 | 34 |
+| w10-06 | 13 | Schokolade + 30 Blau | 29 | 26 |
+| w10-07 | 17 | 4 Knallbonbons + Kisten | 28,5 | 32 |
+| w10-08 | 14 | 7500 Punkte + 30 Gelb | 28 | 25 |
+| w10-09 | 18 | Glasur + Kisten + 23 Rot | 27,5 | 26 |
+| w10-10 | 50 | Boss, 1015 Leben | 22 | 23 |
 
 Der Bot sieht nachfallende Bonbons voraus. Deshalb sind Züge und Zielmengen großzügiger als es für Menschen nötig wäre, und die Bosse brauchen weniger Leben als die Richtwerte der Spec nahelegen würden.
 
@@ -138,13 +200,14 @@ index.html          Einstieg, lädt alle Skripte in fester Reihenfolge
 css/                Stil „Mystische Zuckernacht": Farben, Bonbons, Karte, HUD, Dialoge, Laden (shop.css),
                     Bosskampf (boss.css)
 js/logic/           Spiellogik ohne DOM: Zufall, Feld, Spezialsteine, Hindernisse,
+                    Kirschen (cherries.js), Knallbonbons (fuses.js), Chamäleons (chameleons.js),
                     Ziele, Sitzung (Level und Endlos), Laden (shop.js), Joker-Tabelle (jokers.js),
                     Bosskampf (boss.js), Fortschritt und Weltöffnung (progress.js)
 js/data/            Welt-Registry (registry.js), Schwierigkeitskurve (curve.js), Story-Texte,
-                    worlds/ mit einer Datei je Welt (Level, Boss, Musikmotiv, Texte)
-js/ui/              Bildschirme: Startmenü, Welten-Atlas (atlas.js), Levelkarte (map.js, mapkit.js),
+                    worlds/ mit einer Datei je Welt, w01.js bis w10.js (Level, Boss, Musikmotiv, Texte)
+js/ui/              Bildschirme: Startmenü, Welten-Atlas (atlas.js), Abspann (credits.js), Levelkarte (map.js, mapkit.js),
                     Spielfeld (game.js), Endlos, Dialoge, Laden (shop.js), Effekte, Bossfigur (bossview.js),
-                    worlds/ mit Kartenbild und Bossfigur je Welt
+                    worlds/ mit Kartenbild und Bossfigur je Welt, w01.js bis w10.js
 js/save.js          Speichern und Laden (localStorage, Format Version 4)
 js/audio.js         Web-Audio-Motor: Sequenzer, Musik je Bildschirm, Einstellungen
 js/audio-sfx.js     Tabelle der Soundeffekte

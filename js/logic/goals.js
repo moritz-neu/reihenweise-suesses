@@ -39,6 +39,14 @@
           var n = e.candies.filter(function (c) { return c.color === g.color; }).length;
           g.count = cap(g, g.count + n);
         });
+      } else if (e.type === 'cherryCollected') {
+        state.goals.forEach(function (g) {
+          if (g.type === 'cherry') { g.count = cap(g, g.count + 1); }
+        });
+      } else if (e.type === 'fuseDefused') {
+        state.goals.forEach(function (g) {
+          if (g.type === 'fuse') { g.count = cap(g, g.count + 1); }
+        });
       } else if (e.type === 'bossDamaged') {
         state.goals.forEach(function (g) {
           if (g.type === 'boss') { g.target = e.max; g.count = cap(g, e.max - e.hp); }

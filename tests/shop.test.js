@@ -8,8 +8,8 @@
   function d(sticks, moves, hammer) { return { sticks: sticks, jokers: { moves: moves, hammer: hammer } }; }
 
   t('shop: constants', function () {
-    deep(S.PRICES, { moves: 30, hammer: 20, besen: 25 });
-    deep(S.JOKERS, ['moves', 'hammer', 'besen']);
+    deep(S.PRICES, { moves: 30, hammer: 20, besen: 25, feentausch: 15, regenbogen: 35, zauberbombe: 30 });
+    deep(S.JOKERS, ['moves', 'hammer', 'besen', 'feentausch', 'regenbogen', 'zauberbombe']);
     eq(S.MAX_STOCK, 10);
     eq(S.EXTRA_MOVES, 5);
     eq(S.START_STOCK, 1);

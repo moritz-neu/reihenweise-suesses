@@ -2,6 +2,27 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
+## [5.0.0] – 2026-11-24
+
+Version 5.0.0 ist auf GitHub (Pages) veröffentlicht.
+
+### Neu
+- Welten 5 bis 10 mit je zehn Leveln, eigener Karte, Story, Tor und Musikmotiv: Kirschgarten Morellia (Level 41–50), Zuckerwattenwolken (51–60), Knallhafen (61–70), Marzipanschloss (71–80), Schillerbucht (81–90) und Bitterburg (91–100). Das Spiel hat jetzt 100 Level.
+- Bosse mit Leben: Krähe Krawalla (Welt 5, 620), Gewitterhexe Wolkira (Welt 6, 660), Kapitän Knallfrosch (Welt 7, 700), Ritter Mandelbart (Welt 8, 770), Seeschlange Schillerzahn (Welt 9, 990) und Bitterkönig Amarus (Welt 10, 1015). Jeder Boss hat ein Angriffs-Array je Phase; Einträge können mehrere Angriffe mit gemeinsamem Zähler verbinden.
+- Finale gegen Bitterkönig Amarus in drei Phasen mit 50 Zügen, Doppelangriffen und Phase-3-Abzeichen.
+- Abspann mit einer Szene je Welt und Annikas Abschied, einmalig nach dem Finale. Das Hauptmenü zeigt danach eine Krone und einen Knopf, der den Abspann wiederholt; alle Level bleiben spielbar.
+- Neue Hindernisse und Bonbons: Kirschen (Welt 5, fallen in den Korb), Knallbonbons mit Zündschnur und Zähler (Welt 7, verlieren das Level bei 0, Rettung verlängert die Zünder) und Chamäleons, die nach jedem Zug die Farbe wechseln (Welt 9). Neue Ziele „Kirschen“ und „Knallbonbons entschärfen“.
+- Neue Joker: Feentausch (Welt 6, 15 Zuckerstangen), Regenbogenstaub (Welt 8, 35) und Zauberbombe (Welt 10, 30). Jeder kostet keinen Zug, zwei gibt es beim ersten Betreten der Welt geschenkt.
+- Neue Töne, Wurfgeschosse und Animationen für die neuen Mechaniken und Joker.
+
+### Geändert
+- Balancing-Bot: Bei Kirschenzielen zählt jede Zeile Weg einer Kirsche 0,2 Fortschritt, bei Knallbonbons bekommt das Entschärfen bei Zähler 2 oder weniger einen Bonus von 5, Chamäleons brauchen keine Regel. Die Tabelle im README deckt alle zehn Welten ab.
+- Die normalen Level der Welt 5 und einzelne Level mit Kirschen spielen mit fünf statt sechs Farben, damit Kirschen oft genug fallen.
+- Spielstand-Format bleibt Version 4; ein Abschluss-Merker ist ergänzt, ältere Stände laden unverändert.
+
+### Behoben
+- Feentausch: Wird der Joker wieder abgewählt, bleibt keine Markierung zurück, die den nächsten Klick als echten Zug tauscht.
+
 ## [4.0.0] – 2026-11-23
 
 Version 4.0.0 ist auf GitHub (Pages) veröffentlicht.

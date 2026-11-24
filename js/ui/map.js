@@ -5,7 +5,8 @@
   // kommt aus RS.UI.WorldArt (js/ui/worlds/wNN.js). Zwei Anordnungen: quer (breite Fenster)
   // und hoch (schmale Fenster, scrollt senkrecht). Beim Betreten spielt die Karte die Story
   // der Welt: Prolog oder Einleitung mit Joker-Geschenk, nach dem Bosssieg das Kapitelende
-  // und danach einmalig die Öffnung des Tors.
+  // und danach einmalig die Öffnung des Tors. In der letzten Welt folgen auf das
+  // Kapitelende der Abschluss des Spiels und einmalig der Abspann.
 
   var el = RS.UI.el;
   var NARROW = '(max-width: 720px), (max-aspect-ratio: 4/5)';
@@ -251,9 +252,9 @@
   }
 
   // Prolog (Welt 1) bzw. Einleitung und Geschenk (ab Welt 2), danach das Kapitelende
-  // nach dem Bosssieg; onChapter läuft danach. Jeder Schritt läuft nur, solange diese
-  // Karte noch zu sehen ist.
-  function playStory(world, mine, chapterDue, onChapter) {
+  // nach dem Bosssieg; onChapter läuft danach, zuletzt onFinale, falls angegeben. Jeder
+  // Schritt läuft nur, solange diese Karte noch zu sehen ist.
+  function playStory(world, mine, chapterDue, onChapter, onFinale) {
     function alive() { return section === mine; }
     var steps = [];
     var introKey = world.id === 1 ? 'prolog' : 'intro:' + world.id;
@@ -266,6 +267,7 @@
       steps.push(function () { return sayOnce(world.chapterEnd, 'kapitel:' + world.id); });
       steps.push(onChapter);
     }
+    if (onFinale) { steps.push(onFinale); }
     steps.reduce(function (chain, step) {
       return chain.then(function () { return alive() ? step() : null; });
     }, Promise.resolve());
@@ -292,6 +294,9 @@
     // Das Tor öffnet sich genau einmal (tor:N), nach dem Kapitelende.
     var opening = Boolean(view.exit) && view.exit.state === 'open' && !seen('tor:' + worldId);
     var chapterDue = bossWon(save, worldId) && !seen('kapitel:' + worldId);
+    // Nach dem Finalsieg: Abschluss speichern und den Abspann genau einmal zeigen (abspann).
+    // Brach das zuletzt nach dem Kapitelende ab, holt der nächste Besuch es nach.
+    var finaleDue = worldId === RS.Worlds.FINAL_WORLD && bossWon(save, worldId) && !seen('abspann');
     if (opening) { view.exit.state = chapterDue ? 'closed' : 'opening'; }
     section = el('section', 'screen map map--w' + worldId);
     var mine = section;
@@ -354,7 +359,11 @@
       view.exit.state = 'open';
       markSeen('tor:' + worldId);
       if (gateBtn) { gateBtn.focus(); }
-    });
+    }, finaleDue ? function () {
+      RS.Progress.markComplete(RS.App.save);
+      markSeen('abspann');
+      RS.UI.show('credits');
+    } : null);
   }
 
   function unmount() {

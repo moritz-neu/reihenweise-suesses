@@ -115,6 +115,20 @@
   // Wolken: [links %, oben %, Breite rem, Verzögerung s]
   var CLOUDS = [[4, 14, 11, 0], [24, 34, 8, -20], [62, 20, 10, -36], [80, 6, 7, -12]];
 
+  // Krone neben dem Titel, sobald das Spiel abgeschlossen ist (die Sternenkrone).
+  var CROWN_SVG =
+    '<svg class="menu-crown-svg" viewBox="0 0 64 48" aria-hidden="true" focusable="false">' +
+      '<path class="menu-crown-band" d="M10 38 H54 V44 Q32 48 10 44 Z"/>' +
+      '<path class="menu-crown-body" d="M10 38 L6 12 L20 24 L32 4 L44 24 L58 12 L54 38 Z"/>' +
+      '<path class="menu-crown-shine" d="M14 34 L12 20 L21 28 L32 12 L32 34 Z"/>' +
+      '<circle class="menu-crown-gem" data-color="0" cx="6" cy="11" r="3.4"/>' +
+      '<circle class="menu-crown-gem" data-color="2" cx="32" cy="4" r="3.8"/>' +
+      '<circle class="menu-crown-gem" data-color="3" cx="58" cy="11" r="3.4"/>' +
+      '<circle class="menu-crown-gem" data-color="4" cx="21" cy="41" r="2.4"/>' +
+      '<circle class="menu-crown-gem" data-color="1" cx="32" cy="41.5" r="2.6"/>' +
+      '<circle class="menu-crown-gem" data-color="5" cx="43" cy="41" r="2.4"/>' +
+    '</svg>';
+
   var section = null;
 
   function renderProgress(p) {
@@ -224,6 +238,12 @@
     title.appendChild(el('span', null, 'Reihenweise'));
     title.appendChild(el('span', null, 'Süßes'));
     head.appendChild(title);
+    if (RS.App.save.completed) {
+      var crown = el('span', 'menu-crown');
+      crown.innerHTML = CROWN_SVG;
+      title.classList.add('menu-title--crowned');
+      title.appendChild(crown);
+    }
     var candies = el('ul', 'menu-candies');
     candies.setAttribute('aria-hidden', 'true');
     for (var c = 0; c < 6; c++) {
@@ -246,6 +266,9 @@
     actions.appendChild(adventure);
     actions.appendChild(button('Welten', 'btn--ghost', function () { RS.UI.show('atlas'); }));
     actions.appendChild(button('Endlos', 'btn--blue', function () { RS.UI.show('endless'); }));
+    if (RS.App.save.completed) {
+      actions.appendChild(button('Abspann', 'btn--ghost', function () { RS.UI.show('credits'); }));
+    }
     renderProgress(progress);
     actions.appendChild(progress);
 

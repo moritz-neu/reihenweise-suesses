@@ -73,6 +73,13 @@
     }
   };
 
+  // Knallbonbon explodiert: dumpfer Knall mit Rauschen und Nachrollen.
+  function explode(k, c, d, t) {
+    k.tone(c, d, t, { f: 130, to: 32, glide: 0.45, dec: 0.55, g: 0.95 });
+    k.noise(c, d, t, { filter: 'lowpass', f: 2400, fTo: 180, fTime: 0.45, dec: 0.5, g: 0.7 });
+    k.noise(c, d, t + 0.02, { filter: 'highpass', f: 3500, dec: 0.12, g: 0.18 });
+  }
+
   RS.AudioSfx = {
     click: function (k, c, d, t) {
       k.tone(c, d, t, { type: 'triangle', f: 1250, to: 900, glide: 0.04, dec: 0.06, g: 0.4 });
@@ -84,6 +91,7 @@
     swapRejected: dull,
     smashRejected: dull,
     blastRejected: dull,
+    jokerRejected: dull,
     // Aufgelöste Reihe: die Tonhöhe steigt mit der Kaskadenstufe.
     cleared: function (k, c, d, t) {
       var f = k.clearedFreq(k.stage());
@@ -122,6 +130,45 @@
     },
     jokerMoves: function (k, c, d, t) {
       k.run(c, d, t, semis(C5, [0, 4, 7, 12, 16]), 0.06, { type: 'triangle', lp: 3200, dec: 0.22, g: 0.32 });
+    },
+    // Feentausch: Harfenlauf auf und ab
+    fairySwap: function (k, c, d, t) {
+      bells(k, c, d, t, semis(1567.98, [0, 4, 7, 12, 7]), 0.05, 0.14);
+      k.noise(c, d, t, { filter: 'highpass', f: 6500, a: 0.04, dec: 0.25, g: 0.06 });
+    },
+    // Regenbogenstaub: weiter Glitzerlauf über zwei Oktaven
+    rainbow: function (k, c, d, t) {
+      k.run(c, d, t, semis(783.99, [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24]), 0.03, { dec: 0.16, g: 0.18 });
+      k.noise(c, d, t, { filter: 'bandpass', f: 4000, fTo: 9000, fTime: 0.35, q: 1, a: 0.04, dec: 0.4, g: 0.12 });
+    },
+    // Zauberbombe: Bums mit Zauberglocke
+    bombed: function (k, c, d, t) {
+      SPECIALS.bomb(k, c, d, t);
+      bells(k, c, d, t + 0.06, [1760, 2637], 0.07, 0.12);
+    },
+    // Kirschen und Knallbonbons
+    cherryCollected: function (k, c, d, t) {
+      k.tone(c, d, t, { f: 620, to: 980, glide: 0.06, dec: 0.1, g: 0.32 });
+      k.tone(c, d, t + 0.08, { type: 'triangle', f: 1318.5, dec: 0.22, g: 0.22 });
+    },
+    // Ticken nur, wenn ein Zähler bei 3 oder weniger steht.
+    fuseTick: function (k, c, d, t, e) {
+      var low = (e.cells || []).some(function (x) { return x.fuse <= 3; });
+      if (!low) { return false; }
+      k.tone(c, d, t, { type: 'square', f: 1900, lp: 4200, dec: 0.03, g: 0.12 });
+      k.tone(c, d, t + 0.12, { type: 'square', f: 1500, lp: 4200, dec: 0.03, g: 0.1 });
+    },
+    // Entschärft: Zündschnur zischt aus, dann ein heller Ton
+    fuseDefused: function (k, c, d, t) {
+      k.noise(c, d, t, { filter: 'highpass', f: 3000, fTo: 7000, fTime: 0.2, dec: 0.22, g: 0.2 });
+      k.tone(c, d, t + 0.12, { f: 1046.5, dec: 0.25, g: 0.2 });
+    },
+    fuseExplode: explode,
+    // Chamäleon: schimmerndes Gleiten
+    chameleonShift: function (k, c, d, t) {
+      [0, 7].forEach(function (cents) {
+        k.tone(c, d, t, { type: 'triangle', f: 700, to: 1050, glide: 0.25, detune: cents, lp: 2600, a: 0.03, dec: 0.28, g: 0.14 });
+      });
     },
     // Bosse
     bossDamaged: function (k, c, d, t) {
@@ -163,7 +210,9 @@
       });
       bells(k, c, d, t + 0.5, [2093], 0.1, 0.1);
     },
-    levelLost: function (k, c, d, t) {
+    // Verloren durch ein Knallbonbon: erst der Knall, dann die Abwärtsmelodie.
+    levelLost: function (k, c, d, t, e) {
+      if (e && e.reason === 'fuse') { explode(k, c, d, t); t += 0.55; }
       k.run(c, d, t, semis(392, [0, -1, -2, -3]), 0.22, { type: 'triangle', lp: 1400, dec: 0.3, g: 0.36 });
       k.tone(c, d, t + 0.9, { type: 'triangle', f: 196 * Math.pow(2, -3 / 12), lp: 900, hold: 0.2, dec: 0.6, g: 0.3 });
     },

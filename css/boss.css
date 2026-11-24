@@ -51,6 +51,19 @@
 .boss-panel[data-boss="koloss"][data-phase="2"] { --boss-glow: rgba(125, 60, 192, 0.5); }
 .boss-panel[data-boss="blubba"] { --boss-glow: rgba(255, 111, 183, 0.45); }
 .boss-panel[data-boss="blubba"][data-phase="2"] { --boss-glow: rgba(180, 90, 230, 0.5); }
+.boss-panel[data-boss="krawalla"] { --boss-glow: rgba(255, 90, 120, 0.45); }
+.boss-panel[data-boss="krawalla"][data-phase="2"] { --boss-glow: rgba(110, 200, 90, 0.5); }
+.boss-panel[data-boss="wolkira"] { --boss-glow: rgba(90, 150, 255, 0.45); }
+.boss-panel[data-boss="wolkira"][data-phase="2"] { --boss-glow: rgba(255, 150, 60, 0.5); }
+.boss-panel[data-boss="knallfrosch"] { --boss-glow: rgba(255, 150, 60, 0.5); }
+.boss-panel[data-boss="knallfrosch"][data-phase="2"] { --boss-glow: rgba(255, 220, 70, 0.5); }
+.boss-panel[data-boss="mandelbart"] { --boss-glow: rgba(255, 210, 80, 0.5); }
+.boss-panel[data-boss="mandelbart"][data-phase="2"] { --boss-glow: rgba(170, 100, 240, 0.5); }
+.boss-panel[data-boss="schillerzahn"] { --boss-glow: rgba(110, 220, 120, 0.5); }
+.boss-panel[data-boss="schillerzahn"][data-phase="2"] { --boss-glow: rgba(90, 170, 255, 0.5); }
+.boss-panel[data-boss="amarus"] { --boss-glow: rgba(170, 100, 240, 0.5); }
+.boss-panel[data-boss="amarus"][data-phase="2"] { --boss-glow: rgba(255, 90, 110, 0.5); }
+.boss-panel[data-boss="amarus"][data-phase="3"] { --boss-glow: rgba(90, 160, 255, 0.55); }
 
 /* ---------- Figur ---------- */
 
@@ -131,6 +144,82 @@
 .boss-art[data-phase="2"] .bl-brow { opacity: 1; }
 .boss-art .bl-bubble { transform-box: fill-box; transform-origin: 20% 60%; transition: transform 0.4s ease; }
 .boss-art[data-phase="2"] .bl-bubble { transform: scale(1.2); }
+
+/* Krähe Krawalla: in Phase 2 sträubt sie die Federn, runzelt die Stirn und hebt den Flügel */
+.boss-art[data-phase="2"] .kr-ruff { opacity: 1; }
+.boss-art[data-phase="2"] .kr-brow { opacity: 1; }
+.boss-art[data-phase="2"] .kr-body,
+.boss-art[data-phase="2"] .kr-head,
+.boss-art[data-phase="2"] .kr-crest { fill: #2e2244; }
+.boss-art .kr-wing { transform-box: fill-box; transform-origin: 90% 20%; transition: transform 0.4s ease; }
+.boss-art[data-phase="2"] .kr-wing { transform: rotate(-18deg); }
+
+/* Gewitterhexe Wolkira: in Phase 2 zucken Blitze, die Wolke wird schwärzer, sie runzelt die Stirn und hebt den Stab */
+.boss-art[data-phase="2"] .wk-bolt { opacity: 1; }
+.boss-art[data-phase="2"] .wk-brow { opacity: 1; }
+.boss-art[data-phase="2"] .wk-cloud { fill: #34365a; }
+.boss-art .wk-wand { transform-box: fill-box; transform-origin: 0% 100%; transition: transform 0.4s ease; }
+.boss-art[data-phase="2"] .wk-wand { transform: rotate(-14deg); }
+
+/* Kapitän Knallfrosch: in Phase 2 sprühen Funken, er runzelt die Stirn, die Wangen glühen und er reißt die Lunte höher */
+.boss-art[data-phase="2"] .kf-spark { opacity: 1; }
+.boss-art[data-phase="2"] .kf-brow { opacity: 1; }
+.boss-art[data-phase="2"] .kf-cheek { fill: #ff6a4a; opacity: 0.9; }
+.boss-art .kf-arm { transform-box: fill-box; transform-origin: 0% 100%; transition: transform 0.4s ease; }
+.boss-art[data-phase="2"] .kf-arm { transform: rotate(-12deg); }
+
+/* Ritter Mandelbart: in Phase 2 glüht der Schild, er runzelt die Stirn, der Federbusch wird rot und er hebt die Lanze */
+.boss-art[data-phase="2"] .md-glow { opacity: 1; }
+.boss-art[data-phase="2"] .md-brow { opacity: 1; }
+.boss-art[data-phase="2"] .md-plume { fill: #e0344e; }
+.boss-art .md-arm { transform-box: fill-box; transform-origin: 0% 100%; transition: transform 0.4s ease; }
+.boss-art[data-phase="2"] .md-arm { transform: rotate(-10deg); }
+
+/* Seeschlange Schillerzahn: in Phase 2 umgibt eisiger Schimmer den Kopf, Eiskristalle treiben, sie runzelt die Stirn, der Kamm wird blau und sie reckt den Kopf */
+.boss-art[data-phase="2"] .sz-glow { opacity: 1; }
+.boss-art[data-phase="2"] .sz-frost { opacity: 1; }
+.boss-art[data-phase="2"] .sz-brow { opacity: 1; }
+.boss-art[data-phase="2"] .sz-crest { fill: #6ec6ff; }
+.boss-art .sz-head { transform-box: fill-box; transform-origin: 100% 100%; transition: transform 0.4s ease; }
+.boss-art[data-phase="2"] .sz-head { transform: rotate(8deg); }
+
+/* Bitterkönig Amarus: ab Phase 2 glühen die Augen rot und der Kristall flackert, in Phase 3
+   umgibt ihn ein dunkler Wirbel und der Mantel leuchtet von innen. Nach der Niederlage und im
+   Abspann (data-scene="defeat") bekommt er seine Süße zurück: warm, rosa, mit goldener
+   Sternenkrone und einem Lächeln. */
+.boss-art[data-boss="amarus"]:not([data-phase="1"]) .am-eye { fill: #ff3a5a; }
+.boss-art[data-boss="amarus"]:not([data-phase="1"]) .am-orb { fill: #8a2ad0; animation: rs-am-orb 1.2s ease-in-out infinite; }
+.boss-art[data-boss="amarus"][data-phase="3"] .am-aura { opacity: 1; }
+.boss-art[data-boss="amarus"][data-phase="3"] .am-lining { fill: #8a2ad0; }
+.boss-art[data-boss="amarus"] .am-aura { transform-box: fill-box; transform-origin: 50% 50%; }
+.boss-art[data-boss="amarus"][data-phase="3"] .am-aura { animation: rs-am-aura 4s linear infinite; }
+@keyframes rs-am-orb {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@keyframes rs-am-aura {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-aura { opacity: 0; animation: none; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-cape { fill: #f29ac0; stroke: #c25a8a; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-lining { fill: #ffd0e2; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-robe { fill: #b48ae0; stroke: #7a4ac0; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-trim { stroke: #ffd84a; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-collar { fill: #fff0f6; stroke: #e2a8c8; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-face,
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-hand { fill: #ffdcc4; stroke: #d09a80; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-beard { fill: #f6f0ff; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-eye { fill: #3a2a1a; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-orb { fill: #ff8fc8; stroke: #fff; animation: none; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-crown { fill: #ffd45a; stroke: #e09a2a; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-gem { fill: #ff6b8a; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-brow,
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-mouth { opacity: 0; }
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-smile,
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-cheek,
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-star,
+.boss-art[data-boss="amarus"][data-scene="defeat"] .am-sweet { opacity: 1; }
 
 .boss-flash {
   position: absolute;
@@ -213,6 +302,20 @@
   border-color: #ff6f8f;
   color: #fff;
   background: rgba(224, 32, 79, 0.35);
+}
+
+/* Phase 3 (Finale): violett-golden und glühend */
+.boss-panel[data-phase="3"] .boss-phase {
+  border-color: var(--gold);
+  color: #fff6dc;
+  background: linear-gradient(135deg, rgba(138, 43, 226, 0.75), rgba(224, 32, 79, 0.7));
+  box-shadow: 0 0 10px rgba(199, 125, 255, 0.8);
+  animation: boss-phase-glow 1.4s ease-in-out infinite;
+}
+
+@keyframes boss-phase-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(199, 125, 255, 0.6); }
+  50% { box-shadow: 0 0 16px rgba(255, 215, 140, 0.95); }
 }
 
 .boss-hp {
@@ -352,6 +455,24 @@
     repeating-linear-gradient(90deg, rgba(90, 44, 14, 0) 0 22%, rgba(90, 44, 14, 0.35) 22% 25%),
     linear-gradient(160deg, #d28a4a, #9a5523);
   box-shadow: 0 0 8px rgba(255, 170, 80, 0.8);
+}
+
+.boss-shot[data-kind="choco"] {
+  border-radius: 40% 55% 45% 50%;
+  background: radial-gradient(circle at 30% 25%, #b5703a, #5a2e14 75%);
+  box-shadow: 0 0 8px rgba(160, 97, 47, 0.8);
+}
+
+.boss-shot[data-kind="fuse"] {
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6dc, #ff9f43 35%, #e0204f 75%);
+  box-shadow: 0 0 12px rgba(255, 106, 0, 0.9);
+}
+
+.boss-shot[data-kind="chameleon"] {
+  border-radius: 50%;
+  background: conic-gradient(var(--candy-0), var(--candy-5), var(--candy-1), var(--candy-2), var(--candy-3), var(--candy-4), var(--candy-0));
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
 }
 
 .boss-shot[data-kind="star"] {

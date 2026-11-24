@@ -58,7 +58,8 @@
       return;
     }
     var candy = RS.Board.get(board, p);
-    if (!candy) { return; }
+    // A cherry is never cleared by a hit; it only leaves the board when collected.
+    if (!candy || candy.cherry) { return; }
     ctx.toClear.set(k, pos(p.r, p.c));
     if (candy.special && !ctx.triggered.has(candy.id)) {
       ctx.triggered.add(candy.id);
@@ -91,7 +92,7 @@
       // Locked candies are not transformed; the combo hit only removes their lock.
       combo.cells.forEach(function (p) {
         var candy = board.candies[p.r][p.c];
-        if (candy.special || board.lock[p.r][p.c]) { return; }
+        if (candy.special || candy.fuse !== undefined || board.lock[p.r][p.c]) { return; }
         candy.special = RS.Specials.transformKind(board, combo.transform.special);
         ctx.events.push({
           type: 'specialCreated',
@@ -111,10 +112,12 @@
   // (also when only obstacles were hit); then resets the per-stage hit bookkeeping.
   function clearCollected(board, ctx) {
     var candies = [];
+    var defused = [];
     ctx.toClear.forEach(function (p) {
       var candy = board.candies[p.r][p.c];
       if (!candy) { return; }
       candies.push({ id: candy.id, color: candy.color, special: candy.special, pos: pos(p.r, p.c) });
+      if (candy.fuse !== undefined) { defused.push({ type: 'fuseDefused', pos: pos(p.r, p.c), id: candy.id }); }
       board.candies[p.r][p.c] = null;
     });
     ctx.toClear = new Map();
@@ -123,6 +126,7 @@
       candies: candies,
       points: POINTS.CANDY * ctx.stage * candies.length + POINTS.OBSTACLE * (ctx.obstacleHits || 0)
     });
+    defused.forEach(function (e) { ctx.events.push(e); });
     ctx.hit = new Set();
     ctx.matched = new Set();
     ctx.obstacleHits = 0;
@@ -158,13 +162,27 @@
     for (var r = 0; r < board.rows; r++) {
       for (var c = 0; c < board.cols; c++) {
         if (isFallSlot(board, r, c) && !board.candies[r][c]) {
-          var candy = { id: board.nextId++, color: board.rng.int(board.colors), special: null };
+          var candy = RS.Cherries.spawnInto(board,
+            { id: board.nextId++, color: board.rng.int(board.colors), special: null });
           board.candies[r][c] = candy;
-          candies.push({ id: candy.id, color: candy.color, special: null, pos: pos(r, c) });
+          var entry = { id: candy.id, color: candy.color, special: null, pos: pos(r, c) };
+          if (candy.cherry) { entry.cherry = true; }
+          candies.push(entry);
         }
       }
     }
     ctx.events.push({ type: 'spawned', candies: candies });
+  }
+
+  // Gravity and spawn; cherries on the lowest fall slot of a column are collected afterwards,
+  // and each collection frees a cell, so gravity and spawn run again until nothing is collected.
+  function fall(board, ctx) {
+    applyGravity(board, ctx);
+    spawn(board, ctx);
+    while (RS.Cherries.collect(board, ctx.events) > 0) {
+      applyGravity(board, ctx);
+      spawn(board, ctx);
+    }
   }
 
   function sortRowMajor(cells) {
@@ -195,7 +213,7 @@
     if (!preferred) { preferred = sorted[Math.floor(sorted.length / 2)]; }
     function free(p) {
       var candy = board.candies[p.r][p.c];
-      return !taken[key(p)] && candy !== null && !candy.special;
+      return !taken[key(p)] && candy !== null && !candy.special && candy.fuse === undefined;
     }
     if (free(preferred)) { return preferred; }
     // Taken by another match of this stage, or already special: take the next free cell.
@@ -292,8 +310,7 @@
       thawNeighbours(board, matches, ctx);
       createSpecials(board, matches, ctx);
       clearCollected(board, ctx);
-      applyGravity(board, ctx);
-      spawn(board, ctx);
+      fall(board, ctx);
       matches = RS.Board.findMatches(board);
     }
     shuffleIfDead(board, ctx.events);
@@ -303,8 +320,7 @@
   function settle(board, ctx) {
     ctx.stage++;
     ctx.events.push({ type: 'cascade', stage: ctx.stage });
-    applyGravity(board, ctx);
-    spawn(board, ctx);
+    fall(board, ctx);
     resolve(board, ctx);
   }
 
@@ -335,9 +351,42 @@
     return { valid: true, events: ctx.events };
   }
 
+  // Feentausch joker: swaps two neighbours even without a match. A combo resolves as a combo,
+  // matches cascade; otherwise only `swapped` (plus a cherry that landed on its collect slot).
+  function forceSwap(board, a, b) {
+    if (!RS.Board.canSwap(board, a, b)) {
+      return { valid: false, events: [{ type: 'swapRejected', a: a, b: b }] };
+    }
+    var ctx = {
+      stage: 0,
+      events: [],
+      swap: { a: a, b: b },
+      triggered: new Set(),
+      toClear: new Map(),
+      combo: null
+    };
+    swapCandies(board, a, b);
+    ctx.events.push({ type: 'swapped', a: a, b: b });
+    var combo = RS.Specials.combo(board, a, b);
+    if (combo) { ctx.combo = { a: a, b: b, result: combo }; }
+    if (combo || RS.Board.findMatches(board).length > 0) {
+      RS.Engine._resolve(board, ctx);
+    } else if (RS.Cherries.collect(board, ctx.events) > 0) {
+      RS.Engine._settle(board, ctx);
+    } else {
+      shuffleIfDead(board, ctx.events);
+    }
+    return { valid: true, events: ctx.events };
+  }
+
   // Hammer joker: hits one cell like a match would (glaze, lock, special), then resolves.
   function smash(board, p) {
     if (!RS.Board.isPlayable(board, p) || (!RS.Board.get(board, p) && !board.choco[p.r][p.c] && !board.crate[p.r][p.c])) {
+      return { valid: false, events: [{ type: 'smashRejected', pos: p }] };
+    }
+    // A plain cherry is never hit away: without glaze or lock the hammer has nothing to do there.
+    var target = RS.Board.get(board, p);
+    if (target && target.cherry && !board.glaze[p.r][p.c] && !board.lock[p.r][p.c]) {
       return { valid: false, events: [{ type: 'smashRejected', pos: p }] };
     }
     var ctx = {
@@ -375,7 +424,9 @@
 
   RS.Engine = {
     POINTS: POINTS,
+    isFallSlot: isFallSlot,
     swap: swap,
+    forceSwap: forceSwap,
     smash: smash,
     blast: blast,
     shuffleIfDead: shuffleIfDead,

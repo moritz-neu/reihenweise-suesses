@@ -232,9 +232,15 @@
 
 
   // Bosses with a list of phases and the crate attack
+  var temps = [];
   function tempBoss(key, d) {
     RS.BOSSES[key] = d;
+    if (temps.indexOf(key) < 0) { temps.push(key); }
     return RS.Boss.create(key);
+  }
+  function dropTemps() {
+    temps.forEach(function (k) { delete RS.BOSSES[k]; });
+    temps = [];
   }
   function threePhase() {
     return tempBoss('tPhases', { name: 'T', hp: 100, weak: [0, 1, 2], thresholds: [0.66, 0.33],
@@ -462,5 +468,130 @@
     ofType(ev, 'cleared').forEach(function (e) { n += e.candies.length; });
     eq(s.boss.charge, Math.min(40, n));
     ok(s.boss.charge >= 3);
+  });
+
+  // Attack arrays and the new kinds
+  function freeBoard(seed) {
+    return B.create({ rows: 8, cols: 8, colors: 5, seed: seed, layout: [FULL, FULL, FULL, FULL, FULL, FULL, FULL, FULL] });
+  }
+  function dueBoss(key, attacks) {
+    var boss = tempBoss(key, { name: 'T', hp: 100, weak: [0], thresholds: [], attacks: attacks });
+    return boss;
+  }
+
+  t('boss: attack array shares counter and runs all', function () {
+    var board = freeBoard(501);
+    var boss = tempBoss('tArr', { name: 'T', hp: 100, weak: [0, 1], thresholds: [0.5],
+      attacks: [{ kind: 'lock', count: 1, every: 9 },
+        [{ kind: 'lock', count: 2, every: 2 }, { kind: 'ice', count: 3, level: 2, every: 9 }]] });
+    RS.Boss.apply(boss, 50);
+    eq(boss.phase, 2);
+    boss.counter = 0;
+    eq(RS.Boss.step(boss, board).length, 0, 'not due after one move');
+    eq(boss.counter, 1);
+    var ev = RS.Boss.step(boss, board);
+    var atks = ofType(ev, 'bossAttack');
+    eq(atks.length, 2);
+    eq(atks[0].kind, 'lock');
+    eq(atks[0].cells.length, 2);
+    eq(atks[1].kind, 'ice');
+    eq(atks[1].cells.length, 3);
+    eq(atks[1].level, 2);
+    eq(boss.counter, 0);
+    eq(count(board, 'lock', Boolean), 2);
+    eq(count(board, 'ice', function (v) { return v === 2; }), 3);
+    atks[1].cells.forEach(function (q) {
+      ok(!atks[0].cells.some(function (o) { return o.r === q.r && o.c === q.c; }), 'second attack picks after the first');
+    });
+  });
+
+  t('boss: fuse attack sets the fuse on free candies', function () {
+    var board = freeBoard(502);
+    var boss = dueBoss('tFuse', [{ kind: 'fuse', count: 2, level: 6, every: 1 }]);
+    var ev = RS.Boss.step(boss, board);
+    var atk = ofType(ev, 'bossAttack')[0];
+    eq(atk.kind, 'fuse');
+    eq(atk.level, 6);
+    eq(atk.cells.length, 2);
+    atk.cells.forEach(function (q) { eq(board.candies[q.r][q.c].fuse, 6); });
+    eq(count(board, 'candies', function (v) { return v && v.fuse !== undefined; }), 2);
+  });
+
+  t('boss: chameleon attack marks free candies', function () {
+    var board = freeBoard(503);
+    var boss = dueBoss('tCham', [{ kind: 'chameleon', count: 2, every: 1 }]);
+    var ev = RS.Boss.step(boss, board);
+    var atk = ofType(ev, 'bossAttack')[0];
+    eq(atk.kind, 'chameleon');
+    eq(atk.cells.length, 2);
+    atk.cells.forEach(function (q) { eq(board.candies[q.r][q.c].chameleon, true); });
+    eq(count(board, 'candies', function (v) { return v && v.chameleon; }), 2);
+  });
+
+  t('boss: choco attack removes the candy and sets chocolate', function () {
+    var board = freeBoard(504);
+    var boss = dueBoss('tChoco', [{ kind: 'choco', count: 3, every: 1 }]);
+    var ev = RS.Boss.step(boss, board);
+    var atk = ofType(ev, 'bossAttack')[0];
+    eq(atk.kind, 'choco');
+    eq(atk.cells.length, 3);
+    atk.cells.forEach(function (q) {
+      eq(board.candies[q.r][q.c], null);
+      eq(board.choco[q.r][q.c], true);
+    });
+    eq(count(board, 'choco', Boolean), 3);
+    ok(B.findPossibleMoves(board).length > 0, 'possible move');
+  });
+
+  t('spell: order with fuse is ice, fuse, lock, crate, glaze', function () {
+    // 1 ice, 2 fuses, 2 locks, 1 crate, 3 glaze: ice, fuses, locks, crate fill the six slots
+    var layout = [FULL, 'xIxxxxxx', 'xxxLLxxx', 'xxxxxxZx', '1x1x1xxx', 'xxxxxxxx', FULL, FULL];
+    var s = layoutSession(layout);
+    s.board.candies[5][1].fuse = 5;
+    s.board.candies[5][4].fuse = 4;
+    s.boss.charge = 40;
+    var ev = RS.Session.starSpell(s);
+    eq(ofType(ev, 'spellCast')[0].cells.length, 6);
+    eq(count(s.board, 'ice', function (v) { return v > 0; }), 0);
+    eq(count(s.board, 'candies', function (v) { return v && v.fuse !== undefined; }), 0);
+    eq(count(s.board, 'lock', Boolean), 0);
+    eq(count(s.board, 'crate', function (v) { return v > 0; }), 0);
+    eq(count(s.board, 'glaze', function (v) { return v > 0; }), 3);
+    var defused = ofType(ev, 'fuseDefused');
+    eq(defused.length, 2);
+    ok(s.board.candies[5][1] && s.board.candies[5][4], 'defused candies stay');
+    // fuses beat locks when slots run short: 5 ice cells leave one slot
+    var s2 = layoutSession([FULL, 'xIIIIIxx', 'xxxxxxxx', 'xxxxLxxx', FULL, FULL, FULL, FULL]);
+    s2.board.candies[2][1].fuse = 3;
+    s2.boss.charge = 40;
+    RS.Session.starSpell(s2);
+    eq(s2.board.candies[2][1].fuse, undefined);
+    eq(s2.board.lock[3][4], true);
+  });
+
+  t('boss: amarus-like three-phase boss walks phases 1-2-3 with matching attacks', function () {
+    var boss = tempBoss('tAmarus', { name: 'T', hp: 100, weak: [4, 0, 3], thresholds: [0.66, 0.33],
+      attacks: [[{ every: 3, kind: 'lock', count: 3 }, { every: 3, kind: 'ice', count: 2, level: 2 }],
+        [{ every: 2, kind: 'crate', count: 3, level: 2 }, { every: 2, kind: 'choco', count: 2 }],
+        [{ every: 2, kind: 'fuse', count: 2, level: 6 }, { every: 2, kind: 'chameleon', count: 2 }]] });
+    var board = freeBoard(505);
+    var expected = [['lock', 'ice'], ['crate', 'choco'], ['fuse', 'chameleon']];
+    var every = [3, 2, 2];
+    for (var ph = 1; ph <= 3; ph++) {
+      eq(boss.phase, ph);
+      eq(boss.weak, [4, 0, 3][ph - 1]);
+      boss.counter = 0;
+      var ev = [];
+      for (var i = 0; i < every[ph - 1]; i++) { ev = RS.Boss.step(boss, board); }
+      var kinds = ofType(ev, 'bossAttack').map(function (e) { return e.kind; });
+      RS.assert.deepEqual(kinds, expected[ph - 1]);
+      ofType(ev, 'bossAttack').forEach(function (e) { eq(e.phase, ph); });
+      if (ph === 1) { eq(ofType(RS.Boss.apply(boss, 34), 'bossPhase').length, 1); }
+      if (ph === 2) { eq(ofType(RS.Boss.apply(boss, 33), 'bossPhase').length, 1); }
+    }
+    eq(boss.phase, 3);
+    dropTemps();
+    eq(RS.BOSSES.tAmarus, undefined);
+    eq(RS.BOSSES.tPhases, undefined);
   });
 })(window.RS = window.RS || {});

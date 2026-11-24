@@ -25,7 +25,7 @@
   RS.test('save: load returns fresh when empty', function () {
     RS.assert.deepEqual(RS.Save.load(fakeStorage()), RS.Save.fresh());
     RS.assert.deepEqual(RS.Save.fresh(),
-      { version: 4, stars: {}, seen: [], sticks: 0, jokers: { moves: 1, hammer: 1, besen: 0 }, endlessHighscore: 0, completed: false,
+      { version: 4, stars: {}, seen: [], sticks: 0, jokers: { moves: 1, hammer: 1, besen: 0, feentausch: 0, regenbogen: 0, zauberbombe: 0 }, endlessHighscore: 0, completed: false,
         settings: { music: true, sfx: true } });
   });
 
@@ -198,7 +198,7 @@
     RS.assert.equal(Object.keys(d.stars).length, 11);
     RS.assert.equal(d.sticks, 140);
     RS.assert.equal(d.endlessHighscore, 777);
-    RS.assert.deepEqual(d.jokers, { moves: 3, hammer: 2, besen: 0 });
+    RS.assert.deepEqual(d.jokers, { moves: 3, hammer: 2, besen: 0, feentausch: 0, regenbogen: 0, zauberbombe: 0 });
     RS.assert.deepEqual(d.seen.slice().sort(), ['intro:2', 'kapitel:1', 'laden', 'prolog', 'tor:1']);
     RS.assert.equal(d.completed, false);
     RS.assert.equal('unlocked' in d, false);
@@ -213,7 +213,7 @@
     var d = RS.Save.load(s);
     RS.assert.deepEqual(d.seen, ['kapitel:2']);
     RS.assert.equal(d.stars['w2-10'], 1);
-    RS.assert.deepEqual(d.jokers, { moves: 0, hammer: 0, besen: 0 });
+    RS.assert.deepEqual(d.jokers, { moves: 0, hammer: 0, besen: 0, feentausch: 0, regenbogen: 0, zauberbombe: 0 });
   });
 
   RS.test('save: v1 and v2 -> v4', function () {
@@ -221,7 +221,7 @@
     putRaw(s, { version: 1, unlocked: 6, stars: { 1: 3, 2: 1 }, endlessHighscore: 4200, prologueSeen: true, finaleSeen: false });
     var d = RS.Save.load(s);
     RS.assert.deepEqual(d, { version: 4, stars: { 'w1-01': 3, 'w1-02': 1 }, seen: ['prolog'], sticks: 0,
-      jokers: { moves: 1, hammer: 1, besen: 0 }, endlessHighscore: 4200, completed: false,
+      jokers: { moves: 1, hammer: 1, besen: 0, feentausch: 0, regenbogen: 0, zauberbombe: 0 }, endlessHighscore: 4200, completed: false,
       settings: { music: true, sfx: true } });
     d.jokers.moves = 0;
     RS.Save.store(d, s);
@@ -233,7 +233,7 @@
     var d2 = RS.Save.load(s2);
     RS.assert.deepEqual(d2.stars, { 'w1-01': 3, 'w1-09': 2, 'w1-10': 1 });
     RS.assert.equal(d2.sticks, 42);
-    RS.assert.deepEqual(d2.jokers, { moves: 3, hammer: 0, besen: 0 });
+    RS.assert.deepEqual(d2.jokers, { moves: 3, hammer: 0, besen: 0, feentausch: 0, regenbogen: 0, zauberbombe: 0 });
     RS.assert.deepEqual(d2.seen, ['prolog', 'laden', 'kapitel:1']);
   });
 
@@ -283,7 +283,7 @@
     RS.assert.deepEqual(d.settings, { music: true, sfx: true });
     RS.assert.equal(d.stars['w2-03'], 3);
     RS.assert.equal(d.sticks, 55);
-    RS.assert.deepEqual(d.jokers, { moves: 2, hammer: 3, besen: 1 });
+    RS.assert.deepEqual(d.jokers, { moves: 2, hammer: 3, besen: 1, feentausch: 0, regenbogen: 0, zauberbombe: 0 });
     RS.assert.deepEqual(d.seen, ['prolog', 'tor:1']);
   });
 

@@ -5,7 +5,8 @@
   // und meldet Tausch-Wünsche (Ziehen oder Klick-Klick).
   //
   // Aufbau (Ebenen von unten nach oben): Kacheln, Glasur, Schokolade, Lebkuchenkisten, Bonbons, Eis,
-  // Lakritzgitter, Effekte.
+  // Lakritzgitter, Effekte. Kirsche, Knallbonbon und Chamäleon sind Attribute am Bonbon
+  // (data-cherry, data-fuse, data-chameleon).
   // Jedes Element ist eine Zelle groß und wird per transform: translate(c*100%, r*100%)
   // platziert; so passt alles ohne Messen zu jeder Feldgröße.
 
@@ -14,8 +15,11 @@
   var DUR = {
     swap: 150, rejected: 150, matched: 220, cleared: 220, created: 260,
     beam: 320, shockwave: 320, swirl: 420, fell: 200, spawned: 200, shuffled: 400, spread: 360,
+    cherry: 300, fuse: 220, explode: 560, shift: 360, rainbow: 560, bombed: 360, fairy: 320,
     stagePause: 70
   };
+
+  var FUSE_LOW = 3;   // ab hier pulsiert der Zähler rot
 
   function reducedMotion() {
     return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -183,7 +187,8 @@
       if (n) { n.setAttribute('data-level', String(level || 0)); }
     }
 
-    function makePiece(id, color, special) {
+    // cd: Bonbon oder Ereignis-Eintrag { color, special, cherry?, fuse?, chameleon? }
+    function makePiece(id, cd) {
       var node = el('div', 'bv-cell bv-piece');
       node.setAttribute('data-id', String(id));
       var body = el('div', 'bv-body');
@@ -191,11 +196,19 @@
       body.appendChild(el('div', 'bv-glow'));
       body.appendChild(candy);
       body.appendChild(el('div', 'bv-mark'));
+      // Knallbonbon: Zündschnur und Zähler (nur sichtbar mit data-fuse)
+      var fuse = el('div', 'bv-fuse');
+      fuse.appendChild(el('span', 'bv-wick'));
+      var num = el('span', 'bv-fuse-num');
+      fuse.appendChild(num);
+      body.appendChild(fuse);
       node.appendChild(body);
       pieceLayer.appendChild(node);
-      var p = { el: node, body: body, candy: candy, r: -1, c: -1, color: undefined, special: undefined };
+      var p = { el: node, body: body, candy: candy, fuseNum: num, r: -1, c: -1,
+        color: undefined, special: undefined, fuse: undefined, cherry: false, chameleon: false };
       pieces[id] = p;
-      setLook(p, color, special);
+      setLook(p, cd.color, cd.special || null);
+      setMarks(p, cd);
       return p;
     }
 
@@ -210,6 +223,40 @@
         if (special) { p.el.setAttribute('data-special', special); }
         else { p.el.removeAttribute('data-special'); }
       }
+    }
+
+    // Kirsche, Knallbonbon-Zähler und Chamäleon-Rand als Attribute am Bonbon.
+    function setMarks(p, cd) {
+      setCherry(p, Boolean(cd.cherry));
+      setFuse(p, cd.fuse);
+      setChameleon(p, Boolean(cd.chameleon));
+    }
+
+    function setCherry(p, on) {
+      if (p.cherry === on) { return; }
+      p.cherry = on;
+      if (on) { p.el.setAttribute('data-cherry', '1'); } else { p.el.removeAttribute('data-cherry'); }
+    }
+
+    // n: Zählerstand oder undefined (kein Knallbonbon)
+    function setFuse(p, n) {
+      if (n === null) { n = undefined; }
+      if (p.fuse === n) { return; }
+      p.fuse = n;
+      if (n === undefined) {
+        p.el.removeAttribute('data-fuse');
+        p.el.classList.remove('is-fuse-low');
+        return;
+      }
+      p.el.setAttribute('data-fuse', String(n));
+      p.el.classList.toggle('is-fuse-low', n <= FUSE_LOW);
+      p.fuseNum.textContent = String(n);
+    }
+
+    function setChameleon(p, on) {
+      if (p.chameleon === on) { return; }
+      p.chameleon = on;
+      if (on) { p.el.setAttribute('data-chameleon', '1'); } else { p.el.removeAttribute('data-chameleon'); }
     }
 
     function place(p, r, c) {
@@ -247,8 +294,9 @@
           setCrate(r, c, b.crate ? b.crate[r][c] : 0);
           var candy = b.mask[r][c] ? b.candies[r][c] : null;
           if (!candy) { continue; }
-          var p = pieces[candy.id] || makePiece(candy.id, candy.color, candy.special);
+          var p = pieces[candy.id] || makePiece(candy.id, candy);
           setLook(p, candy.color, candy.special || null);
+          setMarks(p, candy);
           if (p.r !== r || p.c !== c) { place(p, r, c); }
           p.el.style.opacity = '';
           ids[r][c] = candy.id;
@@ -284,13 +332,21 @@
       ids[b.r][b.c] = t;
     }
 
-    function playSwap(a, b, ms) {
+    // fairy: Feentausch, beide Bonbons heben sich dabei kurz an.
+    function playSwap(a, b, ms, fairy) {
       var pa = pieceAt(a);
       var pb = pieceAt(b);
       swapIds(a, b);
       var jobs = [];
       if (pa) { pa.el.style.zIndex = '2'; jobs.push(moveAnim(pa, a, b, ms, 'ease-in-out')); }
       if (pb) { jobs.push(moveAnim(pb, b, a, ms, 'ease-in-out')); }
+      if (fairy) {
+        [pa, pb].forEach(function (p) {
+          if (!p) { return; }
+          jobs.push(animate(p.body, [{ transform: 'scale(1)' }, { transform: 'scale(1.25) rotate(12deg)' },
+            { transform: 'scale(1)' }], ms, 'ease-in-out'));
+        });
+      }
       return Promise.all(jobs).then(function () { if (pa) { pa.el.style.zIndex = ''; } });
     }
 
@@ -480,20 +536,32 @@
     }
 
     // Boss-Angriff: Der Wurf ist gelandet (eventHook), jetzt erscheinen die neuen Hindernisse.
+    var ATTACK_COLORS = { lock: '#6b4a5c', crate: '#c98a4b', choco: '#8a4a22', fuse: '#ff6a00', chameleon: null };
+
     function showAttack(e) {
       e.cells.forEach(function (p) {
         var node;
-        if (e.kind === 'lock') { setLock(p.r, p.c, true); node = lockEls[p.r] && lockEls[p.r][p.c]; }
-        else if (e.kind === 'glaze') { setGlaze(p.r, p.c, e.level); node = glazeEls[p.r] && glazeEls[p.r][p.c]; }
-        else if (e.kind === 'crate') {
-          // Die Kiste ersetzt das Bonbon der Zelle.
+        var piece = pieceAt(p);
+        var color = ATTACK_COLORS.hasOwnProperty(e.kind) ? ATTACK_COLORS[e.kind] : '#bfeaff';
+        effects.burst(p, color, 8);
+        if (e.kind === 'fuse' || e.kind === 'chameleon') {
+          // Das Bonbon bleibt; es bekommt Zündschnur und Zähler oder den Chamäleon-Rand.
+          if (!piece) { return; }
+          if (e.kind === 'fuse') { setFuse(piece, e.level); } else { setChameleon(piece, true); }
+          animate(piece.body, [{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], 220,
+            'cubic-bezier(.3,1.5,.5,1)');
+          return;
+        }
+        if (e.kind === 'crate' || e.kind === 'choco') {
+          // Kiste oder Schokolade ersetzt das Bonbon der Zelle.
           var gone = ids[p.r] && ids[p.r][p.c];
           if (gone !== null && gone !== undefined) { ids[p.r][p.c] = null; removePiece(gone); }
-          setCrate(p.r, p.c, e.level);
-          node = crateEls[p.r] && crateEls[p.r][p.c];
         }
+        if (e.kind === 'lock') { setLock(p.r, p.c, true); node = lockEls[p.r] && lockEls[p.r][p.c]; }
+        else if (e.kind === 'glaze') { setGlaze(p.r, p.c, e.level); node = glazeEls[p.r] && glazeEls[p.r][p.c]; }
+        else if (e.kind === 'crate') { setCrate(p.r, p.c, e.level); node = crateEls[p.r] && crateEls[p.r][p.c]; }
+        else if (e.kind === 'choco') { setChoco(p.r, p.c, true); node = chocoEls[p.r] && chocoEls[p.r][p.c]; }
         else { setIce(p.r, p.c, e.level); node = iceEls[p.r] && iceEls[p.r][p.c]; }
-        effects.burst(p, e.kind === 'lock' ? '#6b4a5c' : e.kind === 'crate' ? '#c98a4b' : '#bfeaff', 8);
         if (node) {
           animate(node, [{ opacity: 0, transform: tf(p.r, p.c) + ' scale(1.5)' },
             { opacity: 1, transform: tf(p.r, p.c) + ' scale(1)' }], 220, 'cubic-bezier(.3,1.5,.5,1)');
@@ -547,7 +615,7 @@
       });
       var jobs = [];
       e.candies.forEach(function (cd) {
-        var p = pieces[cd.id] || makePiece(cd.id, cd.color, cd.special || null);
+        var p = pieces[cd.id] || makePiece(cd.id, cd);
         ids[cd.pos.r][cd.pos.c] = cd.id;
         var from = { r: cd.pos.r - perColumn[cd.pos.c], c: cd.pos.c };
         jobs.push(moveAnim(p, from, cd.pos, DUR.spawned, 'ease-in'));
@@ -584,12 +652,142 @@
       return Promise.all(jobs);
     }
 
+    // Kirsche eingesammelt: sie fällt unten aus dem Feld.
+    function playCherry(e) {
+      // Nur die Kirsche selbst: liegt ihre id nicht vor, bleibt das Bonbon der Zelle unberührt.
+      var p = pieces[e.id];
+      if (ids[e.pos.r] && ids[e.pos.r][e.pos.c] === e.id) { ids[e.pos.r][e.pos.c] = null; }
+      effects.burst(e.pos, '#ff4d7a', 10);
+      if (!p) { return Promise.resolve(); }
+      var from = tf(e.pos.r, e.pos.c);
+      var to = tf(e.pos.r + 1.3, e.pos.c);
+      p.el.style.transform = to;
+      p.el.style.opacity = '0';
+      return animate(p.el, [{ transform: from, opacity: 1 }, { transform: to, opacity: 0 }], DUR.cherry, 'ease-in')
+        .then(function () { removePiece(e.id); });
+    }
+
+    // Neue Zählerstände; ein Zähler, der sich ändert, hüpft kurz.
+    function playFuseTick(e) {
+      e.cells.forEach(function (x) {
+        var p = pieces[x.id] || pieceAt(x.pos);
+        if (!p) { return; }
+        setFuse(p, x.fuse);
+        animate(p.fuseNum, [{ transform: 'scale(1.6)' }, { transform: 'scale(1)' }], DUR.fuse,
+          'cubic-bezier(.3,1.5,.5,1)');
+      });
+      return wait(dur(DUR.fuse * 0.6));
+    }
+
+    function playFuseSpawned(e) {
+      var p = pieces[e.id] || pieceAt(e.pos);
+      effects.burst(e.pos, '#ff9f43', 8);
+      if (!p) { return Promise.resolve(); }
+      setFuse(p, e.fuse);
+      return animate(p.body, [{ transform: 'scale(0.7)' }, { transform: 'scale(1.2)' }, { transform: 'scale(1)' }],
+        DUR.fuse, 'ease-out');
+    }
+
+    // Entschärft: Das Bonbon ist meist schon aufgelöst; Rauchwölkchen an der Zelle.
+    function playFuseDefused(e) {
+      effects.burst(e.pos, '#d8d0e8', 10);
+      effects.sparkle(e.pos);
+      var p = pieces[e.id];
+      if (p) { setFuse(p, undefined); }
+      return Promise.resolve();
+    }
+
+    // Verloren durch ein Knallbonbon: jedes Bonbon mit Zähler 0 explodiert, das Feld wackelt.
+    function playFuseExplosion() {
+      var hits = Object.keys(pieces).map(function (id) { return pieces[id]; })
+        .filter(function (p) { return p.fuse === 0; });
+      var jobs = [];
+      hits.forEach(function (p) {
+        var pos = { r: p.r, c: p.c };
+        effects.shockwave(pos, 2.2, dur(DUR.explode));
+        effects.burst(pos, '#ff6a00', 24);
+        effects.burst(pos, '#ffd24d', 16);
+        jobs.push(animate(p.body, [
+          { transform: 'scale(1)' }, { transform: 'scale(1.7)', offset: 0.3 }, { transform: 'scale(1)' }
+        ], DUR.explode, 'ease-out'));
+      });
+      if (hits.length) {
+        jobs.push(animate(root, [
+          { transform: 'translate(0,0)' }, { transform: 'translate(-1.5%,0.8%)' }, { transform: 'translate(1.5%,-0.8%)' },
+          { transform: 'translate(-1%,0)' }, { transform: 'translate(0,0)' }
+        ], DUR.explode, 'linear'));
+      }
+      return Promise.all(jobs);
+    }
+
+    // Chamäleon wechselt die Farbe: die alte Farbe blendet über der neuen aus.
+    function playChameleonShift(e) {
+      var jobs = [];
+      e.changes.forEach(function (x) {
+        var p = pieces[x.id] || pieceAt(x.pos);
+        if (!p) { return; }
+        var ghost = null;
+        if (p.color !== null && p.color !== undefined && p.color !== x.color) {
+          ghost = el('div', 'candy bv-ghost');
+          ghost.setAttribute('data-color', String(p.color));
+          p.body.insertBefore(ghost, p.candy.nextSibling);
+        }
+        setLook(p, x.color, p.special);
+        effects.burst(x.pos, x.color, 4);
+        jobs.push(animate(p.candy, [{ opacity: 0 }, { opacity: 1 }], DUR.shift, 'ease-in-out'));
+        if (ghost) {
+          jobs.push(animate(ghost, [{ opacity: 1 }, { opacity: 0 }], DUR.shift, 'ease-in-out')
+            .then(function () { if (ghost.parentNode) { ghost.parentNode.removeChild(ghost); } }));
+        }
+      });
+      return Promise.all(jobs);
+    }
+
+    function playChameleonSpawned(e) {
+      var p = pieces[e.id] || pieceAt(e.pos);
+      effects.sparkle(e.pos);
+      if (!p) { return Promise.resolve(); }
+      setChameleon(p, true);
+      return animate(p.body, [{ transform: 'scale(0.7)' }, { transform: 'scale(1.2)' }, { transform: 'scale(1)' }],
+        DUR.fuse, 'ease-out');
+    }
+
+    // Regenbogenstaub: ein Regenbogenband zieht über das Feld, die Bonbons der Farbe leuchten auf.
+    function playRainbow(e) {
+      var cells = [];
+      Object.keys(pieces).forEach(function (id) {
+        var p = pieces[id];
+        if (p.color === e.color && pieceAt({ r: p.r, c: p.c }) === p) { cells.push({ r: p.r, c: p.c }); }
+      });
+      effects.sweep(cells, dur(DUR.rainbow));
+      cells.forEach(function (q) {
+        var t = pieceAt(q);
+        if (t) { animate(t.body.firstChild, [{ opacity: 0 }, { opacity: 1 }, { opacity: 0.3 }], DUR.rainbow); }
+      });
+      return wait(dur(DUR.rainbow * 0.8));
+    }
+
+    // Zauberbombe: Druckwelle mit Glitzer über das 3×3-Feld.
+    function playBombed(e) {
+      effects.shockwave(e.pos, 1.8, dur(DUR.bombed));
+      effects.glitter(e.pos, 40);
+      return wait(dur(DUR.bombed * 0.7));
+    }
+
+    // Feentausch: Sternchen an beiden Zellen; der folgende Tausch läuft langsamer und federt.
+    function playFairy(e) {
+      effects.sparkle(e.a);
+      effects.sparkle(e.b);
+      return wait(dur(80));
+    }
+
     // Spielt alle Ereignisse der Reihe nach. Gleichzeitig laufen nur Ereignisse, die im
     // Spiel im selben Augenblick passieren: aufeinanderfolgende `matched` (eine Stufe),
     // aufeinanderfolgende `specialCreated` (z. B. Farbball-Kombo) und Hindernis-Treffer.
     function runEvents(events) {
       var i = 0;
       var swapPending = null;
+      var fairyPending = false;
 
       function takeGroup(type) {
         var group = [];
@@ -609,11 +807,16 @@
         else if (e.type === 'specialCreated') { job = playCreated(takeGroup('specialCreated')); }
         else if (e.type === 'obstacleHit') { job = playObstacles(takeGroup('obstacleHit')); }
         else {
-          RS.Audio.play(e);
+          // Nach dem Feentausch klingt der Tausch selbst nicht noch einmal.
+          if (!(e.type === 'swapped' && fairyPending)) { RS.Audio.play(e); }
           i++;
-          if (e.type === 'swapped') {
+          if (e.type === 'fairySwap') {
+            fairyPending = true;
+            job = playFairy(e);
+          } else if (e.type === 'swapped') {
             swapPending = e;
-            job = playSwap(e.a, e.b, DUR.swap);
+            job = fairyPending ? playSwap(e.a, e.b, DUR.fairy, true) : playSwap(e.a, e.b, DUR.swap);
+            fairyPending = false;
           } else if (e.type === 'swapRejected') {
             job = swapPending ? playSwap(e.b, e.a, DUR.rejected) : playNudge(e.a, e.b);
             swapPending = null;
@@ -625,6 +828,15 @@
           else if (e.type === 'spawned') { job = playSpawned(e); }
           else if (e.type === 'shuffled') { job = playShuffled(e); }
           else if (e.type === 'chocoSpread') { job = playChocoSpread(e); }
+          else if (e.type === 'cherryCollected') { job = playCherry(e); }
+          else if (e.type === 'fuseTick') { job = playFuseTick(e); }
+          else if (e.type === 'fuseSpawned') { job = playFuseSpawned(e); }
+          else if (e.type === 'fuseDefused') { job = playFuseDefused(e); }
+          else if (e.type === 'chameleonShift') { job = playChameleonShift(e); }
+          else if (e.type === 'chameleonSpawned') { job = playChameleonSpawned(e); }
+          else if (e.type === 'rainbow') { job = playRainbow(e); }
+          else if (e.type === 'bombed') { job = playBombed(e); }
+          else if (e.type === 'levelLost' && e.reason === 'fuse') { job = playFuseExplosion(); }
           else if (e.type === 'swept') {
             // Zuckerbesen: ein Strahl fegt über die ganze Reihe.
             effects.beam('h', e.row, null, dur(DUR.beam));
@@ -748,7 +960,9 @@
     function setPicker(handler) {
       pickHandler = handler || null;
       root.classList.toggle('is-picking', Boolean(pickHandler));
-      if (pickHandler) { select(null); }
+      // Scharf schalten wie lösen hebt jede Markierung auf (auch das erste Feld des Feentauschs),
+      // sonst würde ein Klick auf den Nachbarn danach einen echten Zug auslösen.
+      select(null);
     }
 
     function showHint(move) {
@@ -793,6 +1007,8 @@
       cellRect: cellRect,
       setBusy: setBusy,
       setPicker: setPicker,
+      // Markiert eine Zelle (erstes Feld beim Feentausch); null hebt die Markierung auf.
+      markPick: function (pos) { select(pos ? { r: pos.r, c: pos.c } : null); },
       isBusy: function () { return busy; },
       showHint: showHint,
       clearHint: clearHint,

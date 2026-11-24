@@ -42,7 +42,7 @@
     var counts = [];
     block(board, 0, board.rows - 1, 0, board.cols - 1).forEach(function (p) {
       var candy = board.candies[p.r][p.c];
-      if (candy && !candy.special) { counts[candy.color] = (counts[candy.color] || 0) + 1; }
+      if (candy && !candy.special && !candy.cherry) { counts[candy.color] = (counts[candy.color] || 0) + 1; }
     });
     var best = null;
     counts.forEach(function (n, color) {
@@ -68,7 +68,7 @@
   function combo(board, a, b) {
     var ca = RS.Board.get(board, a);
     var cb = RS.Board.get(board, b);
-    if (!ca || !cb) { return null; }
+    if (!ca || !cb || ca.cherry || cb.cherry) { return null; }
     var ballA = ca.special === 'colorball';
     var ballB = cb.special === 'colorball';
     if (ballA && ballB) {

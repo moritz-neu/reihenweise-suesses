@@ -15,15 +15,30 @@
       board: board,
       goals: RS.Goals.create(levelDef, board),
       boss: levelDef.boss ? RS.Boss.create(levelDef.boss) : null,
+      moveNo: 0,
+      lostBy: null,
       status: 'playing'
     };
   }
 
   function startLevel(levelDef) {
     var board = RS.Board.create({
-      rows: 8, cols: 8, colors: levelDef.colors, seed: levelDef.seed, layout: levelDef.layout
+      rows: 8, cols: 8, colors: levelDef.colors, seed: levelDef.seed, layout: levelDef.layout,
+      fuseStart: levelDef.fuses ? levelDef.fuses.start : 9
     });
-    return fromBoard(levelDef, board, 'level');
+    board.cherryRule = levelDef.cherries || null;
+    board.fuseRule = levelDef.fuses || null;
+    board.chameleonRule = levelDef.chameleons || null;
+    RS.Cherries.recount(board);
+    var session = fromBoard(levelDef, board, 'level');
+    // A layout cherry on the bottom fall slot is collected at once.
+    var events = [];
+    if (RS.Cherries.collect(board, events) > 0) {
+      var ctx = { stage: 0, events: events, swap: null, triggered: new Set(), toClear: new Map(), combo: null };
+      RS.Engine._settle(board, ctx);
+      RS.Goals.apply(session.goals, events.filter(function (e) { return e.type === 'cherryCollected'; }));
+    }
+    return session;
   }
 
   function startEndless(seed) {
@@ -76,6 +91,16 @@
     if (cleared > 0) { events.push.apply(events, RS.Boss.charge(boss, cleared)); }
   }
 
+  // Resolves what a non-swap action freed like a hammer cascade: matches (or, with settleOnly, first
+  // the refill of an emptied cell), boss damage included. Returns the new events, [] if nothing to do.
+  function cascadeFreed(session, settleOnly) {
+    if (!settleOnly && RS.Board.findMatches(session.board).length === 0) { return []; }
+    var ctx = { stage: 0, events: [], swap: null, triggered: new Set(), toClear: new Map(), combo: null };
+    if (settleOnly) { RS.Engine._settle(session.board, ctx); } else { RS.Engine._resolve(session.board, ctx); }
+    bossHit(session, ctx.events, false);
+    return ctx.events;
+  }
+
   // Shared tail of move and smash: goals, win check with move bonus, status events.
   function finishLevelAction(session, events, noLoss) {
     var state = session.goals;
@@ -91,6 +116,7 @@
       events.push({ type: 'levelWon', stars: RS.Goals.starsFor(state), score: state.score, bonus: bonus });
     } else if (!noLoss && state.movesLeft === 0) {
       session.status = 'lost';
+      session.lostBy = 'moves';
       events.push({ type: 'levelLost', score: state.score });
     }
     return events;
@@ -133,8 +159,42 @@
     RS.Engine.shuffleIfDead(board, events);
   }
 
-  // Runs after a swap move that left the level still playing: chocolate spread, then boss step.
+  // Fuse tick: a counter at 0 loses the level at once (reason 'fuse'). Returns true on a loss.
+  function tickFuses(session, events) {
+    var res = RS.Fuses.tick(session.board);
+    events.push.apply(events, res.events);
+    if (!res.exploded) { return false; }
+    session.status = 'lost';
+    session.lostBy = 'fuse';
+    events.push({ type: 'levelLost', score: session.goals.score, reason: 'fuse' });
+    return true;
+  }
+
+  // Chameleon shift: matches it creates resolve at once, without a move, and count for goals and
+  // boss damage; a dead board is reshuffled. Returns true if the level is no longer playing (won).
+  function shiftChameleons(session, events) {
+    var own = RS.Chameleons.shift(session.board);
+    if (own.length === 0) { return false; }
+    var cascade = cascadeFreed(session, false);
+    if (cascade.length === 0) {
+      RS.Engine.shuffleIfDead(session.board, own);
+      events.push.apply(events, own);
+      return false;
+    }
+    own = own.concat(cascade);
+    finishLevelAction(session, own, true);
+    events.push.apply(events, own);
+    return session.status !== 'playing';
+  }
+
+  // Runs after a swap move that left the level still playing, in this order: chameleon shift (a win
+  // ends the step), fuse tick (a loss ends the step), fuse spawn, chameleon spawn, chocolate spread,
+  // boss step.
   function afterSwapMove(session, events) {
+    if (shiftChameleons(session, events)) { return; }
+    if (tickFuses(session, events)) { return; }
+    events.push.apply(events, RS.Fuses.spawn(session.board, session.board.fuseRule, session.moveNo));
+    events.push.apply(events, RS.Chameleons.spawn(session.board, session.board.chameleonRule, session.moveNo));
     spreadChoco(session, events);
     if (session.boss) { events.push.apply(events, RS.Boss.step(session.boss, session.board)); }
   }
@@ -146,6 +206,7 @@
     var events = res.events.slice();
     if (!res.valid) { return events; }
     if (session.mode === 'endless') { return moveEndless(session, events); }
+    session.moveNo++;
     session.goals.movesLeft--;
     bossHit(session, events, wasCombo);
     finishLevelAction(session, events, false);
@@ -166,14 +227,43 @@
     return jokerAction(session, RS.Engine.smash(session.board, p));
   }
 
-  // Joker effect on the board: hammer hits one cell, besen sweeps the row of pos.
-  function useJoker(session, kind, p) {
+  function rejectJoker(kind, p) { return [{ type: 'jokerRejected', kind: kind, pos: p }]; }
+
+  // Regenbogenstaub: every cell whose candy has the colour of the candy at p.
+  function rainbow(session, p) {
+    var board = session.board;
+    var candy = RS.Board.isPlayable(board, p) ? RS.Board.get(board, p) : null;
+    if (!candy || candy.color === null || candy.color === undefined || board.ice[p.r][p.c] > 0) {
+      return rejectJoker('regenbogen', p);
+    }
+    var cells = [];
+    for (var r = 0; r < board.rows; r++) {
+      for (var c = 0; c < board.cols; c++) {
+        var q = RS.Board.isPlayable(board, { r: r, c: c }) ? board.candies[r][c] : null;
+        if (q && q.color === candy.color) { cells.push({ r: r, c: c }); }
+      }
+    }
+    return jokerAction(session, RS.Engine.blast(board, cells, { type: 'rainbow', color: candy.color }));
+  }
+
+  // Joker effect on the board. target: {a, b} for feentausch, a pos for the others.
+  function useJoker(session, kind, target) {
     if (session.mode !== 'level' || session.status !== 'playing') { return []; }
-    if (kind === 'hammer') { return smash(session, p); }
+    var board = session.board;
+    if (kind === 'hammer') { return smash(session, target); }
+    if (kind === 'feentausch') {
+      if (!target || !target.a || !target.b) { return []; }
+      return jokerAction(session, RS.Engine.forceSwap(board, target.a, target.b));
+    }
+    if (kind === 'regenbogen') { return rainbow(session, target); }
+    if (kind === 'zauberbombe') {
+      if (!RS.Board.isPlayable(board, target)) { return rejectJoker(kind, target); }
+      return jokerAction(session, RS.Engine.blast(board, RS.Specials.area(board, target, 'bomb'), { type: 'bombed', pos: target }));
+    }
     if (kind !== 'besen') { return []; }
     var cells = [];
-    for (var c = 0; c < session.board.cols; c++) { cells.push({ r: p.r, c: c }); }
-    return jokerAction(session, RS.Engine.blast(session.board, cells, { type: 'swept', row: p.r }));
+    for (var c = 0; c < board.cols; c++) { cells.push({ r: target.r, c: c }); }
+    return jokerAction(session, RS.Engine.blast(board, cells, { type: 'swept', row: target.r }));
   }
 
   // Star spell: only at a full bar; costs no move and triggers no attack or spread.
@@ -185,24 +275,25 @@
     // A removed crate leaves an empty cell to refill; freed candies may complete a match.
     // Both resolve like a hammer cascade.
     var crateGone = events.some(function (e) { return e.kind === 'crate' && e.remaining === 0; });
-    if (crateGone || RS.Board.findMatches(session.board).length > 0) {
-      var ctx = { stage: 0, events: [], swap: null, triggered: new Set(), toClear: new Map(), combo: null };
-      if (crateGone) { RS.Engine._settle(session.board, ctx); } else { RS.Engine._resolve(session.board, ctx); }
-      bossHit(session, ctx.events, false);
-      events = events.concat(ctx.events);
-    }
+    events = events.concat(cascadeFreed(session, crateGone));
     return finishLevelAction(session, events, true);
   }
 
   function addMoves(session, n) {
     if (session.mode !== 'level' || (session.status !== 'playing' && session.status !== 'lost')) { return []; }
     session.goals.movesLeft += n;
+    var events = [{ type: 'movesChanged', movesLeft: session.goals.movesLeft }];
+    // A fuse loss is rescued by more time on every fuse as well.
+    if (session.status === 'lost' && session.lostBy === 'fuse') {
+      events = events.concat(RS.Fuses.extend(session.board, n));
+    }
+    session.lostBy = null;
     session.status = 'playing';
-    return [{ type: 'movesChanged', movesLeft: session.goals.movesLeft }];
+    return events;
   }
 
   RS.Session = {
     ENDLESS: ENDLESS, startLevel: startLevel, startEndless: startEndless,
-    move: move, smash: smash, useJoker: useJoker, starSpell: starSpell, addMoves: addMoves, tick: tick, _fromBoard: fromBoard
+    move: move, smash: smash, useJoker: useJoker, starSpell: starSpell, addMoves: addMoves, tick: tick, _shiftChameleons: shiftChameleons, _fromBoard: fromBoard
   };
 })(window.RS = window.RS || {});

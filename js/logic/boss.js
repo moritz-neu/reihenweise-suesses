@@ -111,46 +111,69 @@
         board.candies[p.r][p.c] = null;
         board.crate[p.r][p.c] = attack.level;
       }
+      else if (attack.kind === 'choco') {
+        board.candies[p.r][p.c] = null;
+        board.choco[p.r][p.c] = true;
+      }
+      else if (attack.kind === 'fuse') { board.candies[p.r][p.c].fuse = attack.level; }
+      else if (attack.kind === 'chameleon') { board.candies[p.r][p.c].chameleon = true; }
       else { board.ice[p.r][p.c] = attack.level; }
     });
   }
 
+  // A phase holds one attack or an array of them; an array runs in order on one counter.
+  function phaseAttacks(boss) {
+    var a = def(boss).attacks[boss.phase - 1];
+    return Array.isArray(a) ? a : [a];
+  }
+
   // Counts one swap move; when an attack is due it strikes and keeps a move possible.
+  // Every element of an array picks its targets after the previous one was applied.
   function step(boss, board) {
     boss.counter++;
-    var attack = def(boss).attacks[boss.phase - 1];
-    if (boss.counter < attack.every) { return []; }
+    var list = phaseAttacks(boss);
+    if (boss.counter < list[0].every) { return []; }
     boss.counter = 0;
-    var cells = attackCells(board, attack);
-    if (cells.length === 0) { return []; }
-    applyAttack(board, attack, cells);
-    var events = [{ type: 'bossAttack', boss: boss.id, phase: boss.phase, kind: attack.kind,
-      cells: cells, level: attack.level || 1 }];
-    RS.Engine.shuffleIfDead(board, events);
+    var events = [];
+    list.forEach(function (attack) {
+      var cells = attackCells(board, attack);
+      if (cells.length === 0) { return; }
+      applyAttack(board, attack, cells);
+      events.push({ type: 'bossAttack', boss: boss.id, phase: boss.phase, kind: attack.kind,
+        cells: cells, level: attack.level || 1 });
+    });
+    if (events.length > 0) { RS.Engine.shuffleIfDead(board, events); }
     return events;
   }
 
-  // 0 = ice, 1 = lock, 2 = crate, 3 = glaze: the obstacle that ranks a cell for the spell.
+  // 0 = ice, 1 = fuse, 2 = lock, 3 = crate, 4 = glaze: the obstacle that ranks a cell for the spell.
   function spellRank(board, p) {
+    var candy = board.candies[p.r][p.c];
     if (board.ice[p.r][p.c] > 0) { return 0; }
-    if (board.lock[p.r][p.c]) { return 1; }
-    if (board.crate[p.r][p.c] > 0) { return 2; }
-    return board.glaze[p.r][p.c] > 0 ? 3 : -1;
+    if (candy && candy.fuse !== undefined) { return 1; }
+    if (board.lock[p.r][p.c]) { return 2; }
+    if (board.crate[p.r][p.c] > 0) { return 3; }
+    return board.glaze[p.r][p.c] > 0 ? 4 : -1;
   }
 
   // Removes every obstacle on the cell, all levels of ice and glaze included.
   function clearCell(board, p, events) {
     var hit;
+    var candy = board.candies[p.r][p.c];
     while ((hit = RS.Obstacles.hitIce(board, p))) { events.push(hit); }
+    if (candy && candy.fuse !== undefined) {
+      delete candy.fuse;
+      events.push({ type: 'fuseDefused', pos: { r: p.r, c: p.c }, id: candy.id });
+    }
     if ((hit = RS.Obstacles.hitLock(board, p))) { events.push(hit); }
     while ((hit = RS.Obstacles.hitCrate(board, p))) { events.push(hit); }
     while ((hit = RS.Obstacles.hitGlaze(board, p))) { events.push(hit); }
   }
 
-  // Star spell: empties the bar, clears up to 6 obstacle cells (ice, lock, crate, glaze), deals damage.
+  // Star spell: empties the bar, clears up to 6 obstacle cells (ice, fuse, lock, crate, glaze), deals damage.
   function castSpell(boss, board) {
     var chosen = [];
-    for (var rank = 0; rank < 4 && chosen.length < SPELL_CLEARS; rank++) {
+    for (var rank = 0; rank < 5 && chosen.length < SPELL_CLEARS; rank++) {
       var cells = cellsWhere(board, function (p) { return spellRank(board, p) === rank; });
       chosen = chosen.concat(pick(cells, SPELL_CLEARS - chosen.length, board.rng));
     }

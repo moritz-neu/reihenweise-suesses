@@ -9,6 +9,7 @@
     if (!cond) { throw new Error('Welt ' + n + ': ' + what); }
   }
 
+  var ATTACK_KINDS = ['lock', 'glaze', 'ice', 'crate', 'fuse', 'chameleon', 'choco'];
   function isLines(v) { return Array.isArray(v) && v.length > 0; }
 
   // ---------- Musikmotiv einer Welt (wird von RS.Audio abgespielt) ----------
@@ -59,6 +60,17 @@
     need(n, Array.isArray(b.weak) && Array.isArray(b.thresholds) && Array.isArray(b.attacks), 'boss weak/thresholds/attacks fehlen');
     need(n, b.weak.length === b.thresholds.length + 1, 'boss.weak braucht ' + (b.thresholds.length + 1) + ' Farben (eine je Phase)');
     need(n, b.attacks.length === b.thresholds.length + 1, 'boss.attacks braucht ' + (b.thresholds.length + 1) + ' Angriffe (einen je Phase)');
+    b.attacks.forEach(function (phase, i) {
+      var list = Array.isArray(phase) ? phase : [phase];
+      need(n, list.length > 0, 'boss.attacks[' + i + '] ist leer');
+      list.forEach(function (a, k) {
+        var at = 'boss.attacks[' + i + ']' + (Array.isArray(phase) ? '[' + k + ']' : '');
+        a = a || {};
+        need(n, ATTACK_KINDS.indexOf(a.kind) >= 0, at + '.kind unbekannt');
+        need(n, Number.isInteger(a.count) && a.count >= 1, at + '.count ungültig');
+        need(n, k > 0 || (Number.isInteger(a.every) && a.every >= 1), at + '.every ungültig');
+      });
+    });
     need(n, b.story && isLines(b.story.intro) && isLines(b.story.defeat), 'boss.story fehlt');
     b.thresholds.forEach(function (th, i) {
       need(n, isLines(b.story['phase' + (i + 2)]), 'boss.story.phase' + (i + 2) + ' fehlt');

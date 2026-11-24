@@ -23,6 +23,12 @@
   --photo-frostberge: none;
   --photo-karamellwueste: none;
   --photo-kaugummidschungel: none;
+  --photo-kirschgarten: none;
+  --photo-wolken: none;
+  --photo-knallhafen: none;
+  --photo-marzipan: none;
+  --photo-schillerbucht: none;
+  --photo-bitterburg: none;
 }
 
 .map {
@@ -692,6 +698,576 @@
 .house-ladder { fill: none; stroke: #d9a070; stroke-width: 1.6; stroke-linecap: round; }
 .house-leafvein { fill: none; stroke: rgba(255, 255, 255, 0.5); stroke-width: 1.2; stroke-linecap: round; }
 .house-liana { fill: none; stroke: #6cc46e; stroke-width: 1.8; stroke-linecap: round; }
+
+/* ---------- Welt 5: Kirschgarten Morellia ---------- */
+
+/* Rosa Abendhimmel über dem Kirschgarten */
+.map-world--w5 {
+  background: linear-gradient(180deg, #1e1236 0%, #3d1f4e 30%, #6e3a66 52%, #4f6a3a 76%, #6f8a42 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 190, 215, 0.2), 0 0 40px rgba(255, 120, 160, 0.2);
+  --world-photo: var(--photo-kirschgarten);
+}
+.map-world--w5 .map-cloud { opacity: 0.5; }
+.map-world--w5 .map-glitter {
+  background: #ffd6e6;
+  filter: drop-shadow(0 0 4px #ff8fb8);
+}
+.map-world--w5 .art-stars circle { fill: #ffeef6; }
+.map-world--w5 .art-moon { fill: #fff0e4; }
+.map-world--w5 .art-moon-glow { fill: rgba(255, 200, 225, 0.16); }
+
+/* Hügel und Wiese */
+.map-world--w5 .art-hill-rim,
+.map-world--w5 .art-ground-rim { stroke: rgba(255, 210, 230, 0.45); stroke-width: 3; }
+.map-world--w5 .art-hill--1 { fill: #5a3a5e; }
+.map-world--w5 .art-hill--2 { fill: #45583f; }
+.map-world--w5 .art-hill--3 { fill: #405a3e; }
+.map-world--w5 .art-hill--4 { fill: #3a5238; }
+.map-world--w5 .art-ground--1 { fill: #33502f; }
+.map-world--w5 .art-ground--2 { fill: #263d24; }
+.map-world--w5 .map-path-road { stroke: #d8b48a; opacity: 0.7; }
+
+/* Ferne Blütenhaine */
+.art-grove-trunk { fill: #3a2430; }
+.art-grove-crown { fill: #d98fb4; opacity: 0.75; }
+
+/* Kirschbäume mit Kirschenpaaren */
+.art-cherrytree-trunk { fill: #6a3c2c; stroke: #9a6448; stroke-width: 1; }
+.art-cherrytree-crown { fill: #f4a6c6; stroke: #ffe0ee; stroke-width: 1.2; stroke-linejoin: round; }
+.art-cherrytree--white .art-cherrytree-crown { fill: #fbe2ee; }
+.art-cherrytree--deep .art-cherrytree-crown { fill: #e27aa8; }
+.art-cherrytree-blossom { fill: #fff; opacity: 0.8; }
+.art-cherry-stem { fill: none; stroke: #4f7a2a; stroke-width: 1.2; stroke-linecap: round; }
+.art-cherry-leaf { fill: #6cae4a; }
+.art-cherry-fruit { fill: #d8233f; stroke: #8a1024; stroke-width: 0.6; }
+.art-cherry-shine { fill: rgba(255, 255, 255, 0.75); }
+
+/* Schwebende Blütenblätter */
+.art-petal-leaf { fill: #ffc4dc; opacity: 0.85; }
+.art-petal.is-drift { animation: rs-petal-drift 6s ease-in-out infinite; }
+@keyframes rs-petal-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(8px, 10px) rotate(40deg); }
+}
+
+/* Kirschen-Kristallbonbon */
+.map-crystal--cherry .map-crystal-base { fill: rgba(255, 120, 160, 0.3); }
+.map-crystal--cherry .map-crystal-gem { fill: #7a1830; }
+
+/* Tor aus zwei verschlungenen Kirschzweigen */
+.gate-branch { fill: none; stroke: #6a3c2c; stroke-width: 9; stroke-linecap: round; }
+.gate-branch-twist { fill: none; stroke: #8f5a40; stroke-width: 3.4; stroke-linecap: round; }
+.gate-branch-shine { fill: none; stroke: rgba(255, 220, 200, 0.45); stroke-width: 2; stroke-linecap: round; }
+.gate-blossom-petal { fill: #ffc4dc; stroke: #ff8fbf; stroke-width: 0.6; }
+.gate-blossom-heart { fill: #ffe27a; }
+.gate-cherry-stem { fill: none; stroke: #4f7a2a; stroke-width: 1.6; stroke-linecap: round; }
+.gate-cherry-fruit { fill: #d8233f; stroke: #8a1024; stroke-width: 0.8; }
+.gate-cherry-shine { fill: none; stroke: #fff; stroke-width: 1.2; stroke-linecap: round; }
+.map-gate--w5.is-open .gate-portal {
+  fill: #ffd0e2;
+  filter: drop-shadow(0 0 10px rgba(255, 140, 180, 0.9));
+}
+
+/* Gartenhaus */
+.station-house--w5 .house-body { fill: #c9905e; stroke: #fff0e0; stroke-width: 1.4; }
+.station-house--w5 .house-window { fill: #2a1a2e; stroke: #fff0e0; stroke-width: 1.6; }
+.station-house--w5 .house-door { fill: #7a4630; stroke: #fff0e0; }
+.house-plank { fill: none; stroke: rgba(110, 60, 30, 0.45); stroke-width: 1; }
+.house-fence { fill: none; stroke: #f3e2c8; stroke-width: 1.6; stroke-linecap: round; }
+.house-flowerbox { fill: #8a5236; stroke: #fff0e0; stroke-width: 0.8; }
+.house-flower { fill: #ffc4dc; }
+.house-cherry-stem { fill: none; stroke: #4f7a2a; stroke-width: 1.2; stroke-linecap: round; }
+.house-cherry-fruit { fill: #d8233f; stroke: #fff; stroke-width: 0.6; }
+
+/* ---------- Welt 6: Zuckerwattenwolken ---------- */
+
+/* Lila-blauer Abendhimmel über dem Wolkenmeer */
+.map-world--w6 {
+  background: linear-gradient(180deg, #1c1a48 0%, #3a3478 30%, #6a5aa8 54%, #c99ad2 78%, #f2cde6 100%);
+  box-shadow: inset 0 0 0 1px rgba(210, 225, 255, 0.25), 0 0 40px rgba(170, 190, 255, 0.22);
+  --world-photo: var(--photo-wolken);
+}
+.map-world--w6 .map-cloud { opacity: 0.85; }
+.map-world--w6 .map-glitter {
+  background: #e4f0ff;
+  filter: drop-shadow(0 0 4px #9fc8ff);
+}
+.map-world--w6 .art-stars circle { fill: #f2f4ff; }
+.map-world--w6 .art-moon { fill: #fff6e8; }
+.map-world--w6 .art-moon-glow { fill: rgba(210, 220, 255, 0.18); }
+
+/* Wolkenbänke und Wolkenmeer */
+.map-world--w6 .art-hill-rim,
+.map-world--w6 .art-ground-rim { stroke: rgba(255, 255, 255, 0.75); stroke-width: 4; }
+.map-world--w6 .art-hill--1 { fill: #9c8fd0; }
+.map-world--w6 .art-hill--2 { fill: #b6a6dc; }
+.map-world--w6 .art-hill--3 { fill: #c6b2e2; }
+.map-world--w6 .art-hill--4 { fill: #d2bce6; }
+.map-world--w6 .art-ground--1 { fill: #e6cdeb; }
+.map-world--w6 .art-ground--2 { fill: #f4e2f2; }
+.map-world--w6 .art-tree-shadow { fill: rgba(90, 60, 140, 0.25); }
+.map-world--w6 .map-path-road { stroke: #b38ad8; opacity: 0.6; }
+
+/* Blasser Regenbogen und ferne Wolkentürme */
+.art-rainbow-band { fill: none; stroke-width: 12; stroke-linecap: round; opacity: 0.28; }
+.art-rainbow-band--a { stroke: #ff9ec8; }
+.art-rainbow-band--b { stroke: #ffe58a; }
+.art-rainbow-band--c { stroke: #8fd4ff; }
+.art-cloudtower-puff { fill: #8e86c8; opacity: 0.7; }
+
+/* Zuckerwatte am Stiel */
+.art-floss-stick { fill: #f4e6d0; stroke: #c9a882; stroke-width: 0.8; }
+.art-floss-ball { fill: #ffb3d6; stroke: #fff; stroke-width: 1.2; stroke-linejoin: round; }
+.art-floss--blue .art-floss-ball { fill: #a8dcff; }
+.art-floss--lilac .art-floss-ball { fill: #d4b8f4; }
+.art-floss-swirl { fill: none; stroke: rgba(255, 255, 255, 0.7); stroke-width: 1.2; stroke-linecap: round; }
+.art-floss-shine { fill: rgba(255, 255, 255, 0.85); }
+
+/* Treibende Wölkchen */
+.art-puff-body { fill: #fff; opacity: 0.7; }
+.art-puff.is-drift { animation: rs-puff-drift 9s ease-in-out infinite; }
+@keyframes rs-puff-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(26px, -4px); }
+}
+
+/* Wolken-Kristallbonbon */
+.map-crystal--cloud .map-crystal-base { fill: rgba(200, 220, 255, 0.4); }
+.map-crystal--cloud .map-crystal-gem { fill: #4a5a9a; }
+
+/* Tor aus Zuckerwatte mit Regenbogenband */
+.gate-rainbow { fill: none; stroke-width: 3.4; stroke-linecap: round; }
+.gate-rainbow--a { stroke: #ff8fbf; }
+.gate-rainbow--b { stroke: #ffe066; }
+.gate-rainbow--c { stroke: #7fcfff; }
+.gate-puff circle { fill: #fff4fb; stroke: #f2c6e0; stroke-width: 0.8; }
+.gate-puff .gate-puff-shine { fill: #fff; stroke: none; }
+.map-gate--w6.is-open .gate-portal {
+  fill: #dff0ff;
+  filter: drop-shadow(0 0 10px rgba(150, 200, 255, 0.9));
+}
+
+/* Wolkenhaus */
+.station-house--w6 .house-body { fill: #f6eefa; stroke: #b49ad6; stroke-width: 1.4; }
+.station-house--w6 .house-window { fill: #3a3478; stroke: #b49ad6; stroke-width: 1.6; }
+.station-house--w6 .house-door { fill: #8f7ac4; stroke: #fff; }
+.house-roof-rim { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+.house-flag-pole { fill: none; stroke: #f4e6d0; stroke-width: 1.4; stroke-linecap: round; }
+.house-flag[data-color="0"] { fill: var(--candy-0); }
+.house-flag[data-color="1"] { fill: var(--candy-1); }
+.house-flag[data-color="2"] { fill: var(--candy-2); }
+.house-flag[data-color="3"] { fill: var(--candy-3); }
+.house-flag[data-color="4"] { fill: var(--candy-4); }
+.house-flag[data-color="5"] { fill: var(--candy-5); }
+.house-cloud { fill: #fff; stroke: #d8c8ec; stroke-width: 1; }
+
+/* ---------- Welt 7: Knallhafen ---------- */
+
+/* Tiefblauer Nachthimmel über dem Brausemeer */
+.map-world--w7 {
+  background: linear-gradient(180deg, #0e1236 0%, #1e2660 32%, #2a4a86 52%, #1f5a7e 74%, #6a4a36 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 200, 120, 0.22), 0 0 40px rgba(255, 150, 60, 0.2);
+  --world-photo: var(--photo-knallhafen);
+}
+.map-world--w7 .map-cloud { opacity: 0.35; }
+.map-world--w7 .map-glitter {
+  background: #ffe2b0;
+  filter: drop-shadow(0 0 4px #ff9a3c);
+}
+.map-world--w7 .art-stars circle { fill: #fff4dc; }
+.map-world--w7 .art-moon { fill: #fff2d6; }
+.map-world--w7 .art-moon-glow { fill: rgba(255, 220, 160, 0.14); }
+
+/* Fernes Ufer, Meer und Kai */
+.map-world--w7 .art-hill-rim { stroke: rgba(160, 220, 255, 0.45); stroke-width: 3; }
+.map-world--w7 .art-ground-rim { stroke: rgba(255, 220, 170, 0.5); stroke-width: 3; }
+.map-world--w7 .art-hill--1 { fill: #2a2450; }
+.map-world--w7 .art-hill--2 { fill: #1e4f86; }
+.map-world--w7 .art-hill--3 { fill: #22609a; }
+.map-world--w7 .art-hill--4 { fill: #2870a8; }
+.map-world--w7 .art-ground--1 { fill: #8a5a38; }
+.map-world--w7 .art-ground--2 { fill: #6e4428; }
+.map-world--w7 .art-tree-shadow { fill: rgba(20, 10, 30, 0.4); }
+.map-world--w7 .map-path-road { stroke: #e0b880; opacity: 0.7; }
+
+/* Zuckerfeuerwerk und Möwen */
+.art-firework-ray { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; opacity: 0.8; }
+.art-firework-spark { fill: currentColor; }
+.art-firework-core { fill: #fff6dc; }
+.art-firework { filter: drop-shadow(0 0 4px currentColor); }
+.art-gull { fill: none; stroke: #f4f0e6; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Leuchtturm */
+.art-lighthouse-beam { fill: rgba(255, 236, 160, 0.22); }
+.art-lighthouse-tower { fill: #f6efe4; stroke: #3a2a40; stroke-width: 1; }
+.art-lighthouse-ring { fill: #e2444e; }
+.art-lighthouse-lamp { fill: #ffe27a; filter: drop-shadow(0 0 6px #ffd04a); }
+.art-lighthouse-roof { fill: #c23a44; }
+.art-lighthouse-deck { fill: #3a2a40; }
+
+/* Wellen und Segelboote */
+.art-wave { fill: none; stroke: rgba(200, 236, 255, 0.55); stroke-width: 1.8; stroke-linecap: round; }
+.art-wave.is-bob { animation: rs-wave-bob 4s ease-in-out infinite; }
+@keyframes rs-wave-bob {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(5px, -2px); }
+}
+.art-ship-hull { stroke: #fff; stroke-width: 1; stroke-linejoin: round; }
+.art-ship-hull[data-color="0"] { fill: var(--candy-0); }
+.art-ship-hull[data-color="1"] { fill: var(--candy-1); }
+.art-ship-hull[data-color="2"] { fill: var(--candy-2); }
+.art-ship-hull[data-color="3"] { fill: var(--candy-3); }
+.art-ship-hull[data-color="4"] { fill: var(--candy-4); }
+.art-ship-hull[data-color="5"] { fill: var(--candy-5); }
+.art-ship-stripe { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 1.4; }
+.art-ship-mast { fill: none; stroke: #7a4a2e; stroke-width: 2; stroke-linecap: round; }
+.art-ship-sail { fill: #fff6e8; stroke: #e0d2bc; stroke-width: 0.8; }
+.art-ship-pennant { fill: #ff9a3c; }
+
+/* Fässer mit Knallbonbons, Poller und Bojen */
+.art-barrel { fill: #a0643a; stroke: #f0d2a8; stroke-width: 1; }
+.art-barrel-hoop { fill: none; stroke: #5a3a22; stroke-width: 2; }
+.art-barrel-candy { stroke: #fff; stroke-width: 0.8; }
+.art-barrel-candy[data-color="0"] { fill: var(--candy-0); }
+.art-barrel-candy[data-color="1"] { fill: var(--candy-1); }
+.art-barrel-candy[data-color="2"] { fill: var(--candy-2); }
+.art-barrel-candy[data-color="3"] { fill: var(--candy-3); }
+.art-barrel-candy[data-color="4"] { fill: var(--candy-4); }
+.art-barrel-candy[data-color="5"] { fill: var(--candy-5); }
+.art-barrel-wick { fill: none; stroke: #3a2a1a; stroke-width: 1.4; stroke-linecap: round; }
+.art-barrel-spark { fill: #ffe14a; filter: drop-shadow(0 0 3px #ff9a3c); }
+.art-bollard { fill: #4a4a5e; stroke: #c8c8d8; stroke-width: 1; }
+.art-bollard-cap { fill: #5e5e74; stroke: #c8c8d8; stroke-width: 1; }
+.art-bollard-rope { fill: none; stroke: #e8cf9a; stroke-width: 2.2; stroke-linecap: round; }
+.art-buoy { fill: #f6efe4; stroke: #3a2a40; stroke-width: 1; }
+.art-buoy-ring { fill: #e2444e; }
+.art-buoy-light { fill: #ffe27a; filter: drop-shadow(0 0 4px #ffd04a); }
+
+/* Hafen-Kristallbonbon */
+.map-crystal--harbor .map-crystal-base { fill: rgba(255, 170, 90, 0.3); }
+.map-crystal--harbor .map-crystal-gem { fill: #8a3a1a; }
+
+/* Tor aus einem riesigen Knallbonbon */
+.gate-cracker { fill: none; stroke: #ff8a2a; stroke-width: 9; stroke-linecap: butt; }
+.gate-cracker-stripes { fill: none; stroke: #ffe066; stroke-width: 9; stroke-dasharray: 4 7; }
+.gate-cracker-end { fill: #ffb05a; stroke: #c96a1a; stroke-width: 1; stroke-linejoin: round; }
+.gate-cracker-knot { fill: #e2702a; stroke: #c96a1a; stroke-width: 0.8; }
+.gate-wick { fill: none; stroke: #3a2a1a; stroke-width: 2; stroke-linecap: round; }
+.gate-wick-glow { fill: #ffe14a; filter: drop-shadow(0 0 4px #ff9a3c); }
+.map-gate--w7.is-open .gate-portal {
+  fill: #ffe0b8;
+  filter: drop-shadow(0 0 10px rgba(255, 160, 80, 0.9));
+}
+
+/* Hafenhaus auf dem Steg */
+.station-house--w7 .house-body { fill: #b07a4a; stroke: #ffe8cc; stroke-width: 1.4; }
+.station-house--w7 .house-window { fill: #1e2a4a; stroke: none; }
+.station-house--w7 .house-door { fill: #4a6a9a; stroke: #ffe8cc; }
+.house-porthole { fill: none; stroke: #e8c060; stroke-width: 1.8; }
+.house-lifering { fill: none; stroke: #fff; stroke-width: 2.4; stroke-dasharray: 3.3 3.3; }
+.house-post { fill: #6a4428; }
+.house-deck { fill: #8a5a38; stroke: #ffe8cc; stroke-width: 0.8; }
+
+/* ---------- Welt 8: Marzipanschloss ---------- */
+
+/* Rosa Abendhimmel über dem Schlosshügel */
+.map-world--w8 {
+  background: linear-gradient(180deg, #2a1440 0%, #5a2a6a 30%, #a8608e 52%, #c99a8a 72%, #7a9a5a 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 230, 0.25), 0 0 40px rgba(240, 150, 200, 0.22);
+  --world-photo: var(--photo-marzipan);
+}
+.map-world--w8 .map-cloud { opacity: 0.45; }
+.map-world--w8 .map-glitter {
+  background: #ffe6f2;
+  filter: drop-shadow(0 0 4px #f29ac0);
+}
+.map-world--w8 .art-stars circle { fill: #fff0f8; }
+.map-world--w8 .art-moon { fill: #fff4e6; }
+.map-world--w8 .art-moon-glow { fill: rgba(255, 210, 230, 0.16); }
+
+/* Schlosshügel und Schlossgarten */
+.map-world--w8 .art-hill-rim { stroke: rgba(255, 230, 240, 0.45); stroke-width: 3; }
+.map-world--w8 .art-ground-rim { stroke: rgba(240, 255, 220, 0.5); stroke-width: 3; }
+.map-world--w8 .art-hill--1 { fill: #6a4a7a; }
+.map-world--w8 .art-hill--2 { fill: #7a8a5a; }
+.map-world--w8 .art-hill--3 { fill: #6e8a52; }
+.map-world--w8 .art-hill--4 { fill: #648048; }
+.map-world--w8 .art-ground--1 { fill: #7aa05a; }
+.map-world--w8 .art-ground--2 { fill: #5e8a46; }
+.map-world--w8 .art-tree-shadow { fill: rgba(30, 40, 20, 0.35); }
+.map-world--w8 .map-path-road { stroke: #f3d9b8; opacity: 0.75; }
+
+/* Marzipanschloss */
+.art-castle-wall { fill: #f3d9b8; stroke: #c9a27a; stroke-width: 1; }
+.art-castle-roof { stroke: rgba(60, 20, 40, 0.4); stroke-width: 1; stroke-linejoin: round; }
+.art-castle-roof[data-color="0"], .art-castle-flag[data-color="0"] { fill: #f27aa0; }
+.art-castle-roof[data-color="1"], .art-castle-flag[data-color="1"] { fill: #f6d26a; }
+.art-castle-roof[data-color="2"], .art-castle-flag[data-color="2"] { fill: #8ed49a; }
+.art-castle-roof[data-color="3"], .art-castle-flag[data-color="3"] { fill: #f29ac0; }
+.art-castle-roof[data-color="4"], .art-castle-flag[data-color="4"] { fill: #b48ae0; }
+.art-castle-roof[data-color="5"], .art-castle-flag[data-color="5"] { fill: #f6a86a; }
+.art-castle-pole { fill: none; stroke: #e8d0b0; stroke-width: 1.4; }
+.art-castle-window { fill: #ffd78c; filter: drop-shadow(0 0 4px #ffc861); }
+.art-castle-trim { fill: none; stroke: #f29ac0; stroke-width: 3; }
+.art-castle-door { fill: #6a3a4a; stroke: #c9a27a; stroke-width: 1; }
+
+/* Schwebende Zuckerperlen */
+.art-pearl-ball { stroke: rgba(255, 255, 255, 0.7); stroke-width: 0.8; opacity: 0.85; }
+.art-pearl-ball[data-color="0"] { fill: #ff8fb0; }
+.art-pearl-ball[data-color="1"] { fill: #ffe08a; }
+.art-pearl-ball[data-color="2"] { fill: #9fe0a8; }
+.art-pearl-ball[data-color="3"] { fill: #9fd0ff; }
+.art-pearl-ball[data-color="4"] { fill: #d0a8f4; }
+.art-pearl-ball[data-color="5"] { fill: #ffb880; }
+.art-pearl-shine { fill: #fff; }
+.art-pearl { filter: drop-shadow(0 0 3px rgba(255, 220, 240, 0.8)); }
+
+/* Wimpelketten, Marzipanrosen und Wimpelstangen */
+.art-bunting-line { fill: none; stroke: #f3d9b8; stroke-width: 1.2; }
+.art-bunting-flag[data-color="0"], .art-pole-flag[data-color="0"], .art-rose[data-color="0"] { fill: var(--candy-0); }
+.art-bunting-flag[data-color="1"], .art-pole-flag[data-color="1"], .art-rose[data-color="1"] { fill: var(--candy-1); }
+.art-bunting-flag[data-color="2"], .art-pole-flag[data-color="2"] { fill: var(--candy-2); }
+.art-bunting-flag[data-color="3"], .art-pole-flag[data-color="3"] { fill: var(--candy-3); }
+.art-bunting-flag[data-color="4"], .art-pole-flag[data-color="4"], .art-rose[data-color="4"] { fill: var(--candy-4); }
+.art-bunting-flag[data-color="5"], .art-pole-flag[data-color="5"] { fill: var(--candy-5); }
+.art-bunting-flag { stroke: #fff; stroke-width: 0.6; stroke-linejoin: round; }
+.art-bush { fill: #3e7a3a; stroke: #2a5a2a; stroke-width: 1; }
+.art-rose { stroke: #fff; stroke-width: 0.8; }
+.art-rose-swirl { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 0.8; stroke-linecap: round; }
+.art-pole { fill: none; stroke: #f3d9b8; stroke-width: 2.4; stroke-linecap: round; }
+.art-pole-knob { fill: #e8b84a; }
+.art-pole-flag { stroke: #fff; stroke-width: 0.6; stroke-linejoin: round; }
+
+/* Marzipan-Kristallbonbon */
+.map-crystal--marzipan .map-crystal-base { fill: rgba(255, 190, 220, 0.35); }
+.map-crystal--marzipan .map-crystal-gem { fill: #7a3a6a; }
+
+/* Burgtor aus Marzipan mit Fallgitter */
+.gate-tower { fill: #f3d9b8; stroke: #c9a27a; stroke-width: 1; }
+.gate-tower-window { fill: #6a3a4a; }
+.gate-marzipan { fill: none; stroke: #f6e2c6; stroke-width: 7; stroke-linecap: butt; }
+.gate-marzipan-stones { fill: none; stroke: #e2b07a; stroke-width: 7; stroke-dasharray: 2 8; }
+.gate-pole { fill: none; stroke: #e8d0b0; stroke-width: 1.6; stroke-linecap: round; }
+.gate-pennant { fill: #f29ac0; stroke: #fff; stroke-width: 0.6; }
+.map-gate--w8.is-open .gate-portal {
+  fill: #ffe6f2;
+  filter: drop-shadow(0 0 10px rgba(255, 170, 210, 0.9));
+}
+
+/* Schlossturm als Station */
+.station-house--w8 .house-body { fill: #f3d9b8; stroke: #fff4e6; stroke-width: 1.4; }
+.station-house--w8 .house-window { fill: #3a1e3e; stroke: #fff4e6; stroke-width: 1.4; }
+.station-house--w8 .house-door { fill: #8a4a5e; stroke: #fff4e6; }
+.house-crenel { fill: #e8c9a2; stroke: #fff4e6; stroke-width: 1; }
+.house-stones { fill: none; stroke: #d9b58c; stroke-width: 1; }
+
+/* ---------- Welt 9: Schillerbucht ---------- */
+
+/* Nachthimmel über der Bucht, tiefes Türkis über violettem Horizont */
+.map-world--w9 {
+  background: linear-gradient(180deg, #101a40 0%, #283a78 30%, #3a5aa0 46%, #1e6a8e 62%, #1a7a8a 78%, #d8c08a 100%);
+  box-shadow: inset 0 0 0 1px rgba(160, 240, 230, 0.25), 0 0 40px rgba(90, 210, 200, 0.22);
+  --world-photo: var(--photo-schillerbucht);
+}
+.map-world--w9 .map-cloud { opacity: 0.35; }
+.map-world--w9 .map-glitter {
+  background: #e6fff8;
+  filter: drop-shadow(0 0 4px #6ec6ff);
+}
+.map-world--w9 .art-stars circle { fill: #eefcff; }
+.map-world--w9 .art-moon { fill: #f4fbff; }
+.map-world--w9 .art-moon-glow { fill: rgba(190, 240, 255, 0.16); }
+
+/* Meer und Strand */
+.map-world--w9 .art-hill-rim { stroke: rgba(190, 240, 255, 0.5); stroke-width: 2.5; }
+.map-world--w9 .art-ground-rim { stroke: rgba(255, 246, 220, 0.6); stroke-width: 3; }
+.map-world--w9 .art-hill--1 { fill: #1e5a8e; }
+.map-world--w9 .art-hill--2 { fill: #1d6e96; }
+.map-world--w9 .art-ground--1 { fill: #e2c88e; }
+.map-world--w9 .art-ground--2 { fill: #d2b276; }
+.map-world--w9 .art-tree-shadow { fill: rgba(60, 40, 20, 0.3); }
+.map-world--w9 .map-path-road { stroke: #f6e6c0; opacity: 0.75; }
+
+/* Schillernde Lichtbänder am Himmel */
+.art-ribbon { fill: none; stroke-width: 7; stroke-linecap: round; opacity: 0.22; filter: blur(1.5px); }
+
+/* Ferne Palmeninseln */
+.art-island-land { fill: #14304e; }
+.art-island-trunk { fill: none; stroke: #14304e; stroke-width: 2.4; stroke-linecap: round; }
+.art-island-leaves { fill: none; stroke: #14304e; stroke-width: 2.6; stroke-linecap: round; }
+
+/* Windungen der Seeschlange im Meer */
+.art-coil { stroke: rgba(10, 30, 50, 0.4); stroke-width: 0.8; opacity: 0.85; }
+.art-coil[data-color="2"] { fill: #3ac8a8; }
+.art-coil[data-color="3"] { fill: #4aa8e8; }
+.art-coil[data-color="4"] { fill: #9a7ae8; }
+.art-coil-fin { fill: #c58cff; opacity: 0.85; }
+.art-coil-water { fill: none; stroke: rgba(190, 240, 255, 0.6); stroke-width: 2; stroke-linecap: round; }
+
+/* Bunte Glanzlichter auf dem Wasser */
+.art-glint { opacity: 0.85; animation: rs-glint 3.6s ease-in-out infinite; }
+@keyframes rs-glint {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.95; }
+}
+
+/* Sandbank unter dem Weg */
+.art-sandbar { fill: none; stroke: #e2c88e; stroke-width: 62; stroke-linecap: round; stroke-linejoin: round; }
+.art-sandbar-rim { fill: none; stroke: rgba(255, 246, 220, 0.35); stroke-width: 68; stroke-linecap: round; opacity: 0.35; }
+
+/* Palmen, Schillermuscheln und Korallen */
+.art-palm-trunk { fill: none; stroke: #9a6a3e; stroke-width: 4; stroke-linecap: round; }
+.art-palm-rings { fill: none; stroke: #6e4628; stroke-width: 1; }
+.art-palm-leaf { fill: #3a9a4a; stroke: #24702e; stroke-width: 0.8; stroke-linejoin: round; }
+.art-palm-nut { fill: #6e4628; }
+.art-shell { stroke: #fff; stroke-width: 1; stroke-linejoin: round; }
+.art-shell[data-color="1"] { fill: #ffd8a0; }
+.art-shell[data-color="3"] { fill: #a8dcff; }
+.art-shell[data-color="5"] { fill: #ffb8d0; }
+.art-shell-ribs { fill: none; stroke: rgba(255, 255, 255, 0.75); stroke-width: 1; stroke-linecap: round; }
+.art-shell-foot { fill: #e8d2a8; }
+.art-shell-pearl { fill: #f6f0ff; filter: drop-shadow(0 0 3px #c58cff); }
+.art-coral { fill: none; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; }
+.art-coral[data-color="0"] { stroke: #ff7a9a; }
+.art-coral[data-color="1"] { stroke: #ffc86a; }
+.art-coral[data-color="2"] { stroke: #7fe0b0; }
+.art-coral[data-color="3"] { stroke: #7ac8ff; }
+.art-coral[data-color="4"] { stroke: #c58cff; }
+.art-coral[data-color="5"] { stroke: #ff9a5a; }
+
+/* Buchten-Kristallbonbon */
+.map-crystal--bay .map-crystal-base { fill: rgba(120, 230, 220, 0.3); }
+.map-crystal--bay .map-crystal-gem { fill: #1e5a6e; }
+
+/* Korallentor mit Schillerperlen und Seestern */
+.gate-coral { fill: none; stroke: #ff7a9a; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.gate-pearl { stroke: #fff; stroke-width: 0.8; }
+.gate-starfish { fill: #ffb05a; stroke: #c96a1a; stroke-width: 0.8; stroke-linejoin: round; }
+.map-gate--w9.is-open .gate-portal {
+  fill: #dffcf6;
+  filter: drop-shadow(0 0 10px rgba(110, 230, 220, 0.9));
+}
+
+/* Muschelhütte als Station */
+.station-house--w9 .house-body { fill: #f0dcb4; stroke: #fff8ec; stroke-width: 1.4; }
+.station-house--w9 .house-window { fill: #1e3a5a; stroke: none; }
+.station-house--w9 .house-door { fill: #3a8a9a; stroke: #fff8ec; }
+.house-shell-ribs { fill: none; stroke: rgba(255, 255, 255, 0.75); stroke-width: 1.2; stroke-linecap: round; }
+.house-starfish { fill: #ffb05a; stroke: #c96a1a; stroke-width: 0.6; }
+
+/* ---------- Welt 10: Bitterburg ---------- */
+
+/* Gewitterhimmel über der Bitterburg, graues Violett über dunklem Fels */
+.map-world--w10 {
+  background: linear-gradient(180deg, #0c0818 0%, #241634 30%, #3a2a4e 48%, #4a3a58 64%, #3a3444 80%, #5a4e5e 100%);
+  box-shadow: inset 0 0 0 1px rgba(200, 160, 255, 0.22), 0 0 40px rgba(140, 80, 220, 0.25);
+  --world-photo: var(--photo-bitterburg);
+}
+.map-world--w10 .map-cloud { opacity: 0.25; }
+.map-world--w10 .map-glitter {
+  background: #f0e0ff;
+  filter: drop-shadow(0 0 4px #b06aff);
+}
+.map-world--w10 .art-stars circle { fill: #e8dcff; }
+.map-world--w10 .art-moon { fill: #d8cce8; }
+.map-world--w10 .art-moon-glow { fill: rgba(200, 170, 255, 0.12); }
+
+/* Felszacken, Burgberg und steiniger Boden */
+.map-world--w10 .art-hill-rim { stroke: rgba(210, 180, 255, 0.35); stroke-width: 2.5; }
+.map-world--w10 .art-ground-rim { stroke: rgba(230, 210, 240, 0.4); stroke-width: 3; }
+.map-world--w10 .art-hill--1 { fill: #2a2038; }
+.map-world--w10 .art-hill--2 { fill: #3a3048; }
+.map-world--w10 .art-ground--1 { fill: #4e4458; }
+.map-world--w10 .art-ground--2 { fill: #5e5466; }
+.map-world--w10 .art-tree-shadow { fill: rgba(10, 0, 20, 0.4); }
+.map-world--w10 .map-path-road { stroke: #b8aac4; opacity: 0.7; }
+
+/* Bittere Wolkenwirbel und ferne Blitze */
+.art-bitter-cloud-body { fill: #2a1e3a; stroke: rgba(170, 130, 230, 0.35); stroke-width: 1.5; opacity: 0.9; }
+.art-bitter-cloud-swirl { fill: none; stroke: rgba(176, 106, 255, 0.55); stroke-width: 2; stroke-linecap: round; }
+.art-bitter-cloud-rim { fill: none; stroke: rgba(120, 80, 180, 0.4); stroke-width: 2; stroke-linecap: round; }
+.art-bolt { fill: #e6d4ff; opacity: 0; filter: drop-shadow(0 0 6px #b06aff); animation: rs-bolt 6s linear infinite; }
+@keyframes rs-bolt {
+  0%, 88%, 100% { opacity: 0; }
+  90% { opacity: 0.95; }
+  92% { opacity: 0.2; }
+  94% { opacity: 0.8; }
+}
+
+/* Die Bitterburg; ist Amarus besiegt, färbt sie sich bunt wie Zuckerguss (is-sweet) */
+.art-burg-rock { fill: #241a2e; stroke: rgba(200, 170, 240, 0.3); stroke-width: 1.5; }
+.art-burg-wall { fill: #3a3048; stroke: #1a1224; stroke-width: 1.2; }
+.art-burg-crenel { fill: #3a3048; stroke: #1a1224; stroke-width: 1; }
+.art-burg-roof { fill: #1e1428; stroke: #0c0814; stroke-width: 1.2; stroke-linejoin: round; }
+.art-burg-pole { fill: none; stroke: #8a7aa0; stroke-width: 2; }
+.art-burg-flag { fill: #5a1a6a; }
+.art-burg-window { fill: #b06aff; filter: drop-shadow(0 0 4px #8a3ae0); }
+.art-burg-rose { fill: #6a2a9a; stroke: #1a1224; stroke-width: 2; filter: drop-shadow(0 0 5px #8a3ae0); }
+.art-burg-rose-lines { fill: none; stroke: #1a1224; stroke-width: 1.6; }
+.art-burg-banner { fill: #4a1a58; stroke: #1a1224; stroke-width: 1; }
+.art-burg-door { fill: #120a1a; stroke: #8a7aa0; stroke-width: 1.2; }
+.art-burg-door-bars { fill: none; stroke: #5a4a6a; stroke-width: 2; }
+.art-bitterburg path,
+.art-bitterburg rect,
+.art-bitterburg circle { transition: fill 0.8s, stroke 0.8s; }
+.art-bitterburg.is-sweet .art-burg-rock { fill: #8a6a8a; }
+.art-bitterburg.is-sweet .art-burg-wall,
+.art-bitterburg.is-sweet .art-burg-crenel { fill: #fbe6f0; stroke: #e2a8c8; }
+.art-bitterburg.is-sweet .art-burg-roof[data-color="0"] { fill: #f27aa0; }
+.art-bitterburg.is-sweet .art-burg-roof[data-color="3"] { fill: #7ac0f6; }
+.art-bitterburg.is-sweet .art-burg-roof[data-color="4"] { fill: #b48ae0; }
+.art-bitterburg.is-sweet .art-burg-flag { fill: #ffd84a; }
+.art-bitterburg.is-sweet .art-burg-window,
+.art-bitterburg.is-sweet .art-burg-rose { fill: #ffd78c; filter: drop-shadow(0 0 5px #ffc861); }
+.art-bitterburg.is-sweet .art-burg-banner[data-color="4"] { fill: var(--candy-4); }
+.art-bitterburg.is-sweet .art-burg-banner[data-color="5"] { fill: var(--candy-5); }
+.art-bitterburg.is-sweet .art-burg-door { fill: #8a4a5e; stroke: #fff4e6; }
+
+/* Dornenbüsche, bittere Kristalle und Laternen */
+.art-thorn-mound { fill: #3a3044; }
+.art-thorn { fill: none; stroke: #1e1626; stroke-width: 3; stroke-linecap: round; }
+.art-thorn-spikes { fill: none; stroke: #1e1626; stroke-width: 1.6; stroke-linecap: round; }
+.art-bitter-crystal { fill: #4a1a6a; stroke: #b06aff; stroke-width: 0.8; stroke-linejoin: round; }
+.art-bitter-crystal-shine { fill: none; stroke: rgba(230, 200, 255, 0.6); stroke-width: 1; stroke-linecap: round; }
+.art-lantern-post { fill: none; stroke: #2a2034; stroke-width: 2.4; stroke-linecap: round; }
+.art-lantern-cap { fill: #2a2034; }
+.art-lantern-glass { fill: rgba(60, 30, 90, 0.6); stroke: #2a2034; stroke-width: 1.2; }
+.art-lantern-flame {
+  fill: #c58cff;
+  filter: drop-shadow(0 0 4px #b06aff);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: rs-flame 1.4s ease-in-out infinite;
+}
+@keyframes rs-flame {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(0.85, 1.15); }
+}
+
+/* Bitteres Kristallbonbon */
+.map-crystal--bitter .map-crystal-base { fill: rgba(176, 106, 255, 0.3); }
+.map-crystal--bitter .map-crystal-gem { fill: #2a1640; }
+
+/* Burgtor der Bitterburg mit Fallgitter */
+.gate-svg--w10 .gate-tower { fill: #3a3048; stroke: #1a1224; stroke-width: 1; }
+.gate-svg--w10 .gate-tower-window { fill: #b06aff; }
+.gate-tower-roof { fill: #1e1428; stroke: #0c0814; stroke-width: 1; stroke-linejoin: round; }
+.gate-stone { fill: none; stroke: #4e4458; stroke-width: 8; stroke-linecap: butt; }
+.gate-stone-joints { fill: none; stroke: #2a2034; stroke-width: 8; stroke-dasharray: 1.5 9; }
+.gate-spike { fill: #2a2034; stroke: #8a7aa0; stroke-width: 0.8; stroke-linejoin: round; }
+.map-gate--w10.is-open .gate-portal {
+  fill: #efe0ff;
+  filter: drop-shadow(0 0 10px rgba(176, 106, 255, 0.9));
+}
+
+/* Wachturm als Station */
+.station-house--w10 .house-body { fill: #5a4e66; stroke: #d8cce8; stroke-width: 1.4; }
+.station-house--w10 .house-window { fill: #241a2e; stroke: #d8cce8; stroke-width: 1.2; }
+.station-house--w10 .house-door { fill: #2a1e36; stroke: #d8cce8; }
+.station-house--w10 .house-crenel { fill: #5a4e66; stroke: #d8cce8; }
+.station-house--w10 .house-stones { stroke: #43384e; }
+.house-pennant-pole { fill: none; stroke: #d8cce8; stroke-width: 1.2; }
+.house-pennant { fill: #b06aff; }
 
 .station-num {
   position: absolute;

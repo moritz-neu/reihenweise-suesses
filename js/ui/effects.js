@@ -307,6 +307,33 @@
       });
     }
 
+    // Regenbogenband zieht von links nach rechts über das Feld; wo es eine der Zellen
+    // erreicht, glitzern Sternchen in allen Bonbonfarben (Regenbogenstaub).
+    function sweep(targets, ms) {
+      if (!enabled()) { return; }
+      var pending = (targets || []).slice();
+      addShape(ms, function (k) {
+        var front = (k * 1.25 - 0.1) * cols;          // Spalte der Bandmitte
+        var band = 1.4;                                 // Breite in Zellen
+        ctx.globalAlpha = 0.55 * Math.sin(Math.PI * Math.min(1, k * 1.1));
+        for (var i = 0; i < 6; i++) {
+          ctx.fillStyle = palette.candy[i];
+          ctx.fillRect(px(front - band / 2 + i * band / 6), 0, px(band / 6) + 1, height);
+        }
+        pending = pending.filter(function (t) {
+          if (t.c + 0.5 > front) { return true; }
+          for (var j = 0; j < 5; j++) {
+            var ang = Math.random() * Math.PI * 2;
+            addParticle({
+              x: t.c + 0.5, y: t.r + 0.5, vx: Math.cos(ang) * 1.4, vy: Math.sin(ang) * 1.4 - 0.4,
+              gravity: 0, drag: 2.5, size: 0.1, life: 0.5, max: 0.5, color: palette.candy[j % 6], star: true
+            });
+          }
+          return false;
+        });
+      });
+    }
+
     // Eissplitter: eckige, helle Stücke fliegen aus der Zelle (Eis bricht).
     function splinter(pos, count) {
       if (!enabled()) { return; }
@@ -401,6 +428,7 @@
       beam: beam,
       shockwave: shockwave,
       swirl: swirl,
+      sweep: sweep,
       glitter: glitter,
       enabled: enabled,
       isIdle: function () { return !rafId; },

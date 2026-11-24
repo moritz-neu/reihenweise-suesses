@@ -155,6 +155,94 @@
     eq(RS.Progress.startWorld(d), 2);
     eq(RS.Progress.isPlayable(d, 'w2-02'), true);
   });
+  function memStorage() {
+    var m = {};
+    return {
+      getItem: function (k) { return Object.prototype.hasOwnProperty.call(m, k) ? m[k] : null; },
+      setItem: function (k, v) { m[k] = String(v); },
+      removeItem: function (k) { delete m[k]; }
+    };
+  }
+
+  // Registriert Testwelten für alle fehlenden Welten bis FINAL_WORLD, führt fn aus und
+  // entfernt sie danach wieder.
+  function withAllWorlds(fn) {
+    var added = [];
+    for (var n = 1; n <= RS.Worlds.FINAL_WORLD; n++) {
+      if (!RS.Worlds.get(n)) {
+        RS.Worlds.register(testWorld(n, ['w' + n + '-01']));
+        added.push(n);
+      }
+    }
+    try { fn(); } finally {
+      added.forEach(function (id) { RS.Worlds._unregister(id); });
+    }
+  }
+
+  function finalBoss() {
+    var lv = RS.Worlds.inWorld(RS.Worlds.FINAL_WORLD);
+    return lv[lv.length - 1].id;
+  }
+
+  t('progress: markComplete only after final boss', function () {
+    withAllWorlds(function () {
+      var s = RS.Save.fresh();
+      eq(RS.Progress.markComplete(s), false, 'fresh save');
+      eq(s.completed, false);
+      for (var n = 1; n < RS.Worlds.FINAL_WORLD; n++) { winWorld(s, n); }
+      RS.Worlds.inWorld(RS.Worlds.FINAL_WORLD).forEach(function (l) {
+        if (!l.isBoss) { s.stars[l.id] = 3; }
+      });
+      eq(RS.Progress.markComplete(s), false, 'everything but the final boss');
+      eq(s.completed, false);
+      s.stars[finalBoss()] = 1;
+      eq(RS.Progress.markComplete(s), true, 'final boss won');
+      eq(s.completed, true);
+      eq(RS.Progress.markComplete(s), false, 'second call changes nothing');
+      eq(s.completed, true);
+    });
+    var lone = RS.Save.fresh();
+    lone.stars['w10-10'] = 3;
+    if (!RS.Worlds.get(RS.Worlds.FINAL_WORLD)) {
+      eq(RS.Progress.markComplete(lone), false, 'no final world registered');
+      eq(lone.completed, false);
+    }
+  });
+
+  t('progress: completed survives store/load', function () {
+    withAllWorlds(function () {
+      var storage = memStorage();
+      var s = RS.Save.fresh();
+      s.stars[finalBoss()] = 2;
+      RS.Progress.markComplete(s);
+      eq(RS.Save.store(s, storage), true);
+      var d = RS.Save.load(storage);
+      eq(d.completed, true);
+      eq(RS.Progress.markComplete(d), false, 'already complete after reload');
+      var plain = RS.Save.load(memStorage());
+      eq(plain.completed, false, 'fresh load is not complete');
+    });
+  });
+
+  t('progress: all levels stay playable after completion', function () {
+    withAllWorlds(function () {
+      var s = RS.Save.fresh();
+      RS.Worlds.list().forEach(function (w) { winWorld(s, w.id); });
+      eq(RS.Progress.markComplete(s), true);
+      RS.Worlds.levels().forEach(function (l) {
+        eq(RS.Progress.isPlayable(s, l.id), true, l.id + ' playable');
+        eq(RS.Progress.isWorldOpen(s, l.world), true, 'world ' + l.world + ' open');
+      });
+      eq(RS.Progress.nextLevel(s), null, 'nothing left unwon');
+      eq(RS.Worlds.get(RS.Progress.startWorld(s)) !== undefined, true, 'map opens on a real world');
+      var first = RS.Worlds.levels()[0].id;
+      var res = RS.Save.recordWin(s, first, [{ type: 'levelWon', stars: 3, score: 1000, bonus: 0 }]);
+      eq(res !== null, true, 'a replay still records');
+      eq(s.stars[first], 3, 'better stars are kept');
+      eq(s.completed, true, 'completion stays');
+    });
+  });
+
   RS.test('progress: totalStars counts only registered levels', function () {
     var d = RS.Save.fresh();
     d.stars['w1-01'] = 3;

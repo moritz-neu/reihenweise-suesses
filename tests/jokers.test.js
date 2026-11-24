@@ -35,7 +35,7 @@
   }
 
   t('jokers: table', function () {
-    deep(J.KINDS, ['moves', 'hammer', 'besen']);
+    deep(J.KINDS, ['moves', 'hammer', 'besen', 'feentausch', 'regenbogen', 'zauberbombe']);
     var b = J.get('besen');
     eq(b.name, 'Zuckerbesen');
     eq(b.price, 25);
@@ -82,10 +82,73 @@
     ok(J.available(s).some(function (j) { return j.kind === 'besen'; }), 'shop offers the besen');
   });
 
+  t('jokers: real registry gifts the feentausch on entering world 6 after w5-10', function () {
+    ok(RS.Worlds.get(6), 'world 6 registered');
+    eq(RS.Worlds.get(6).novelty.key, 'feentausch');
+    var s = RS.Save.fresh();
+    ['w1-10', 'w2-10', 'w3-10', 'w4-10'].forEach(function (id) { s.stars[id] = 1; });
+    eq(RS.Progress.isWorldOpen(s, 6), false, 'world 6 waits for w5-10');
+    ok(!J.available(s).some(function (j) { return j.kind === 'feentausch'; }), 'no feentausch before world 6');
+    s.stars['w5-10'] = 1;
+    eq(RS.Progress.isWorldOpen(s, 6), true);
+    eq(J.giftDue(s, 6), 'feentausch');
+    ok(J.available(s).some(function (j) { return j.kind === 'feentausch'; }), 'shop offers the feentausch');
+    J.giveGift(s, 'feentausch');
+    eq(s.jokers.feentausch, 2);
+    eq(J.giftDue(s, 6), null, 'the gift comes only once');
+  });
+
+  t('jokers: real registry gifts the regenbogen on entering world 8 after w7-10', function () {
+    ok(RS.Worlds.get(8), 'world 8 registered');
+    eq(RS.Worlds.get(8).novelty.key, 'regenbogen');
+    var s = RS.Save.fresh();
+    ['w1-10', 'w2-10', 'w3-10', 'w4-10', 'w5-10', 'w6-10'].forEach(function (id) { s.stars[id] = 1; });
+    eq(RS.Progress.isWorldOpen(s, 8), false, 'world 8 waits for w7-10');
+    ok(!J.available(s).some(function (j) { return j.kind === 'regenbogen'; }), 'no regenbogen before world 8');
+    s.stars['w7-10'] = 1;
+    eq(RS.Progress.isWorldOpen(s, 8), true);
+    eq(J.giftDue(s, 8), 'regenbogen');
+    ok(J.available(s).some(function (j) { return j.kind === 'regenbogen'; }), 'shop offers the regenbogen');
+    J.giveGift(s, 'regenbogen');
+    eq(s.jokers.regenbogen, 2);
+    eq(J.giftDue(s, 8), null, 'the gift comes only once');
+  });
+
   t('jokers: giveGift caps at 10', function () {
     var s = RS.Save.fresh();
     s.jokers.besen = 9;
     J.giveGift(s, 'besen');
     eq(s.jokers.besen, 10);
+  });
+
+  t('jokers: table of feentausch, regenbogen, zauberbombe', function () {
+    var f = J.get('feentausch');
+    eq(f.name, 'Feentausch'); eq(f.price, 15); eq(f.world, 6); eq(f.target, 'pair');
+    eq(f.text, 'Tauscht zwei Nachbarn, auch ohne Reihe.');
+    var r = J.get('regenbogen');
+    eq(r.name, 'Regenbogenstaub'); eq(r.price, 35); eq(r.world, 8); eq(r.target, 'cell');
+    eq(r.text, 'Entfernt alle Bonbons einer Farbe.');
+    var z = J.get('zauberbombe');
+    eq(z.name, 'Zauberbombe'); eq(z.price, 30); eq(z.world, 10); eq(z.target, 'cell');
+    eq(z.text, 'Sprengt ein Feld von drei mal drei.');
+  });
+
+  t('jokers: giftDue gives feentausch in world 6, regenbogen in 8, zauberbombe in 10', function () {
+    var added = [];
+    try {
+      [6, 8, 10].forEach(function (id) {
+        if (!RS.Worlds.get(id)) { RS.Worlds.register(stubWorld(id)); added.push(id); }
+      });
+      var s = RS.Save.fresh();
+      eq(J.giftDue(s, 6), 'feentausch');
+      eq(J.giftDue(s, 8), 'regenbogen');
+      eq(J.giftDue(s, 10), 'zauberbombe');
+      J.giveGift(s, 'feentausch');
+      eq(J.giftDue(s, 6), null);
+      eq(s.jokers.feentausch, 2);
+      eq(J.giftDue(s, 8), 'regenbogen');
+    } finally {
+      added.forEach(function (id) { RS.Worlds._unregister(id); });
+    }
   });
 })(window.RS = window.RS || {});
