@@ -124,7 +124,7 @@
   });
 
   // Attacks
-  t('boss: attack after every 3rd move in phase 1, every 2nd in phase 2', function () {
+  t('boss: lakritz attacks after every 3rd move in both phases, the counter carries over', function () {
     var board = B.create({ rows: 8, cols: 8, colors: 5, seed: 3 });
     var boss = RS.Boss.create('lakritz');
     eq(RS.Boss.step(boss, board).length, 0);
@@ -134,7 +134,9 @@
     eq(RS.Boss.step(boss, board).length, 0);
     RS.Boss.apply(boss, half(boss));
     eq(boss.counter, 1);
+    eq(RS.Boss.step(boss, board).length, 0);
     eq(ofType(RS.Boss.step(boss, board), 'bossAttack').length, 1);
+    eq(RS.Boss.step(boss, board).length, 0);
     eq(RS.Boss.step(boss, board).length, 0);
     eq(ofType(RS.Boss.step(boss, board), 'bossAttack').length, 1);
   });
@@ -162,25 +164,25 @@
     eq(lost.boss.counter, 2);
   });
 
-  t('boss: lakritz phase 2 locks 3 + 4 cells in one row', function () {
+  t('boss: lakritz phase 2 locks 2 + 3 cells in one row', function () {
     var board = B.create({ rows: 8, cols: 8, colors: 5, seed: 7 });
     var boss = RS.Boss.create('lakritz');
     RS.Boss.apply(boss, half(boss));
-    boss.counter = 1;
+    boss.counter = 2;
     var atk = ofType(RS.Boss.step(boss, board), 'bossAttack')[0];
     eq(atk.kind, 'lock');
     eq(atk.phase, 2);
-    eq(atk.cells.length, 7);
-    eq(count(board, 'lock', Boolean), 7);
-    for (var i = 1; i < 4; i++) {
+    eq(atk.cells.length, 5);
+    eq(count(board, 'lock', Boolean), 5);
+    for (var i = 1; i < 3; i++) {
       eq(atk.cells[i].r, atk.cells[0].r);
       eq(atk.cells[i].c, atk.cells[0].c + i);
     }
     var phase1 = RS.Boss.create('lakritz');
     phase1.counter = 2;
     var b2 = B.create({ rows: 8, cols: 8, colors: 5, seed: 8 });
-    eq(ofType(RS.Boss.step(phase1, b2), 'bossAttack')[0].cells.length, 3);
-    eq(count(b2, 'lock', Boolean), 3);
+    eq(ofType(RS.Boss.step(phase1, b2), 'bossAttack')[0].cells.length, 2);
+    eq(count(b2, 'lock', Boolean), 2);
   });
 
   t('boss: kandara phase 1 glaze 2, phase 2 ice 2', function () {

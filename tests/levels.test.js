@@ -43,11 +43,11 @@
     ok(RS.LEVELS === undefined, 'old level list is gone');
   });
 
-  t('levels: boss levels w1-10 and w2-10 with 36/40 moves and single boss goal', function () {
+  t('levels: boss levels w1-10 and w2-10 with 40/40 moves and single boss goal', function () {
     var ten = RS.Worlds.level('w1-10');
     var twenty = RS.Worlds.level('w2-10');
     eq(ten.boss, 'lakritz');
-    eq(ten.moves, 36);
+    eq(ten.moves, 40);
     eq(ten.colors, 6);
     eq(twenty.boss, 'kandara');
     eq(twenty.moves, 40);

@@ -2,9 +2,14 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
-## [5.1.0] – 2026-11-24
+## [5.1.1] – 2026-11-24
 
-Version 5.1.0 ist auf GitHub (Pages) veröffentlicht.
+Version 5.1.1 ist auf GitHub (Pages) veröffentlicht.
+
+### Geändert
+- Bosskampf gegen Graf Lakritz (w1-10) ist leichter: 40 statt 36 Züge. Er sperrt je Angriff zwei statt drei Bonbons, in Phase 2 nur noch nach jedem 3. Zug (statt jedem 2.) zwei Bonbons und drei nebeneinander (statt drei und vier). Der Balancing-Bot gewinnt jetzt 97 % statt 77 %.
+
+## [5.1.0] – 2026-11-24
 
 Aufräum-Release ohne neue Level und ohne Änderung der Balancing-Werte. Spielstand-Format bleibt Version 4, Stände aus 4.0.0 und 5.0.0 laden unverändert.
 

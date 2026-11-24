@@ -319,7 +319,7 @@
     var ev = RS.Boss.step(boss, board);
     var atk = ofType(ev, 'bossAttack')[0];
     eq(atk.kind, 'lock');
-    eq(atk.cells.length, 3);
+    eq(atk.cells.length, 2);
     atk.cells.forEach(function (q) {
       ok(free.some(function (p) { return p.r === q.r && p.c === q.c; }), 'target is a plain candy');
       eq(board.candies[q.r][q.c].fuse, undefined);
@@ -331,6 +331,6 @@
         if (v) { locked++; eq(board.candies[r][c].fuse, undefined, 'no lock on a fuse candy'); }
       });
     });
-    eq(locked, 3);
+    eq(locked, 2);
   });
 })(window.RS);

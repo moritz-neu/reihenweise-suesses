@@ -37,8 +37,8 @@
     boss: {
       key: 'lakritz', name: 'Graf Lakritz', hp: 520, weak: [0, 3], thresholds: [0.5],
       attacks: [
-        { every: 3, kind: 'lock', count: 3 },
-        { every: 2, kind: 'lock', count: 3, row: 4 } ],
+        { every: 3, kind: 'lock', count: 2 },
+        { every: 3, kind: 'lock', count: 2, row: 3 } ],
       story: {
         intro: [
           { who: 'boss', text: 'Hoho, wer wagt es, meinen schönen Lakritzzauber zu stören?' },
@@ -91,7 +91,7 @@
         'Der Zauber wird stärker: Oben Lakritz, unten Glasur. Löse alles auf und sammle 10 Bonbons in Gelb!',
         'Fast geschafft! Das neunte Haus leuchtet warm.'),
       // Bosskampf gegen Graf Lakritz: freies Feld, das Lakritzgitter bringt er selbst mit.
-      { id: 'w1-10', seed: 1010, boss: true, colors: 6, moves: 36, layout: ALL,
+      { id: 'w1-10', seed: 1010, boss: true, colors: 6, moves: 40, layout: ALL,
         intro: 'Auf dem Dorfplatz wartet Graf Lakritz, der den Zauber über das Dorf gelegt hat: Triff ihn mit vielen Bonbons, am liebsten in seiner Schwachstellen-Farbe!',
         win: 'Graf Lakritz ist besiegt, und das zehnte Haus erstrahlt wieder!' }
     ]
