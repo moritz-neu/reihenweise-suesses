@@ -2,9 +2,25 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
-## [5.1.1] – 2026-11-24
+## [5.2.0] – 2026-11-24
 
-Version 5.1.1 ist auf GitHub (Pages) veröffentlicht.
+Version 5.2.0 ist auf GitHub (Pages) veröffentlicht.
+
+Vorbereitung für den Google Play Store. Spielstand-Format bleibt Version 4.
+
+### Neu
+- Installierbare Web-App: Manifest (Kurzname „Süßes“, Vollbild, Hochformat) und Service Worker, damit das Spiel nach dem ersten Start offline läuft.
+- App-Symbol (rund und eckig), Startbildschirm-Vorlage, Store-Titelgrafik und sechs Handy-Fotos in `store/`.
+- Datenschutzerklärung (`datenschutz.html`, mit Platzhaltern) und Knopf „Datenschutz“ im Hauptmenü.
+- Zurück-Taste unter Android und im Browser: schließt Dialoge und führt eine Ebene zurück, im Hauptmenü schließt sie die App.
+- Zweitkopie des Spielstands in IndexedDB; ein gelöschter `localStorage` wird beim Start daraus zurückgeholt.
+- `tools/check_store.py` prüft Offline-Liste, Version und Manifest.
+
+### Verbessert
+- Bedienung wie eine App: kein Zoomen, kein Gummiband, kein Markieren, kein Kontextmenü bei langem Drücken, Hinweis bei quer gehaltenem Handy, Ränder für Kerbe und Gestenleiste.
+- Spiel auf dem Handy: kompakte Anzeigen und Joker-Leiste; das Spielfeld passt samt Bossleiste und Jokern ohne Scrollen auf den Bildschirm.
+
+## [5.1.1] – 2026-11-24
 
 ### Geändert
 - Bosskampf gegen Graf Lakritz (w1-10) ist leichter: 40 statt 36 Züge. Er sperrt je Angriff zwei statt drei Bonbons, in Phase 2 nur noch nach jedem 3. Zug (statt jedem 2.) zwei Bonbons und drei nebeneinander (statt drei und vier). Der Balancing-Bot gewinnt jetzt 97 % statt 77 %.

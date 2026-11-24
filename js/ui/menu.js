@@ -174,6 +174,21 @@
     });
   }
 
+  // Datenschutz in Kürze; die ganze Erklärung steht in datenschutz.html (auch der Link im Store).
+  function showPrivacy() {
+    var body = el('div', 'privacy');
+    body.appendChild(el('p', 'dialog-text', 'Das Spiel sammelt keine persönlichen Daten: keine Konten, keine Werbung, kein Tracking. Dein Spielstand bleibt nur auf diesem Gerät.'));
+    var link = el('a', 'btn btn--ghost privacy-link', 'Ganze Datenschutzerklärung');
+    link.href = 'datenschutz.html';
+    body.appendChild(link);
+    RS.UI.dialog({
+      title: 'Datenschutz',
+      body: body,
+      buttons: [{ label: 'Schließen', className: 'btn--gold' }],
+      onCancel: function () {}
+    });
+  }
+
   // Schalter für Musik bzw. Effekte: wirkt sofort und wird im Spielstand gespeichert.
   function soundToggle(key, name) {
     var b = el('button', 'btn btn--ghost menu-toggle');
@@ -279,6 +294,7 @@
     }));
     extras.appendChild(soundToggle('music', 'Musik'));
     extras.appendChild(soundToggle('sfx', 'Effekte'));
+    extras.appendChild(button('Datenschutz', 'btn--ghost', showPrivacy));
     actions.appendChild(extras);
     actions.appendChild(notice);
     section.appendChild(actions);

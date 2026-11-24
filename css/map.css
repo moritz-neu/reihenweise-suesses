@@ -106,7 +106,7 @@
    .map-photo, .map-sky (Wolken, Glitzer), .map-scenery, Tor und Stationen. */
 .map-world {
   position: relative;
-  width: min(100%, 72rem, calc((100vh - 6.5rem) * 1.5625));
+  width: min(100%, 72rem, calc((100vh - 6.5rem - var(--safe-y)) * 1.5625));
   container-type: inline-size;
   border-radius: 28px;
   background: linear-gradient(180deg, #160b3d 0%, #34196a 38%, #7a3a8f 62%, #c46a9e 82%, #f2a7b8 100%);
@@ -1975,5 +1975,60 @@
   .hud-time.is-low .timebar-fill,
   .result-record {
     animation: none;
+  }
+}
+
+/* ---------- Spiel auf dem Handy (bis 600 px): kompakte Anzeigen ----------
+   Züge, Punkte und Zuckerstangen in einer Reihe, darunter die Ziele; die Erklärzeile der
+   Sternleiste entfällt (die Sterne auf der Leiste bleiben). Den Rest erledigt fitBoard in
+   js/ui/game.js: Das Feld wird so klein, dass alles ohne Scrollen auf den Bildschirm passt. */
+@media (max-width: 600px) {
+  .game {
+    gap: 0.5rem;
+    padding: 0.6rem 0.5rem 0.75rem;
+  }
+
+  .game-layout {
+    gap: 0.5rem;
+  }
+
+  .hud:not(.hud--endless) {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "moves score sticks" "goals goals goals";
+    gap: 0.4rem;
+  }
+
+  .hud:not(.hud--endless) .hud-sticks {
+    grid-area: sticks;
+  }
+
+  .hud.hud--endless {
+    gap: 0.4rem;
+  }
+
+  .hud-box {
+    gap: 0.1rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+  }
+
+  .hud-label {
+    font-size: 0.62rem;
+  }
+
+  .hud-value {
+    font-size: 1.25rem;
+  }
+
+  .hud-moves .hud-value {
+    font-size: 1.45rem;
+  }
+
+  .hud-moves .starbar {
+    margin: 0.25rem 0.4rem 0.15rem 0.2rem;
+  }
+
+  .starbar-caption {
+    display: none;
   }
 }

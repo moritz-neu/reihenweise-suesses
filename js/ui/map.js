@@ -321,7 +321,7 @@
 
     var head = el('header', 'map-head');
     var nav = el('div', 'map-nav');
-    var back = headButton('Zurück', 'btn--ghost', function () { RS.UI.show('menu'); });
+    var back = RS.UI.Back.mark(headButton('Zurück', 'btn--ghost', function () { RS.UI.show('menu'); }));
     nav.appendChild(back);
     nav.appendChild(headButton('Welten', 'btn--ghost', function () {
       RS.UI.show('atlas', { from: 'map', world: worldId });

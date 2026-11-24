@@ -8,6 +8,7 @@
 <h1>Tests</h1>
 <script src="runner.js"></script>
 <!-- logic, data, save -->
+<script src="../js/platform.js"></script>
 <script src="../js/logic/rng.js"></script>
 <script src="../js/logic/board.js"></script>
 <script src="../js/logic/specials.js"></script>
@@ -22,6 +23,7 @@
 <script src="../js/logic/jokers.js"></script>
 <script src="../js/logic/shop.js"></script>
 <script src="../js/save.js"></script>
+<script src="../js/save-mirror.js"></script>
 <script src="../js/logic/progress.js"></script>
 <script src="../js/data/curve.js"></script>
 <script src="../js/data/registry.js"></script>
@@ -40,6 +42,9 @@
 <script src="../js/audio.js"></script>
 <script src="../js/audio-sfx.js"></script>
 <!-- map art (strings only, no DOM) -->
+<!-- screens and back button (DOM) -->
+<script src="../js/ui/screens.js"></script>
+<script src="../js/ui/backnav.js"></script>
 <script src="../js/ui/mapkit.js"></script>
 <script src="../js/ui/worlds/w01.js"></script>
 <script src="../js/ui/worlds/w02.js"></script>
@@ -69,6 +74,9 @@
 <script src="registry.test.js"></script>
 <script src="progress.test.js"></script>
 <script src="audio.test.js"></script>
+<script src="platform.test.js"></script>
+<script src="backnav.test.js"></script>
+<script src="mirror.test.js"></script>
 <script>
 (function (RS) { RS.test('runner works', function () { RS.assert.equal(1, 1); }); })(window.RS);
 </script>

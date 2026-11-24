@@ -151,15 +151,79 @@
     }
   }
 
+  // Zweitkopie des Spielstands außerhalb des Browser-Speichers (Spiegel). Ein Spiegel hat
+  // read() -> Promise<string|null>, write(text) -> Promise und remove() -> Promise.
+  // Standard ist IndexedDB (RS.SaveMirror.indexedDb); eine App-Hülle (Capacitor) kann ihren
+  // eigenen Speicher einsetzen. Der Browser-Speicher bleibt die Hauptquelle: Der Spiegel wird
+  // nach jedem Speichern beschrieben und nur gelesen, wenn der Browser-Speicher leer ist.
+  var mirror = null;
+
+  function setMirror(m) { mirror = m || null; }
+
+  function mirrorCall(name, arg) {
+    if (!mirror) { return; }
+    try {
+      var p = mirror[name](arg);
+      if (p && p.catch) { p.catch(function () { /* Spiegel nicht verfügbar */ }); }
+    } catch (e) { /* Spiegel nicht verfügbar */ }
+  }
+
   function store(data, storage) {
+    var text;
+    try {
+      text = JSON.stringify(data);
+    } catch (e) {
+      return false;
+    }
+    mirrorCall('write', text);
     try {
       var s = storage || defaultStorage();
       if (!s) { return false; }
-      s.setItem(KEY, JSON.stringify(data));
+      s.setItem(KEY, text);
       return true;
     } catch (e) {
       return false;
     }
+  }
+
+  // Abgleich beim Start mit dem Text aus dem Spiegel (raw, null wenn leer):
+  // - Browser-Speicher hat einen Stand: er gilt und wird in den Spiegel übernommen ('kept');
+  // - Browser-Speicher leer, Spiegel gültig: der Spiegel wird zurückgeschrieben ('restored');
+  // - sonst 'none'. Ungültiges im Spiegel wird nie übernommen.
+  function restoreFrom(raw, storage) {
+    try {
+      var s = storage || defaultStorage();
+      if (!s) { return 'none'; }
+      var local = s.getItem(KEY);
+      if (local !== null && local !== undefined) {
+        if (local !== raw) { mirrorCall('write', local); }
+        return 'kept';
+      }
+      if (typeof raw !== 'string') { return 'none'; }
+      var probe = {
+        getItem: function () { return raw; }, setItem: function () {}, removeItem: function () {}
+      };
+      var data = load(probe);
+      if (JSON.stringify(data) === JSON.stringify(fresh())) { return 'none'; }
+      s.setItem(KEY, JSON.stringify(data));
+      return 'restored';
+    } catch (e) {
+      return 'none';
+    }
+  }
+
+  // Liest den Spiegel und gleicht ab; endet spätestens nach timeoutMs (Standard 1500) mit 'none'.
+  function restore(storage, timeoutMs) {
+    if (!mirror) { return Promise.resolve('none'); }
+    return new Promise(function (resolve) {
+      var done = false;
+      function finish(v) { if (!done) { done = true; resolve(v); } }
+      setTimeout(function () { finish('none'); }, timeoutMs || 1500);
+      try {
+        Promise.resolve(mirror.read()).then(function (raw) { finish(restoreFrom(raw, storage)); },
+          function () { finish(restoreFrom(null, storage)); });
+      } catch (e) { finish(restoreFrom(null, storage)); }
+    });
   }
 
   function hasSeen(data, key) { return data.seen.indexOf(key) !== -1; }
@@ -195,6 +259,7 @@
   }
 
   function reset(storage) {
+    mirrorCall('remove');
     try {
       var s = storage || defaultStorage();
       if (s) { s.removeItem(KEY); }
@@ -211,6 +276,9 @@
     legacyId: legacyId,
     recordWin: recordWin,
     recordEndless: recordEndless,
-    reset: reset
+    reset: reset,
+    setMirror: setMirror,
+    restoreFrom: restoreFrom,
+    restore: restore
   };
 })(window.RS = window.RS || {});

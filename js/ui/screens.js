@@ -7,6 +7,10 @@
 
   var root = null;
   var current = null;   // { name, screen }
+  var listeners = [];   // laufen nach jedem Bildschirmwechsel und jedem Öffnen/Schließen eines Dialogs
+
+  function onChange(fn) { listeners.push(fn); }
+  function changed() { listeners.forEach(function (fn) { fn(); }); }
 
   function init(rootEl) {
     root = rootEl;
@@ -22,6 +26,7 @@
     current = { name: name, screen: screen };
     screen.mount(root, params || {});
     window.scrollTo(0, 0);
+    changed();
   }
 
   function currentName() {
@@ -44,6 +49,7 @@
   //   title, text?, body?: Node (eigener Inhalt unter dem Text), className?: zusätzliche
   //   Klasse am Dialogkasten, buttons: [{ label, className?, onClick?, keepOpen? }],
   //   focus?: Index des Knopfs, der den Fokus bekommt (Standard 0),
+  //   ein Knopf mit back: true ist der, den die Zurück-Taste (Android) drückt,
   //   onCancel?, onClose?
   // }
   // Ein Klick auf einen Knopf schließt den Dialog und ruft dann onClick auf
@@ -79,6 +85,7 @@
     (opts.buttons || []).forEach(function (b) {
       var btn = el('button', 'btn ' + (b.className || ''), b.label);
       btn.type = 'button';
+      if (b.back) { btn.setAttribute('data-back', ''); }
       btn.addEventListener('click', function () {
         if (!b.keepOpen) { closeDialog(); }
         if (b.onClick) { b.onClick(btn); }
@@ -112,11 +119,22 @@
     document.addEventListener('keydown', onKey);
 
     openDialog = { overlay: overlay, onKey: onKey, onClose: opts.onClose || null,
-      previousFocus: document.activeElement };
+      previousFocus: document.activeElement, cancel: opts.onCancel ? cancel : null };
     if (root) { root.setAttribute('inert', ''); }
     document.body.appendChild(overlay);
     if (buttons.length) { (buttons[opts.focus || 0] || buttons[0]).focus(); }
+    changed();
     return overlay;
+  }
+
+  // Zurück-Taste im offenen Dialog: wie Escape (onCancel), sonst der Knopf mit back: true.
+  // true, wenn ein Dialog offen war (die Taste ist dann verbraucht, auch wenn nichts passiert).
+  function backInDialog() {
+    if (!openDialog) { return false; }
+    if (openDialog.cancel) { openDialog.cancel(); return true; }
+    var btn = openDialog.overlay.querySelector('[data-back]');
+    if (btn) { btn.click(); }
+    return true;
   }
 
   function closeDialog() {
@@ -130,6 +148,7 @@
       d.previousFocus.focus();
     }
     if (d.onClose) { d.onClose(); }
+    changed();
   }
 
   function isDialogOpen() {
@@ -166,6 +185,8 @@
     el: el,
     dialog: dialog,
     closeDialog: closeDialog,
-    isDialogOpen: isDialogOpen
+    isDialogOpen: isDialogOpen,
+    backInDialog: backInDialog,
+    onChange: onChange
   };
 })(window.RS = window.RS || {});

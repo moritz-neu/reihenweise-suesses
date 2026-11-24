@@ -99,7 +99,7 @@
 
     var section = el('section', 'screen game' + (opts.className ? ' ' + opts.className : ''));
     var head = el('header', 'game-head');
-    var back = el('button', 'btn btn--ghost', opts.back.label);
+    var back = RS.UI.Back.mark(el('button', 'btn btn--ghost', opts.back.label));
     back.type = 'button';
     back.addEventListener('click', function () {
       RS.Audio.play({ type: 'click' });
@@ -134,6 +134,27 @@
     root.appendChild(section);
 
     var view = RS.UI.BoardView.create(holder, session.board);
+
+    // Das Feld passt immer ganz auf den Bildschirm: Ragt die Seite unten hinaus (kleines
+    // Handy, Bossleiste, Joker-Leiste), wird das quadratische Feld um genau so viel schmaler,
+    // höchstens bis 240 px. Läuft nach dem Aufbau und bei jeder Größenänderung.
+    var fitFrame = 0;
+    function fitBoard() {
+      fitFrame = 0;
+      var b = holder.querySelector('.bv-board');
+      if (!b || dead) { return; }
+      b.style.width = '';
+      var over = document.documentElement.scrollHeight - window.innerHeight;
+      if (over > 0) {
+        var w = b.getBoundingClientRect().width;
+        b.style.width = Math.max(240, Math.floor(w - over)) + 'px';
+      }
+    }
+    function scheduleFit() {
+      if (!fitFrame) { fitFrame = requestAnimationFrame(fitBoard); }
+    }
+    window.addEventListener('resize', scheduleFit);
+    scheduleFit();
     function playing() { return !dead && session.status === 'playing'; }
     var hint = createHint(view, function () { return session.board; }, function () {
       return playing() && !RS.UI.isDialogOpen();
@@ -170,6 +191,8 @@
       if (dead) { return; }
       dead = true;
       hint.stop();
+      window.removeEventListener('resize', scheduleFit);
+      if (fitFrame) { cancelAnimationFrame(fitFrame); fitFrame = 0; }
       section.removeEventListener('pointerdown', onInput, true);
       document.removeEventListener('keydown', onInput, true);
       view.destroy();
@@ -355,7 +378,7 @@
       className: 'dialog--result dialog--annika',
       body: resultBody(lines, level.win || ''),
       // Nach dem Bosssieg spielt die Karte das Kapitelende und öffnet das Tor.
-      buttons: [{ label: 'Zur Karte', className: 'btn--gold', onClick: function () {
+      buttons: [{ label: 'Zur Karte', className: 'btn--gold', back: true, onClick: function () {
         RS.Audio.play({ type: 'click' });
         RS.UI.show('map', mapParams(level));
       } }]
@@ -372,7 +395,7 @@
       if (fuse) { lines.push(el('p', 'result-line result-rule', 'Dazu bekommt jedes Knallbonbon 5 Züge mehr.')); }
     }
     var buttons = [
-      { label: 'Zur Karte', className: 'btn--ghost', onClick: function () { RS.UI.show('map', mapParams(level)); } },
+      { label: 'Zur Karte', className: 'btn--ghost', back: true, onClick: function () { RS.UI.show('map', mapParams(level)); } },
       { label: 'Nochmal', className: rescue ? 'btn--ghost' : 'btn--gold', onClick: function () {
         RS.Audio.play({ type: 'click' });
         RS.UI.show('game', { levelId: level.id });

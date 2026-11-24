@@ -91,7 +91,7 @@
     });
     section.appendChild(list);
     var actions = el('div', 'credits-actions');
-    var skip = button('Überspringen', 'btn--ghost', finish);
+    var skip = RS.UI.Back.mark(button('Überspringen', 'btn--ghost', finish));
     var next = button('Weiter', 'btn--gold', finish);
     actions.appendChild(skip);
     actions.appendChild(next);
@@ -111,7 +111,7 @@
     stage.setAttribute('aria-live', 'polite');
     section.appendChild(stage);
     var actions = el('div', 'credits-actions');
-    var skip = button('Überspringen', 'btn--ghost', finish);
+    var skip = RS.UI.Back.mark(button('Überspringen', 'btn--ghost', finish));
     var next = button('Weiter', 'btn--gold', function () {
       if (index < all.length - 1) { index++; render(); }
       else { finish(); }

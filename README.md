@@ -27,7 +27,20 @@ Zuckerstangen sind die Währung des Spiels. Wer ein Level zum ersten Mal schafft
 
 Dafür gibt es im Laden auf der Levelkarte die Joker „+5 Züge“ für 30 Zuckerstangen, den „Zuckerhammer“ für 20, der ein Bonbon mit einem Schlag entfernt, und den „Zuckerbesen“ für 25, der eine ganze Reihe räumt, den „Feentausch“ für 15, der zwei Nachbarn tauscht, den „Regenbogenstaub“ für 35, der alle Bonbons einer Farbe entfernt, und die „Zauberbombe“ für 30, die ein Feld von drei mal drei sprengt. Alle Joker außer „+5 Züge“ kosten keinen Zug. Der Laden zeigt nur Joker, deren Welt offen ist (der Besen nach dem Sieg über den Karamellkoloss, der Feentausch nach Krawalla, der Regenbogenstaub nach Knallfrosch, die Zauberbombe nach Schillerzahn). Vom Vorrat passen höchstens 10 je Joker. Zum Start liegt von „+5 Züge“ und Hammer je einer bereit, von jedem neuen Joker gibt es zwei geschenkt, sobald seine Einführungswelt (4, 6, 8, 10) betreten wird. Joker gelten nur im Abenteuer-Modus, übrige Züge zählen für die Sterne ganz normal mit. Geht ein Level verloren, bietet der Dialog mit vorhandenem Vorrat eine Rettung an.
 
-Der Fortschritt (freigeschaltete Level, Abschluss des Spiels, Sterne, Tor- und Story-Stand, Endlos-Rekord, Zuckerstangen, Joker-Vorrat, Einstellungen für Musik und Effekte) liegt im `localStorage` des Browsers. Der Spielstand hat das Format Version 4; ältere Stände (Version 1 bis 3) werden beim Laden umgewandelt, ohne dass Fortschritt verloren geht. Ist kein Speicher verfügbar, läuft das Spiel ohne Speichern weiter.
+Der Fortschritt (freigeschaltete Level, Abschluss des Spiels, Sterne, Tor- und Story-Stand, Endlos-Rekord, Zuckerstangen, Joker-Vorrat, Einstellungen für Musik und Effekte) liegt im `localStorage` des Browsers. Eine Zweitkopie liegt in IndexedDB (`js/save-mirror.js`): Ist der `localStorage` beim Start leer, holt das Spiel den Stand von dort zurück. Der Spielstand hat das Format Version 4; ältere Stände (Version 1 bis 3) werden beim Laden umgewandelt, ohne dass Fortschritt verloren geht. Ist kein Speicher verfügbar, läuft das Spiel ohne Speichern weiter.
+
+## Als App (Play Store)
+
+Das Spiel ist als installierbare Web-App vorbereitet und kann so in eine App-Hülle für den Play Store (später auch den App Store) gepackt werden. Eine `index.html` dient allen Zielen; was nur auf einem Ziel gilt, entscheidet `js/platform.js`.
+
+- **Installierbar und offline:** `manifest.webmanifest` (Name „Reihenweise Süßes“, Kurzname „Süßes“, Vollbild, Hochformat, Nachtblau) und `sw.js` (Service Worker). Nach dem ersten Start über http(s) liegen alle Dateien im Offline-Speicher. Unter `file://` und auf dem Hub gibt es keinen Service Worker.
+- **Neue Version:** `VERSION` in `sw.js` muss zur obersten Version im CHANGELOG passen, sonst behalten installierte Apps die alten Dateien. Eine neue Datei, die `index.html` lädt, gehört auch in `ASSETS` von `sw.js`. Beides prüft `python tools/check_store.py` (Windows, macOS, Linux; Ausgabe `STORE CHECK: OK`).
+- **Bedienung wie eine App:** kein Zoomen, kein Gummiband am Rand, kein Markieren, kein Menü bei langem Drücken mit dem Finger. Ein Handy quer zeigt einen Hinweis zum Drehen. Ränder für Kerbe und Gestenleiste kommen aus `env(safe-area-inset-*)` (CSS-Variablen `--safe-top` usw. in `css/theme.css`).
+- **Spielfeld auf dem Handy:** Anzeigen und Joker-Leiste sind bis 600 px Breite kompakt (Joker nur mit Zeichen und Vorrat). Das Feld wird so weit verkleinert (höchstens bis 240 px), dass alles ohne Scrollen passt (`fitBoard` in `js/ui/game.js`).
+- **Zurück-Taste (Android und Browser):** schließt erst einen offenen Dialog, drückt sonst den Zurück-Knopf des Bildschirms (mit dessen Rückfrage, etwa „Level verlassen?“) und schließt im Hauptmenü die App (`js/ui/backnav.js`). Neue Bildschirme markieren ihren Zurück-Knopf mit `RS.UI.Back.mark(button)`, Dialogknöpfe mit `back: true`.
+- **Datenschutz:** `datenschutz.html` und ein Knopf im Hauptmenü. Vor der Veröffentlichung die Platzhalter `[NAME]`, `[ANSCHRIFT]`, `[E-MAIL]` und `[HOSTER …]` ausfüllen und den Text rechtlich prüfen lassen. Die Seite muss öffentlich erreichbar sein, der Play Store verlangt ihren Link.
+- **Store-Grafiken in `store/`:** Symbol 512 × 512 für den Play Store (`play-icon-512.png`), Titelgrafik 1024 × 500 (`feature-graphic-1024x500.png`), sechs Handy-Fotos 1080 × 2160 (`screenshots/`), dazu `icon-1024.png` und `splash-2732.png` als Vorlagen für eine App-Hülle. Die App-Symbole liegen in `icons/` (Quellen `icon.svg` und `icon-maskable.svg`).
+- **App-Hülle (noch offen):** Empfohlen ist Capacitor. Es packt die Dateien in die App, braucht keine eigene Domain und taugt später auch für iOS. Ein Spiegel für dessen Speicher (`@capacitor/preferences`) lässt sich mit `RS.Save.setMirror` einsetzen. Eine Trusted Web Activity bräuchte `/.well-known/assetlinks.json` im Hauptverzeichnis der Domain, das geht unter `moritz-neu.github.io/reihenweise-suesses/` nicht.
 
 ## Musik und Effekte
 
@@ -199,6 +212,10 @@ Der Bot sieht nachfallende Bonbons voraus. Deshalb sind Züge und Zielmengen gro
 
 ```
 index.html          Einstieg, lädt alle Skripte in fester Reihenfolge
+manifest.webmanifest, sw.js   Installierbare Web-App und Offline-Speicher
+datenschutz.html    Datenschutzerklärung (Platzhalter ausfüllen)
+icons/, store/      App-Symbole; Grafiken und Fotos für den Store
+tools/check_store.py  Prüft Offline-Liste, Version und Manifest vor einem Release
 css/                Stil „Mystische Zuckernacht": Farben, Bonbons, Karte, HUD, Dialoge, Laden (shop.css),
                     Bosskampf (boss.css)
 js/logic/           Spiellogik ohne DOM: Zufall, Feld, Spezialsteine, Hindernisse,
@@ -209,8 +226,11 @@ js/data/            Welt-Registry (registry.js), Schwierigkeitskurve (curve.js),
                     worlds/ mit einer Datei je Welt, w01.js bis w10.js (Level, Boss, Musikmotiv, Texte)
 js/ui/              Bildschirme: Startmenü, Welten-Atlas (atlas.js), Abspann (credits.js), Levelkarte (map.js, mapkit.js),
                     Spielfeld (game.js, boardview.js, boardfx.js), Endlos, Dialoge, Laden (shop.js), Effekte, Bossfigur (bossview.js),
+                    Zurück-Taste (backnav.js),
                     worlds/ mit Kartenbild und Bossfigur je Welt, w01.js bis w10.js
 js/save.js          Speichern und Laden (localStorage, Format Version 4)
+js/save-mirror.js   Zweitkopie des Spielstands in IndexedDB
+js/platform.js      Wo läuft das Spiel (Hub, Service Worker, installierte App)
 js/audio.js         Web-Audio-Motor: Sequenzer, Musik je Bildschirm, Einstellungen
 js/audio-sfx.js     Tabelle der Soundeffekte
 js/main.js          Start und Verdrahtung
@@ -226,3 +246,5 @@ Alle Dateien sind klassische `<script>`-Tags ohne ES-Module und hängen ihre Exp
 - Einige Level spielen mit fünf statt sechs Farben.
 - Gespeichert wird nur im Browser, es gibt keinen Abgleich zwischen Geräten.
 - Auf dem Handy gibt es keine eigenen Touch-Gesten, nur Tippen und Ziehen wie bisher.
+- Der Spiegel in IndexedDB hilft nicht, wenn der Browser alle Websitedaten auf einmal löscht.
+- Es gibt noch keine App-Hülle; der Play-Store-Eintrag braucht Capacitor (oder eine eigene Domain für eine Trusted Web Activity).

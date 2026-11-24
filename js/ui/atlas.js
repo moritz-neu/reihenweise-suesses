@@ -64,7 +64,7 @@
     RS.Audio.music(1);
     section = el('section', 'screen atlas');
     var head = el('header', 'map-head atlas-head');
-    var back = el('button', 'btn btn--ghost', 'Zurück');
+    var back = RS.UI.Back.mark(el('button', 'btn btn--ghost', 'Zurück'));
     back.type = 'button';
     back.addEventListener('click', function () {
       RS.Audio.play({ type: 'click' });

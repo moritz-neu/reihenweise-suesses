@@ -94,7 +94,7 @@
       className: 'dialog--result dialog--annika',
       body: body,
       buttons: [
-        { label: 'Menü', className: 'btn--ghost', onClick: function () {
+        { label: 'Menü', className: 'btn--ghost', back: true, onClick: function () {
           RS.Audio.play({ type: 'click' });
           RS.UI.show('menu');
         } },
