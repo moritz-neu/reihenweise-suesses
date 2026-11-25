@@ -2,9 +2,15 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
-## [6.0.0] – 2026-11-25
+## [6.0.1] – 2026-11-25
 
-Version 6.0.0 ist auf GitHub (Pages) veröffentlicht.
+Version 6.0.1 ist auf GitHub (Pages) veröffentlicht.
+
+### Verbessert
+- Neue Version ohne Umweg: Liegt eine neue Version bereit, lädt das Spiel einmal von selbst neu, aber nie mitten im Level, im Endlos-Lauf oder bei offenem Dialog (dann beim nächsten Bildschirmwechsel).
+- Neuigkeiten im Spiel: Nach einem Update zeigt das Hauptmenü einmal kurz, was neu ist (höchstens die zwei neuesten Versionen), danach mit „Los geht’s“ weggeklickt. Neue Spieler sehen es nicht. Der Knopf „Neuigkeiten“ im Hauptmenü zeigt alle Versionen.
+
+## [6.0.0] – 2026-11-25
 
 Jede Welt hat 100 statt 10 Level. Spielstand-Format bleibt Version 4; Stände aus 5.x laden mit allen Sternen.
 

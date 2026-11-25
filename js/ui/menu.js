@@ -189,6 +189,54 @@
     });
   }
 
+  // Neuigkeiten: Liste der Versionen mit ihren Zeilen (RS.NEWS, js/data/news.js).
+  function newsBody(entries) {
+    var body = el('div', 'news');
+    entries.forEach(function (n) {
+      var block = el('section', 'news-version');
+      block.appendChild(el('h3', 'news-title', 'Version ' + n.version + ' · ' + n.date));
+      var list = el('ul', 'news-list');
+      n.items.forEach(function (text) { list.appendChild(el('li', null, text)); });
+      block.appendChild(list);
+      body.appendChild(block);
+    });
+    return body;
+  }
+
+  // Alle Versionen zum Nachlesen (Knopf im Hauptmenü).
+  function showAllNews() {
+    RS.UI.dialog({
+      title: 'Neuigkeiten',
+      className: 'dialog--news',
+      body: newsBody(RS.NEWS),
+      buttons: [{ label: 'Schließen', className: 'btn--gold', back: true }],
+      onCancel: function () {}
+    });
+  }
+
+  // Nach einem Update einmal die ungelesenen Versionen zeigen; Schließen markiert alle als gelesen.
+  // Neue Spieler sehen nichts, ihre Versionen gelten sofort als gelesen.
+  function showNewsIfDue() {
+    var save = RS.App.save;
+    if (RS.News.isNewPlayer(save)) {
+      if (RS.News.markAllSeen(save)) { RS.App.persist(); }
+      return;
+    }
+    var entries = RS.News.due(save);
+    if (!entries.length) { return; }
+    function done() {
+      if (RS.News.markAllSeen(RS.App.save)) { RS.App.persist(); }
+    }
+    RS.UI.dialog({
+      title: 'Neu in Version ' + entries[0].version,
+      className: 'dialog--news',
+      body: newsBody(entries),
+      buttons: [{ label: 'Los geht’s', className: 'btn--gold', back: true }],
+      onCancel: function () {},
+      onClose: done
+    });
+  }
+
   // Schalter für Musik bzw. Effekte: wirkt sofort und wird im Spielstand gespeichert.
   function soundToggle(key, name) {
     var b = el('button', 'btn btn--ghost menu-toggle');
@@ -294,6 +342,7 @@
     }));
     extras.appendChild(soundToggle('music', 'Musik'));
     extras.appendChild(soundToggle('sfx', 'Effekte'));
+    extras.appendChild(button('Neuigkeiten', 'btn--ghost', showAllNews));
     extras.appendChild(button('Datenschutz', 'btn--ghost', showPrivacy));
     actions.appendChild(extras);
     actions.appendChild(notice);
@@ -309,4 +358,5 @@
   }
 
   RS.UI.screens.menu = { mount: mount, unmount: unmount };
+  RS.UI.News = { showIfDue: showNewsIfDue, showAll: showAllNews };
 })(window.RS = window.RS || {});

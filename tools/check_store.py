@@ -3,7 +3,7 @@
 Aufruf im Projektordner (Windows, macOS, Linux):  python tools/check_store.py
 - Jede Datei, die index.html lädt (src/href), steht in ASSETS von sw.js.
 - Jede Datei in ASSETS existiert.
-- VERSION in sw.js passt zur obersten Version im CHANGELOG.
+- VERSION in sw.js passt zur obersten Version im CHANGELOG und in js/data/news.js.
 - manifest.webmanifest ist gültiges JSON, und seine Symbole existieren.
 Endet mit Code 0 und „STORE CHECK: OK“ oder mit Code 1 und den Fehlern.
 """
@@ -35,6 +35,9 @@ def main():
         errors.append('ASSETS enthält Einträge doppelt')
     version = re.search(r"var VERSION = '([^']+)'", sw).group(1)
     top = re.search(r'^## \[([^\]]+)\]', read('CHANGELOG.md'), re.M).group(1)
+    news = re.search(r"version: '([^']+)'", read('js/data/news.js')).group(1)
+    if news != version:
+        errors.append('oberste Version in js/data/news.js (%s) passt nicht zu sw.js VERSION %s' % (news, version))
     if top != version:
         errors.append('sw.js VERSION %s passt nicht zur obersten CHANGELOG-Version %s' % (version, top))
     try:

@@ -766,3 +766,29 @@ button.atlas-card:hover {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
+
+/* Neuigkeiten nach einem Update und im Hauptmenü */
+.news {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+
+.news-title {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+  color: var(--gold);
+}
+
+.news-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.news-list li + li {
+  margin-top: 0.25rem;
+}

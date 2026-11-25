@@ -35,6 +35,26 @@
     window.addEventListener('load', function () {
       navigator.serviceWorker.register('sw.js').catch(function () { /* ohne Offline-Speicher weiter */ });
     });
+    // Neue Version: Der neue Service Worker übernimmt sofort (skipWaiting, clients.claim). Lief
+    // vorher schon eine Version, lädt die Seite einmal neu, damit alle Dateien zusammenpassen.
+    // Nie mitten im Level oder Endlos-Lauf und nie bei offenem Dialog: dann beim nächsten
+    // Bildschirmwechsel. Beim allerersten Besuch (noch kein Service Worker) gibt es kein Neuladen.
+    var hadController = Boolean(navigator.serviceWorker.controller);
+    var updateReady = false;
+    var reloading = false;
+    var reloadWhenIdle = function () {
+      if (!updateReady || reloading || !RS.UI.current) { return; }
+      var screen = RS.UI.current();
+      if (screen === 'game' || screen === 'endless' || RS.UI.isDialogOpen()) { return; }
+      reloading = true;
+      window.location.reload();
+    };
+    RS.App.reloadWhenIdle = reloadWhenIdle;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadController) { return; }
+      updateReady = true;
+      reloadWhenIdle();
+    });
   }
 
   // Start erst nach dem Abgleich mit dem Spiegel (höchstens 1,5 s, meist wenige ms).
@@ -45,6 +65,8 @@
     }
     RS.UI.init(document.getElementById('app'));
     RS.UI.Back.install(window);
+    if (RS.App.reloadWhenIdle) { RS.UI.onChange(RS.App.reloadWhenIdle); }
     RS.UI.show('menu');
+    RS.UI.News.showIfDue();
   });
 })(window.RS = window.RS || {});
