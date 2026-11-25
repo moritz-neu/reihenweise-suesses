@@ -748,3 +748,60 @@
   animation: amb-hop 1.4s ease-in-out infinite;
   transform-origin: 50% 100%;
 }
+
+/* Endlos-Modus: Die Kulisse reist durch die Welten (Überblendung) und nennt die neue Welt */
+.ambient.is-leaving {
+  opacity: 0;
+  transition: opacity 1.6s ease-in-out;
+}
+
+.amb-world-banner {
+  position: fixed;
+  left: 50%;
+  top: 22%;
+  z-index: 40;
+  padding: 0.45em 1.2em;
+  border: 2px solid var(--gold-line);
+  border-radius: 999px;
+  background: rgba(20, 12, 46, 0.85);
+  color: var(--gold);
+  font-family: var(--font-title);
+  font-size: clamp(1.1rem, 4.5vmin, 1.7rem);
+  font-weight: 800;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: amb-banner 2.6s ease-out forwards;
+}
+
+@keyframes amb-banner {
+  0% { opacity: 0; transform: translate(-50%, 12px) scale(0.9); }
+  15% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -8px); }
+}
+
+/* Startfenster eines Levels: unten der Horizont der Welt */
+.dialog-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30%;
+  overflow: hidden;
+  border-radius: 0 0 20px 20px;
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+.dialog-horizon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.dialog .dialog-actions,
+.dialog .annika-say,
+.dialog .intro-goal {
+  position: relative;
+}

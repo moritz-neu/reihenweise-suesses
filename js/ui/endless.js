@@ -9,6 +9,7 @@
   var Kit = RS.UI.GameKit;
   var MAX_DT = 0.25;   // Sekunden: ein hängender Frame frisst nie mehr Zeit als das
   var LOW_TIME = 10;   // Sekunden: darunter wird die Zeitleiste zur Warnung
+  var WORLD_STEP = 3000;   // Punkte: so oft reist die Kulisse in die nächste Welt
 
   // ---------- HUD ----------
 
@@ -136,9 +137,40 @@
       onFinished: function (events) {
         hud.apply(events);
         last = null;   // die Zeit des Abspielens zählt nicht
+        travel();
       }
     });
     var view = board.view;
+
+    // Reise durch die Welten: alle WORLD_STEP Punkte blendet die Kulisse in die nächste Welt
+    // über (Himmel, Bewohner, Spielfeldfarben, Musik), nach Welt 10 wieder von vorn.
+    var currentWorld = 1;
+    function travel() {
+      var count = RS.Worlds.list().length || 10;
+      var next = 1 + Math.floor(session.score / WORLD_STEP) % count;
+      if (next === currentWorld || !RS.UI.Ambient || board.isDead()) { return; }
+      var section = board.section;
+      section.classList.remove('game--w' + currentWorld);
+      section.classList.add('game--w' + next);
+      var old = section.querySelector('.ambient');
+      var fresh = RS.UI.Ambient.gameLayer(next);
+      if (old) {
+        section.insertBefore(fresh, old);
+        old.classList.add('is-leaving');
+        setTimeout(function () { if (old.parentNode) { old.parentNode.removeChild(old); } }, 1700);
+      } else {
+        section.insertBefore(fresh, section.firstChild);
+      }
+      currentWorld = next;
+      RS.Audio.music(next, { endless: true });
+      var world = RS.Worlds.get(next);
+      if (world) {
+        var banner = el('div', 'amb-world-banner', world.name);
+        banner.setAttribute('role', 'status');
+        section.appendChild(banner);
+        setTimeout(function () { if (banner.parentNode) { banner.parentNode.removeChild(banner); } }, 2600);
+      }
+    }
 
     function stopClock() {
       if (frameId) { cancelAnimationFrame(frameId); frameId = 0; }
@@ -177,7 +209,9 @@
     function onVisibility() { last = null; }
     document.addEventListener('visibilitychange', onVisibility);
 
-    active = { board: board, stopClock: stopClock, onVisibility: onVisibility };
+    active = { board: board, stopClock: stopClock, onVisibility: onVisibility,
+      // Test-Haken: Punktestand setzen und die Reise prüfen (nur für Proben, nicht im Spiel benutzt).
+      travelTo: function (score) { session.score = score; travel(); return currentWorld; } };
     frameId = requestAnimationFrame(frame);
   }
 
@@ -190,5 +224,6 @@
     state.board.teardown();
   }
 
-  RS.UI.screens.endless = { mount: mount, unmount: unmount };
+  RS.UI.screens.endless = { mount: mount, unmount: unmount,
+    _travelTo: function (score) { return active ? active.travelTo(score) : null; } };
 })(window.RS = window.RS || {});

@@ -6,6 +6,9 @@
   // (tools/check_store.py prüft das). Nach einem Update zeigt das Hauptmenü einmal die noch
   // ungelesenen Versionen (höchstens zwei); gelesen ist eine Version mit dem Merker news:<version>.
   var NEWS = [
+    { version: '6.4.0', date: '25.11.2026', items: [
+      'Im Endlos-Modus reist du mit: Alle 3000 Punkte wechselt die Kulisse in die nächste Welt, mit ihrer Musik.'
+    ] },
     { version: '6.3.0', date: '25.11.2026', items: [
       'Die Weltenübersicht zeigt jede Welt mit ihrem eigenen Horizont.',
       'Nach einem Sieg fliegt Annika zum nächsten Level, und gesperrte Level sagen dir, was vorher dran ist.',

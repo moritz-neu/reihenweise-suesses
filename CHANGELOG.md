@@ -2,9 +2,15 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
-## [6.3.0] – 2026-11-25
+## [6.4.0] – 2026-11-25
 
-Version 6.3.0 ist auf GitHub (Pages) veröffentlicht.
+Version 6.4.0 ist auf GitHub (Pages) veröffentlicht.
+
+### Neu
+- Endlos-Modus als Reise: Alle 3000 Punkte blendet die Kulisse in die nächste Welt über (Himmel, Bewohner, Spielfeldfarben, Musik), der Name der Welt erscheint kurz; nach Welt 10 geht es in Kandishain weiter.
+- Das Startfenster eines Levels zeigt unten den Horizont seiner Welt.
+
+## [6.3.0] – 2026-11-25
 
 ### Neu
 - Weltenübersicht: unten auf jeder Weltkarte der Horizont der Welt.

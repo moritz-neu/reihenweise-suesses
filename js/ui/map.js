@@ -58,6 +58,9 @@
 
   function openIntro(level) {
     var body = el('div');
+    if (RS.UI.Ambient) {
+      body.insertAdjacentHTML('beforeend', '<span class="dialog-horizon" aria-hidden="true">' + RS.UI.Ambient.horizon(level.world) + '</span>');
+    }
     body.appendChild(RS.UI.Dialog.annika(level.intro || '').node);
     body.appendChild(el('p', 'intro-goal', goalSummary(level)));
     RS.UI.dialog({
