@@ -805,3 +805,25 @@
 .dialog .intro-goal {
   position: relative;
 }
+
+/* ---------- Ruhige Kulisse (Schalter im Hauptmenü): stehende Bilder, keine Szenen ---------- */
+
+.rs-calm .amb-fig,
+.rs-calm .amb-fig *,
+.rs-calm .ambient-horizon *,
+.rs-calm .ambient--boss::after,
+.rs-calm .map-here,
+.rs-calm .map-boss,
+.rs-calm .bv-piece .candy::after,
+.rs-calm .bv-piece .bv-mark,
+.rs-calm .bv-piece .bv-mark::after,
+.rs-calm .result-fig {
+  animation: none !important;
+}
+
+.rs-calm .amb-scene,
+.rs-calm .amb-particle,
+.rs-calm .menu-shooting,
+.rs-calm .menu-flyby {
+  display: none !important;
+}

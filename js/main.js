@@ -16,6 +16,11 @@
   // fort (bei laufendem Kontext ist der Aufruf billig). Bei Touch zählen erst pointerup,
   // touchend und click als Nutzeraktion, iOS verlangt den Aufruf in touchend oder click.
   RS.Audio.setSettings(RS.App.save.settings);
+  // Ruhige Kulisse: Klasse rs-calm am Dokument (css/ambient.css), aus dem Spielstand.
+  RS.App.applyMotion = function () {
+    document.documentElement.classList.toggle('rs-calm', RS.App.save.settings.motion === false);
+  };
+  RS.App.applyMotion();
   function unlockAudio() { RS.Audio.unlock(); }
   ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'].forEach(function (type) {
     document.addEventListener(type, unlockAudio, true);
@@ -62,6 +67,7 @@
     if (result === 'restored') {
       RS.App.save = RS.Save.load();
       RS.Audio.setSettings(RS.App.save.settings);
+      RS.App.applyMotion();
     }
     RS.UI.init(document.getElementById('app'));
     RS.UI.Back.install(window);

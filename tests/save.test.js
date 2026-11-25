@@ -26,7 +26,7 @@
     RS.assert.deepEqual(RS.Save.load(fakeStorage()), RS.Save.fresh());
     RS.assert.deepEqual(RS.Save.fresh(),
       { version: 4, stars: {}, seen: [], sticks: 0, jokers: { moves: 1, hammer: 1, besen: 0, feentausch: 0, regenbogen: 0, zauberbombe: 0 }, endlessHighscore: 0, completed: false,
-        settings: { music: true, sfx: true } });
+        settings: { music: true, sfx: true, motion: true } });
   });
 
   RS.test('save: load returns fresh on corrupt JSON', function () {
@@ -222,7 +222,7 @@
     var d = RS.Save.load(s);
     RS.assert.deepEqual(d, { version: 4, stars: { 'w1-01': 3, 'w1-02': 1 }, seen: ['prolog'], sticks: 0,
       jokers: { moves: 1, hammer: 1, besen: 0, feentausch: 0, regenbogen: 0, zauberbombe: 0 }, endlessHighscore: 4200, completed: false,
-      settings: { music: true, sfx: true } });
+      settings: { music: true, sfx: true, motion: true } });
     d.jokers.moves = 0;
     RS.Save.store(d, s);
     RS.assert.equal(RS.Save.load(s).jokers.moves, 0, 'gift only once');
@@ -267,12 +267,12 @@
   });
 
   RS.test('save: fresh has settings on', function () {
-    RS.assert.deepEqual(RS.Save.fresh().settings, { music: true, sfx: true });
+    RS.assert.deepEqual(RS.Save.fresh().settings, { music: true, sfx: true, motion: true });
     var s = fakeStorage();
     var d = RS.Save.fresh();
     d.settings.music = false;
     RS.Save.store(d, s);
-    RS.assert.deepEqual(RS.Save.load(s).settings, { music: false, sfx: true }, 'stored setting survives');
+    RS.assert.deepEqual(RS.Save.load(s).settings, { music: false, sfx: true, motion: true }, 'stored setting survives');
   });
 
   RS.test('save: v4 without settings keeps progress and gets defaults', function () {
@@ -280,7 +280,7 @@
     putRaw(s, { version: 4, stars: { 'w2-03': 3 }, seen: ['prolog', 'tor:1'], sticks: 55,
       jokers: { moves: 2, hammer: 3, besen: 1 }, endlessHighscore: 900, completed: false });
     var d = RS.Save.load(s);
-    RS.assert.deepEqual(d.settings, { music: true, sfx: true });
+    RS.assert.deepEqual(d.settings, { music: true, sfx: true, motion: true });
     RS.assert.equal(d.stars['w2-03'], 3);
     RS.assert.equal(d.sticks, 55);
     RS.assert.deepEqual(d.jokers, { moves: 2, hammer: 3, besen: 1, feentausch: 0, regenbogen: 0, zauberbombe: 0 });
@@ -289,12 +289,12 @@
 
   RS.test('save: invalid settings value falls back to default', function () {
     var cases = [
-      [{ music: 'nein', sfx: false }, { music: true, sfx: false }],
-      [{ music: false }, { music: false, sfx: true }],
-      [{ music: false, sfx: 0 }, { music: false, sfx: true }],
-      [null, { music: true, sfx: true }],
-      ['aus', { music: true, sfx: true }],
-      [[false, false], { music: true, sfx: true }]
+      [{ music: 'nein', sfx: false }, { music: true, sfx: false, motion: true }],
+      [{ music: false }, { music: false, sfx: true, motion: true }],
+      [{ music: false, sfx: 0 }, { music: false, sfx: true, motion: true }],
+      [null, { music: true, sfx: true, motion: true }],
+      ['aus', { music: true, sfx: true, motion: true }],
+      [[false, false], { music: true, sfx: true, motion: true }]
     ];
     cases.forEach(function (c, i) {
       var s = fakeStorage();
@@ -347,7 +347,9 @@
     var s = fakeStorage();
     putRaw(s, fixture);
     var loaded = RS.Save.load(s);
-    RS.assert.deepEqual(loaded, fixture);
+    var expected = JSON.parse(JSON.stringify(fixture));
+    expected.settings.motion = true;   // seit 6.5.0: neue Einstellung mit Standardwert
+    RS.assert.deepEqual(loaded, expected);
     RS.assert.equal(RS.Save.hasSeen(loaded, 'abspann'), true);
     RS.assert.equal(RS.Save.hasSeen(loaded, 'kapitel:10'), true);
     RS.assert.equal(loaded.settings.music, false);
@@ -355,7 +357,7 @@
     // Storing the loaded save and loading it again changes nothing either.
     var s2 = fakeStorage();
     RS.assert.equal(RS.Save.store(loaded, s2), true);
-    RS.assert.equal(s2.raw[RS.Save.KEY], JSON.stringify(fixture));
-    RS.assert.deepEqual(RS.Save.load(s2), fixture);
+    RS.assert.equal(s2.raw[RS.Save.KEY], JSON.stringify(expected));
+    RS.assert.deepEqual(RS.Save.load(s2), expected);
   });
 })(window.RS = window.RS || {});

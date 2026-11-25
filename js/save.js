@@ -13,7 +13,8 @@
     return j;
   }
 
-  var SETTINGS = { music: true, sfx: true };
+  // motion: lebendige Kulisse (Bewohner, Szenen, Konfetti); false = ruhige Kulisse.
+  var SETTINGS = { music: true, sfx: true, motion: true };
 
   function fresh() {
     return { version: 4, stars: {}, seen: [], sticks: 0, jokers: startJokers(), endlessHighscore: 0, completed: false,

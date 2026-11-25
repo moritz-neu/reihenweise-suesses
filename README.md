@@ -47,7 +47,7 @@ Das Spiel ist als installierbare Web-App vorbereitet und kann so in eine App-Hü
 
 ## Musik und Effekte
 
-Musik und Soundeffekte entstehen zur Laufzeit mit Web Audio, es gibt keine Audiodateien. Jeder Bildschirm hat seine Musik, jede Welt ein eigenes Motiv (Tempo, Tonleiter, Klangfarbe, Bass, Trommeln, Melodien) in ihrer Weltdatei. Im Hauptmenü schalten zwei Schalter Musik und Effekte getrennt ein und aus; die Wahl steht im Spielstand. Browser geben Ton erst nach der ersten Eingabe frei, deshalb startet der Ton mit dem ersten Klick oder Tipp. Ohne Web Audio läuft das Spiel still weiter.
+Musik und Soundeffekte entstehen zur Laufzeit mit Web Audio, es gibt keine Audiodateien. Jeder Bildschirm hat seine Musik, jede Welt ein eigenes Motiv (Tempo, Tonleiter, Klangfarbe, Bass, Trommeln, Melodien) in ihrer Weltdatei. Im Hauptmenü schalten zwei Schalter Musik und Effekte getrennt ein und aus, ein dritter stellt die Kulisse auf lebendig oder ruhig; die Wahl steht im Spielstand. Browser geben Ton erst nach der ersten Eingabe frei, deshalb startet der Ton mit dem ersten Klick oder Tipp. Ohne Web Audio läuft das Spiel still weiter.
 
 ## Zwischenlevel erzeugen
 

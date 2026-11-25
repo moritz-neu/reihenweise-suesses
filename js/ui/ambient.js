@@ -394,8 +394,13 @@
   // Konfetti über dem ganzen Bildschirm (Sieg); räumt sich nach 4 s selbst weg. Bei
   // „Bewegung reduzieren“ gibt es keins.
   var CONFETTI = ['#ff4d7a', '#ffd24d', '#4dffb0', '#4dc3ff', '#c77dff', '#ff9f43', '#fff2c4'];
+  function calm() {
+    return document.documentElement.classList.contains('rs-calm') ||
+      Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
   function confetti(count) {
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { return null; }
+    if (calm()) { return null; }
     var layer = el('div', 'amb-confetti');
     layer.setAttribute('aria-hidden', 'true');
     var n = count || 46;
@@ -417,7 +422,7 @@
 
   // Goldener Lichtblitz über dem ganzen Bildschirm (Bosssieg); räumt sich selbst weg.
   function flash() {
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { return null; }
+    if (calm()) { return null; }
     var f = el('div', 'amb-flash');
     f.setAttribute('aria-hidden', 'true');
     document.body.appendChild(f);

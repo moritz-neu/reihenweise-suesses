@@ -6,6 +6,9 @@
   // (tools/check_store.py prüft das). Nach einem Update zeigt das Hauptmenü einmal die noch
   // ungelesenen Versionen (höchstens zwei); gelesen ist eine Version mit dem Merker news:<version>.
   var NEWS = [
+    { version: '6.5.0', date: '25.11.2026', items: [
+      'Neuer Schalter im Hauptmenü: „Kulisse: ruhig“ hält Bewohner, Szenen und Konfetti still.'
+    ] },
     { version: '6.4.0', date: '25.11.2026', items: [
       'Im Endlos-Modus reist du mit: Alle 3000 Punkte wechselt die Kulisse in die nächste Welt, mit ihrer Musik.'
     ] },

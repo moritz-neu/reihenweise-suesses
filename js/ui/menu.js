@@ -237,6 +237,26 @@
     });
   }
 
+  // Schalter für die Kulisse: lebendig (Bewohner, Szenen, Konfetti) oder ruhig (stehende Bilder).
+  function motionToggle() {
+    var b = el('button', 'btn btn--ghost menu-toggle');
+    b.type = 'button';
+    function render() {
+      var on = RS.App.save.settings.motion;
+      b.textContent = 'Kulisse: ' + (on ? 'lebendig' : 'ruhig');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    }
+    b.addEventListener('click', function () {
+      RS.App.save.settings.motion = !RS.App.save.settings.motion;
+      RS.App.persist();
+      RS.App.applyMotion();
+      render();
+      RS.Audio.play({ type: 'click' });
+    });
+    render();
+    return b;
+  }
+
   // Schalter für Musik bzw. Effekte: wirkt sofort und wird im Spielstand gespeichert.
   function soundToggle(key, name) {
     var b = el('button', 'btn btn--ghost menu-toggle');
@@ -342,6 +362,7 @@
     }));
     extras.appendChild(soundToggle('music', 'Musik'));
     extras.appendChild(soundToggle('sfx', 'Effekte'));
+    extras.appendChild(motionToggle());
     extras.appendChild(button('Neuigkeiten', 'btn--ghost', showAllNews));
     extras.appendChild(button('Datenschutz', 'btn--ghost', showPrivacy));
     actions.appendChild(extras);
