@@ -98,6 +98,13 @@
     var dead = false;
 
     var section = el('section', 'screen game' + (opts.className ? ' ' + opts.className : ''));
+    // Lebendige Kulisse der Welt hinter dem Spiel (js/ui/ambient.js).
+    if (opts.world) { section.classList.add('game--w' + opts.world); }
+    if (opts.world && RS.UI.Ambient) {
+      var amb = RS.UI.Ambient.gameLayer(opts.world);
+      if (opts.className && opts.className.indexOf('game--boss') >= 0) { amb.classList.add('ambient--boss'); }
+      section.appendChild(amb);
+    }
     var head = el('header', 'game-head');
     var back = RS.UI.Back.mark(el('button', 'btn btn--ghost', opts.back.label));
     back.type = 'button';
@@ -188,10 +195,26 @@
       return playMove(view, events, finished);
     }
 
+    // Lob für lange Kettenreaktionen: ab der dritten Kaskadenstufe ein kurzes Wort über dem Feld.
+    var PRAISE = ['Super!', 'Klasse!', 'Zuckersüß!', 'Fantastisch!'];
+    function praise(events) {
+      var stage = 0;
+      events.forEach(function (e) { if (e.type === 'cascade' && e.stage > stage) { stage = e.stage; } });
+      if (stage < 3) { return; }
+      var word = el('div', 'bv-praise', PRAISE[Math.min(stage - 3, PRAISE.length - 1)]);
+      word.setAttribute('aria-hidden', 'true');
+      setTimeout(function () {
+        if (dead) { return; }
+        holder.appendChild(word);
+        setTimeout(function () { if (word.parentNode) { word.parentNode.removeChild(word); } }, 1400);
+      }, 450);
+    }
+
     view.onSwap(function (a, b) {
       if (!playing() || view.isBusy()) { return; }
       hint.stop();
       var events = RS.Session.move(session, a, b);
+      praise(events);
       if (opts.onMoved) { opts.onMoved(events); }
       playMove(view, events, finished);
     });
@@ -373,6 +396,10 @@
   RS.UI.GameKit.rewardLine = rewardLine;
 
   function showWin(level, won, reward) {
+    if (RS.UI.Ambient) {
+      if (level.isBoss) { RS.UI.Ambient.flash(); }
+      RS.UI.Ambient.confetti(level.isBoss ? 90 : 46);
+    }
     var stars = el('div', 'result-stars');
     stars.setAttribute('aria-label', won.stars + ' von 3 Sternen');
     stars.setAttribute('role', 'img');
@@ -693,6 +720,7 @@
 
     active = mountBoard(root, {
       title: 'Level ' + level.label,
+      world: level.world,
       hud: hud.el,
       session: session,
       back: {

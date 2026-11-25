@@ -38,6 +38,8 @@
     pic.setAttribute('aria-hidden', 'true');
     if (art) { pic.innerHTML = art.house(world.id - 1); }
     b.appendChild(pic);
+    // Eine kleine Figur der Welt hüpft, schwebt oder winkt in der Ecke der Karte.
+    if (RS.UI.Ambient) { b.insertAdjacentHTML('beforeend', RS.UI.Ambient.figure(world.id, 0, 'atlas-fig')); }
     b.appendChild(el('span', 'atlas-name', world.name));
     var stars = el('span', 'atlas-stars');
     stars.appendChild(el('span', 'atlas-star', '★'));

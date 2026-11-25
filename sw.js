@@ -5,7 +5,7 @@
 // ASSETS muss jede Datei enthalten, die index.html lädt: python tools/check_store.py prüft das.
 'use strict';
 
-var VERSION = '6.0.1';
+var VERSION = '6.1.0';
 var CACHE = 'rs-' + VERSION;
 var ASSETS = [
   './',
@@ -21,6 +21,7 @@ var ASSETS = [
   'css/map.css',
   'css/shop.css',
   'css/boss.css',
+  'css/ambient.css',
   'js/platform.js',
   'js/logic/rng.js',
   'js/logic/board.js',
@@ -70,6 +71,7 @@ var ASSETS = [
   'js/ui/shop.js',
   'js/ui/menu.js',
   'js/ui/effects.js',
+  'js/ui/ambient.js',
   'js/ui/boardfx.js',
   'js/ui/boardview.js',
   'js/ui/bossview.js',

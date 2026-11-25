@@ -349,6 +349,19 @@
     section.appendChild(actions);
 
     section.insertAdjacentHTML('beforeend', villageSvg());
+    // Über den Himmel: ab und zu eine Sternschnuppe, gelegentlich fliegt Annika vorbei.
+    var shoot = el('span', 'menu-shooting');
+    shoot.setAttribute('aria-hidden', 'true');
+    section.appendChild(shoot);
+    var flyer = el('div', 'menu-flyby');
+    flyer.setAttribute('aria-hidden', 'true');
+    flyer.appendChild(RS.UI.Dialog.figure());
+    section.appendChild(flyer);
+    // Bewohner von Kandishain: der Lebkuchenmann winkt, die Katze schaut zu.
+    if (RS.UI.Ambient) {
+      section.insertAdjacentHTML('beforeend', RS.UI.Ambient.figure(1, 0, 'menu-fig menu-fig--left') +
+        RS.UI.Ambient.figure(1, 1, 'menu-fig menu-fig--right'));
+    }
 
     root.appendChild(section);
   }

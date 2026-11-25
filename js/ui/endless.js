@@ -122,6 +122,7 @@
     var board = Kit.mountBoard(root, {
       className: 'endless',
       title: 'Endlos',
+      world: 1,
       hud: hud.el,
       session: session,
       back: {

@@ -172,6 +172,10 @@
       path: [OFF, [OFF[0] + 1, OFF[1]]], lit: [], crystalLit: crystalLit
     });
     if (top) { seg.appendChild(skyLayer()); }
+    if (RS.UI.Ambient) {
+      var s = Number(seg.getAttribute('data-seg'));
+      seg.insertAdjacentHTML('beforeend', RS.UI.Ambient.mapLayer(view.world.id, s, Number(seg.getAttribute('data-segs'))));
+    }
     seg.setAttribute('data-painted', '1');
   }
 
@@ -218,6 +222,7 @@
       seg.style.top = ((segs - 1 - s) / segs * 100) + '%';
       seg.style.height = (100 / segs) + '%';
       seg.setAttribute('data-seg', String(s));
+      seg.setAttribute('data-segs', String(segs));
       holder.appendChild(seg);
       pending.push(seg);
     }
@@ -282,6 +287,25 @@
       if (state === 'next' && !nextBtn) { nextBtn = b; }
       holder.appendChild(b);
     });
+    // Annika schwebt über dem nächsten spielbaren Level („Du bist hier“).
+    if (nextBtn) {
+      var here = el('div', 'map-here');
+      here.setAttribute('aria-hidden', 'true');
+      here.appendChild(RS.UI.Dialog.figure());
+      place(here, pts[levels.indexOf(levels.filter(function (l, i) { return open[i] && !(save.stars[l.id] > 0); })[0])], full);
+      holder.appendChild(here);
+    }
+    // Der Boss wartet neben seiner Station, bis er besiegt ist.
+    var bossLevel = levels[levels.length - 1];
+    if (bossLevel && bossLevel.isBoss && !RS.Progress.isWon(save, bossLevel.id) && view.art.bossFigure) {
+      var bp = pts[levels.length - 1];
+      var waiting = el('div', 'map-boss');
+      waiting.setAttribute('aria-hidden', 'true');
+      waiting.innerHTML = view.art.bossFigure();
+      place(waiting, [bp[0] < layout.w / 2 ? bp[0] + 95 : bp[0] - 95, bp[1] + 10], full);
+      holder.appendChild(waiting);
+    }
+
     // Die Abschnitte rund um die Station, bei der die Karte öffnet, sofort zeichnen.
     var focusIndex = Math.max(0, nextBtn ? open.indexOf(true, 0) : litCount - 1);
     levels.forEach(function (l, i) { if (open[i] && !(save.stars[l.id] > 0) && i < focusIndex) { focusIndex = i; } });
@@ -402,6 +426,8 @@
     if (opening) { view.exit.state = chapterDue ? 'closed' : 'opening'; }
     section = el('section', 'screen map map--w' + worldId);
     var mine = section;
+    // Kulisse der Welt hinter der Karte (füllt auf breiten Fenstern die Seiten).
+    if (RS.UI.Ambient) { section.appendChild(RS.UI.Ambient.gameLayer(worldId)); }
 
     var head = el('header', 'map-head');
     var nav = el('div', 'map-nav');
@@ -462,6 +488,7 @@
       view.exit.state = 'opening';
       var gateBtn = renderMap(holder, view);
       RS.Audio.play({ type: 'gateOpen' });
+      if (RS.UI.Ambient) { RS.UI.Ambient.confetti(70); }
       view.exit.state = 'open';
       markSeen('tor:' + worldId);
       reveal(gateBtn);

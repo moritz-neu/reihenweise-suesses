@@ -1,0 +1,622 @@
+/* Reihenweise Süßes – lebendige Kulissen je Welt (js/ui/ambient.js)
+   Langsame, kleine Bewegungen nur über transform und opacity; alles hinter dem Spielgeschehen
+   und ohne Klicks. Bei „Bewegung reduzieren“ steht alles still (css/theme.css). */
+
+/* ---------- Spielbildschirm ---------- */
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--amb-sky-top) 0%, var(--amb-sky-bottom) 100%);
+  opacity: 0.82;
+}
+
+.ambient-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 24vh;
+  opacity: 0.95;
+}
+
+.ambient-horizon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.amb-fig {
+  position: absolute;
+  aspect-ratio: 1 / 1;
+  filter: drop-shadow(0 3px 4px rgba(8, 3, 22, 0.45));
+}
+
+.amb-fig svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ambient .amb-fig {
+  opacity: 0.92;
+}
+
+/* Bosskampf: dunklerer Himmel und ein langsam pulsierendes Glühen am Horizont */
+.ambient--boss::before {
+  filter: brightness(0.7) saturate(1.2);
+}
+
+.ambient--boss::after {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: -10vh;
+  height: 45vh;
+  background: radial-gradient(ellipse at 50% 100%, rgba(224, 32, 79, 0.45), rgba(224, 32, 79, 0) 70%);
+  animation: amb-bossglow 5s ease-in-out infinite alternate;
+}
+
+@keyframes amb-bossglow {
+  from { opacity: 0.45; }
+  to { opacity: 0.9; }
+}
+
+/* Breite Fenster: zwei Figuren mehr in den freien Seitenflächen */
+.ambient .amb-wide {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .ambient .amb-wide {
+    display: block;
+  }
+}
+
+/* Fallende und steigende Teilchen (Schnee, Blüten, Kaugummiblasen) */
+.amb-particle {
+  position: absolute;
+  top: 0;
+  width: clamp(14px, 3.2vmin, 30px);
+  aspect-ratio: 1 / 1;
+  opacity: 0.7;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.amb-particle svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.amb-particle--fall { animation-name: amb-fall; }
+.amb-particle--rise { animation-name: amb-rise; }
+
+@keyframes amb-fall {
+  from { transform: translate(0, -10vh) rotate(0deg); }
+  50% { transform: translate(3vw, 50vh) rotate(180deg); }
+  to { transform: translate(-2vw, 110vh) rotate(360deg); }
+}
+
+@keyframes amb-rise {
+  from { transform: translate(0, 110vh) scale(0.6); opacity: 0; }
+  15% { opacity: 0.7; }
+  85% { opacity: 0.7; }
+  to { transform: translate(2vw, 30vh) scale(1.1); opacity: 0; }
+}
+
+/* ---------- Lange Karte: Figuren je Abschnitt, Schleier zur Bosshöhe hin ---------- */
+
+.ambient-map {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ambient-map::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(14, 6, 34, calc(var(--amb-dusk, 0) * 0.38)) 0%, rgba(14, 6, 34, 0) 70%);
+}
+
+/* ---------- Bewegungen der ganzen Figur ---------- */
+
+.amb-anim-bob { animation: amb-bob 4.6s ease-in-out infinite; }
+.amb-anim-float { animation: amb-float 7s ease-in-out infinite; }
+.amb-anim-hop { animation: amb-hop 3.4s ease-in-out infinite; transform-origin: 50% 100%; }
+.amb-anim-sway { animation: amb-sway 5.5s ease-in-out infinite; transform-origin: 50% 100%; }
+.amb-anim-spin { animation: amb-spin 22s linear infinite; }
+.amb-anim-walk { animation: amb-walk 18s ease-in-out infinite; }
+.amb-anim-twinkle { animation: amb-twinkle 3.2s ease-in-out infinite; }
+.amb-anim-swing { animation: amb-swing 4.2s ease-in-out infinite; transform-origin: 50% 0%; }
+.amb-anim-buzz { animation: amb-buzz 7s ease-in-out infinite; }
+.amb-anim-glide { animation: amb-glide 11s ease-in-out infinite; }
+.amb-anim-rock { animation: amb-rock 4.8s ease-in-out infinite; transform-origin: 50% 90%; }
+.amb-anim-burst { animation: amb-burst 4.5s ease-out infinite; }
+.amb-anim-jump { animation: amb-jump 8s ease-in-out infinite; }
+.amb-anim-swim { animation: amb-swim 12s ease-in-out infinite; }
+.amb-anim-flutter { animation: amb-flutter 6s ease-in-out infinite; }
+.amb-anim-haunt { animation: amb-haunt 8s ease-in-out infinite; }
+
+@keyframes amb-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6%); }
+}
+
+@keyframes amb-float {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(4%, -8%); }
+  66% { transform: translate(-3%, -4%); }
+}
+
+@keyframes amb-hop {
+  0%, 60%, 100% { transform: translateY(0) scale(1, 1); }
+  66% { transform: translateY(0) scale(1.06, 0.92); }
+  76% { transform: translateY(-22%) scale(0.96, 1.05); }
+  86% { transform: translateY(0) scale(1.04, 0.95); }
+}
+
+@keyframes amb-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes amb-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes amb-walk {
+  0% { transform: translateX(0) scaleX(1); }
+  45% { transform: translateX(40%) scaleX(1); }
+  50% { transform: translateX(40%) scaleX(-1); }
+  95% { transform: translateX(0) scaleX(-1); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+@keyframes amb-twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.8) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.05) rotate(20deg); }
+}
+
+@keyframes amb-swing {
+  0%, 100% { transform: rotate(-9deg); }
+  50% { transform: rotate(9deg); }
+}
+
+@keyframes amb-buzz {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(18%, -12%); }
+  50% { transform: translate(0, -20%); }
+  75% { transform: translate(-18%, -10%); }
+}
+
+@keyframes amb-glide {
+  0%, 100% { transform: translate(0, 0) rotate(-3deg); }
+  50% { transform: translate(-45%, 10%) rotate(3deg); }
+}
+
+@keyframes amb-rock {
+  0%, 100% { transform: rotate(-4deg) translateY(0); }
+  50% { transform: rotate(4deg) translateY(-4%); }
+}
+
+@keyframes amb-burst {
+  0%, 55% { transform: scale(0.2); opacity: 0; }
+  62% { opacity: 1; }
+  85% { transform: scale(1); opacity: 0.85; }
+  100% { transform: scale(1.12); opacity: 0; }
+}
+
+@keyframes amb-jump {
+  0%, 55% { transform: translate(-30%, 40%) rotate(-30deg); opacity: 0; }
+  60% { opacity: 1; }
+  72% { transform: translate(0, -25%) rotate(0deg); }
+  84% { transform: translate(30%, 30%) rotate(35deg); opacity: 1; }
+  90%, 100% { transform: translate(34%, 50%) rotate(40deg); opacity: 0; }
+}
+
+@keyframes amb-swim {
+  0% { transform: translateX(0) scaleX(1); }
+  45% { transform: translateX(-60%) scaleX(1); }
+  50% { transform: translateX(-60%) scaleX(-1); }
+  95% { transform: translateX(0) scaleX(-1); }
+  100% { transform: translateX(0) scaleX(1); }
+}
+
+@keyframes amb-flutter {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(-20%, -14%); }
+  50% { transform: translate(-6%, -24%); }
+  75% { transform: translate(10%, -10%); }
+}
+
+@keyframes amb-haunt {
+  0%, 100% { transform: translate(0, 0); opacity: 0.55; }
+  50% { transform: translate(-8%, -10%); opacity: 0.9; }
+}
+
+/* ---------- Bewegte Teile einer Figur ---------- */
+
+.amb-fig .amb-wing,
+.amb-fig .amb-tail,
+.amb-fig .amb-arm,
+.amb-fig .amb-eye,
+.amb-fig .amb-flame,
+.amb-fig .amb-scarf,
+.amb-fig .amb-ear,
+.amb-fig .amb-legs,
+.amb-fig .amb-peck,
+.amb-fig .amb-flagcloth {
+  transform-box: fill-box;
+}
+
+.amb-fig .amb-eye { transform-origin: center; animation: amb-blink 5.5s infinite; }
+.amb-fig .amb-wing { transform-origin: center; animation: amb-flap 0.9s ease-in-out infinite alternate; }
+.amb-bee .amb-wing { animation-duration: 0.12s; }
+.amb-bat .amb-wing { animation-duration: 0.35s; }
+.amb-gull .amb-wing { animation-duration: 1.4s; }
+.amb-fig .amb-tail { transform-origin: 0% 100%; animation: amb-tailswish 4s ease-in-out infinite; }
+.amb-fig .amb-arm { transform-origin: 0% 100%; animation: amb-wave 2.6s ease-in-out infinite; }
+.amb-fig .amb-flame { transform-origin: 50% 100%; animation: amb-flicker 0.5s ease-in-out infinite alternate; }
+.amb-fig .amb-scarf { transform-origin: 20% 0%; animation: amb-sway 3s ease-in-out infinite; }
+.amb-fig .amb-ear { transform-origin: 50% 100%; animation: amb-twitch 6s ease-in-out infinite; }
+.amb-fig .amb-legs { transform-origin: center; animation: amb-step 0.7s ease-in-out infinite alternate; }
+.amb-fig .amb-peck { transform-origin: 30% 100%; animation: amb-pecking 5s ease-in-out infinite; }
+.amb-fig .amb-flagcloth { transform-origin: 0% 50%; animation: amb-flagwave 2.4s ease-in-out infinite alternate; }
+.amb-fig .amb-shift { animation: amb-hue 9s linear infinite; }
+
+.ambient-horizon .amb-windows { animation: amb-glow 4s ease-in-out infinite alternate; }
+.ambient-horizon .amb-beam { transform-box: view-box; transform-origin: 338px 30px; animation: amb-beam 7s ease-in-out infinite alternate; }
+
+@keyframes amb-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+@keyframes amb-flap {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(0.55); }
+}
+
+@keyframes amb-tailswish {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-12deg); }
+}
+
+@keyframes amb-wave {
+  0%, 40%, 100% { transform: rotate(0deg); }
+  55% { transform: rotate(-18deg); }
+  70% { transform: rotate(6deg); }
+  85% { transform: rotate(-14deg); }
+}
+
+@keyframes amb-flicker {
+  from { transform: scale(0.92, 0.95); opacity: 0.9; }
+  to { transform: scale(1.06, 1.08); opacity: 1; }
+}
+
+@keyframes amb-twitch {
+  0%, 80%, 100% { transform: rotate(0deg); }
+  85% { transform: rotate(-10deg); }
+  90% { transform: rotate(4deg); }
+}
+
+@keyframes amb-step {
+  from { transform: translateY(0); }
+  to { transform: translateY(-3%); }
+}
+
+@keyframes amb-pecking {
+  0%, 70%, 100% { transform: rotate(0deg); }
+  75% { transform: rotate(14deg); }
+  80% { transform: rotate(0deg); }
+  85% { transform: rotate(14deg); }
+}
+
+@keyframes amb-flagwave {
+  from { transform: skewY(-4deg) scaleX(1); }
+  to { transform: skewY(5deg) scaleX(0.94); }
+}
+
+@keyframes amb-hue {
+  to { filter: hue-rotate(360deg); }
+}
+
+@keyframes amb-glow {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+@keyframes amb-beam {
+  from { transform: rotate(-12deg); }
+  to { transform: rotate(14deg); }
+}
+
+@keyframes amb-waveshift {
+  from { transform: translateX(-2%); }
+  to { transform: translateX(2%); }
+}
+
+/* ---------- Weltenübersicht und Hauptmenü ---------- */
+
+.atlas-fig {
+  position: absolute;
+  left: 7%;
+  top: 30%;
+  width: 20%;
+  max-width: 54px;
+  pointer-events: none;
+}
+
+.menu-fig {
+  position: absolute;
+  bottom: 2%;
+  z-index: 3;
+  width: clamp(46px, 13vmin, 110px);
+  pointer-events: none;
+}
+
+.menu-fig--left { left: 4%; }
+.menu-fig--right { right: 5%; width: clamp(40px, 11vmin, 90px); }
+
+/* ---------- Siegesfeier: Konfetti ---------- */
+
+.amb-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.amb-confetto {
+  position: absolute;
+  top: -4vh;
+  width: 0.7rem;
+  height: 0.45rem;
+  border-radius: 2px;
+  opacity: 0;
+  animation-name: amb-confetti-fall;
+  animation-timing-function: cubic-bezier(0.25, 0.6, 0.5, 1);
+  animation-fill-mode: forwards;
+}
+
+@keyframes amb-confetti-fall {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(var(--amb-dx, 0), 105vh) rotate(var(--amb-rot, 360deg)); opacity: 0; }
+}
+
+/* ---------- Karte: Annika über dem nächsten Level, der Boss wartet ---------- */
+
+.map-here {
+  position: absolute;
+  z-index: 4;
+  width: calc(var(--station) * 0.62);
+  transform: translate(-50%, -175%);
+  pointer-events: none;
+  animation: amb-here 2.6s ease-in-out infinite;
+}
+
+.map-here .annika {
+  width: 100%;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 140, 0.8));
+}
+
+@keyframes amb-here {
+  0%, 100% { transform: translate(-50%, -175%); }
+  50% { transform: translate(-50%, -195%); }
+}
+
+.map-boss {
+  position: absolute;
+  z-index: 2;
+  width: calc(var(--station) * 1.05);
+  transform: translate(-50%, -80%);
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(8, 3, 22, 0.6));
+  animation: amb-boss-breathe 3.4s ease-in-out infinite;
+}
+
+.map-boss svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@keyframes amb-boss-breathe {
+  0%, 100% { transform: translate(-50%, -80%) scale(1); }
+  50% { transform: translate(-50%, -82%) scale(1.04); }
+}
+
+/* ---------- Sanfte Bildschirmwechsel (nur Deckkraft: ein transform würde die festen Kulissen verschieben) ---------- */
+
+#app > .screen {
+  animation: amb-screen-in 0.28s ease-out;
+}
+
+@keyframes amb-screen-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------- Hauptmenü: Sternschnuppe und Annika fliegt vorbei ---------- */
+
+.menu-shooting {
+  position: absolute;
+  top: 8%;
+  left: 60%;
+  z-index: 0;
+  width: 7rem;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 246, 220, 0), #fff6dc);
+  opacity: 0;
+  transform: rotate(-24deg);
+  pointer-events: none;
+  animation: amb-shoot 11s ease-in infinite 3s;
+}
+
+@keyframes amb-shoot {
+  0%, 88% { opacity: 0; transform: translate(0, 0) rotate(-24deg); }
+  90% { opacity: 1; }
+  96% { opacity: 0; transform: translate(-40vw, 18vh) rotate(-24deg); }
+  100% { opacity: 0; transform: translate(-40vw, 18vh) rotate(-24deg); }
+}
+
+.menu-flyby {
+  position: absolute;
+  top: 26%;
+  left: 0;
+  z-index: 0;
+  width: clamp(44px, 9vmin, 80px);
+  pointer-events: none;
+  opacity: 0;
+  animation: amb-flyby 26s ease-in-out infinite 6s;
+}
+
+.menu-flyby .annika {
+  width: 100%;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 140, 0.7));
+}
+
+@keyframes amb-flyby {
+  0%, 70% { opacity: 0; transform: translate(-15vw, 0) rotate(8deg); }
+  72% { opacity: 1; }
+  80% { transform: translate(35vw, -4vh) rotate(-4deg); }
+  88% { transform: translate(75vw, 3vh) rotate(6deg); opacity: 1; }
+  92%, 100% { opacity: 0; transform: translate(110vw, -2vh) rotate(0deg); }
+}
+
+/* ---------- Spielfeld und Anzeigen in den Farben der Welt ---------- */
+
+.game--w1 { --board-tint: rgba(80, 52, 160, 0.38); --board-glow: rgba(140, 90, 255, 0.28); }
+.game--w2 { --board-tint: rgba(60, 120, 200, 0.36); --board-glow: rgba(120, 200, 255, 0.3); }
+.game--w3 { --board-tint: rgba(190, 110, 50, 0.34); --board-glow: rgba(255, 180, 90, 0.26); }
+.game--w4 { --board-tint: rgba(40, 140, 90, 0.34); --board-glow: rgba(90, 230, 150, 0.24); }
+.game--w5 { --board-tint: rgba(190, 60, 120, 0.34); --board-glow: rgba(255, 120, 170, 0.28); }
+.game--w6 { --board-tint: rgba(150, 120, 230, 0.36); --board-glow: rgba(230, 190, 255, 0.32); }
+.game--w7 { --board-tint: rgba(30, 90, 170, 0.38); --board-glow: rgba(90, 170, 255, 0.28); }
+.game--w8 { --board-tint: rgba(170, 90, 150, 0.34); --board-glow: rgba(255, 190, 120, 0.26); }
+.game--w9 { --board-tint: rgba(20, 140, 160, 0.36); --board-glow: rgba(80, 230, 230, 0.26); }
+.game--w10 { --board-tint: rgba(120, 20, 60, 0.38); --board-glow: rgba(255, 60, 110, 0.26); }
+
+.game[class*="game--w"] .bv-board {
+  background: radial-gradient(circle at 50% 30%, var(--board-tint), rgba(16, 9, 36, 0.35));
+  box-shadow: 0 0 40px var(--board-glow), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.game[class*="game--w"] .hud-box,
+.game[class*="game--w"] .boss-panel {
+  box-shadow: inset 0 0 18px var(--board-glow);
+}
+
+/* ---------- Lob für lange Kettenreaktionen ---------- */
+
+.bv-praise {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 8;
+  font-family: var(--font-title);
+  font-size: clamp(1.8rem, 8vmin, 3.4rem);
+  font-weight: 800;
+  white-space: nowrap;
+  color: #fff6dc;
+  background: linear-gradient(180deg, #fff2c4, #ffd78c 50%, #f5b942);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(120, 60, 10, 0.7)) drop-shadow(0 0 14px rgba(255, 200, 100, 0.7));
+  pointer-events: none;
+  animation: amb-praise 1.35s ease-out forwards;
+}
+
+@keyframes amb-praise {
+  0% { transform: translate(-50%, -50%) scale(0.3) rotate(-8deg); opacity: 0; }
+  18% { transform: translate(-50%, -50%) scale(1.15) rotate(3deg); opacity: 1; }
+  32% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  75% { opacity: 1; }
+  100% { transform: translate(-50%, -80%) scale(1); opacity: 0; }
+}
+
+.game-board {
+  position: relative;
+}
+
+/* ---------- Bonbons: ab und zu ein Glanz, Sondersteine schimmern ---------- */
+
+.bv-piece .candy::after {
+  animation: amb-glint 7.5s ease-in-out infinite;
+}
+
+.bv-piece:nth-child(5n + 1) .candy::after { animation-delay: -1.3s; }
+.bv-piece:nth-child(5n + 2) .candy::after { animation-delay: -2.9s; }
+.bv-piece:nth-child(5n + 3) .candy::after { animation-delay: -4.4s; }
+.bv-piece:nth-child(5n + 4) .candy::after { animation-delay: -6.1s; }
+.bv-piece:nth-child(7n + 3) .candy::after { animation-duration: 9.5s; }
+
+@keyframes amb-glint {
+  0%, 86%, 100% { opacity: 0.65; transform: rotate(-25deg) scale(1); }
+  92% { opacity: 1; transform: rotate(-25deg) scale(1.28); }
+}
+
+.bv-piece[data-special="stripeH"] .bv-mark,
+.bv-piece[data-special="stripeV"] .bv-mark {
+  overflow: hidden;
+}
+
+.bv-piece[data-special="stripeH"] .bv-mark::after,
+.bv-piece[data-special="stripeV"] .bv-mark::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: linear-gradient(110deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0.75) 50%, rgba(255, 255, 255, 0) 60%);
+  transform: translateX(-100%);
+  animation: amb-sheen 2.6s ease-in-out infinite;
+}
+
+@keyframes amb-sheen {
+  0%, 45% { transform: translateX(-100%); }
+  85%, 100% { transform: translateX(100%); }
+}
+
+.bv-piece[data-special="bomb"] .bv-mark {
+  animation: amb-bomb-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes amb-bomb-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+/* ---------- Bosssieg: goldener Lichtblitz ---------- */
+
+.amb-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 119;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 45%, rgba(255, 246, 220, 0.95), rgba(255, 215, 140, 0.5) 40%, rgba(255, 215, 140, 0) 75%);
+  animation: amb-flash 1.2s ease-out forwards;
+}
+
+@keyframes amb-flash {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}

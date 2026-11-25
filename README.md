@@ -243,6 +243,7 @@ js/data/            Welt-Registry (registry.js), Schwierigkeitskurve (curve.js),
 js/ui/              Bildschirme: Startmenü, Welten-Atlas (atlas.js), Abspann (credits.js), Levelkarte (map.js, mapkit.js),
                     Spielfeld (game.js, boardview.js, boardfx.js), Endlos, Dialoge, Laden (shop.js), Effekte, Bossfigur (bossview.js),
                     Zurück-Taste (backnav.js),
+                    lebendige Kulissen je Welt mit animierten Figuren (ambient.js, css/ambient.css),
                     worlds/ mit Kartenbild und Bossfigur je Welt, w01.js bis w10.js
 js/save.js          Speichern und Laden (localStorage, Format Version 4)
 js/save-mirror.js   Zweitkopie des Spielstands in IndexedDB

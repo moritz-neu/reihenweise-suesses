@@ -2,9 +2,22 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
-## [6.0.1] – 2026-11-25
+## [6.1.0] – 2026-11-25
 
-Version 6.0.1 ist auf GitHub (Pages) veröffentlicht.
+Version 6.1.0 ist auf GitHub (Pages) veröffentlicht.
+
+### Neu
+- Lebendige Kulissen je Welt (`js/ui/ambient.js`, `css/ambient.css`): eigener Himmel, eine Horizont-Silhouette (Dächer, Berge, Dünen, Dschungel, Kirschbäume, Wolken, Hafen mit Leuchtturm, Burg, Wellen, Bitterburg) und drei kleine animierte Figuren je Welt, im Spiel, hinter der Karte und auf breiten Fenstern zwei mehr. Schnee, Blüten und Kaugummiblasen ziehen langsam durchs Bild.
+- Auf der langen Karte zwei Bewohner je Abschnitt und ein Schleier, der zum Boss hin dunkler wird.
+- Figuren auch in der Weltenübersicht und im Hauptmenü.
+- Bosskämpfe mit dunklerem Himmel und einem langsam pulsierenden Glühen am Horizont.
+- Karte: Annika schwebt über dem nächsten spielbaren Level, der Boss der Welt wartet neben seiner Station, bis er besiegt ist.
+- Konfetti nach jedem geschafften Level (beim Boss mehr), sanfte Bildschirmwechsel, im Hauptmenü Sternschnuppen und eine vorbeifliegende Annika.
+- Spielfeld und Anzeigen leuchten in den Farben der Welt; lange Kettenreaktionen bekommen ein kurzes Lob („Super!“, „Klasse!“, „Zuckersüß!“, „Fantastisch!“).
+- Bonbons glänzen ab und zu auf, Streifen-Bonbons schimmern, Bomben pulsieren; Bosssieg mit goldenem Lichtblitz, Toröffnung mit Konfetti.
+- Alle Bewegungen sind langsam, liegen hinter dem Spiel und fangen keine Klicks ab; bei „Bewegung reduzieren“ steht alles still.
+
+## [6.0.1] – 2026-11-25
 
 ### Verbessert
 - Neue Version ohne Umweg: Liegt eine neue Version bereit, lädt das Spiel einmal von selbst neu, aber nie mitten im Level, im Endlos-Lauf oder bei offenem Dialog (dann beim nächsten Bildschirmwechsel).
