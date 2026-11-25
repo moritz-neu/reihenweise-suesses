@@ -23,6 +23,24 @@
       'Kandishain dankt dir, doch hinter dem Tor warten die Frostzuckerberge, und unsere Reise geht weiter!'
     ],
     gateLocked: 'Besiege Graf Lakritz, um das Tor zu öffnen.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Ein Fenster im Dorf leuchtet wieder warm.',
+      'Der Brunnen auf dem Dorfplatz glitzert wie Zuckerguss.',
+      'Eine Laterne am Weg flackert hell auf.',
+      'Die Dorfkatze schnurrt zufrieden auf dem Zaun.',
+      'Ein Duft von frischem Gebäck zieht durch die Gassen.',
+      'Die Glocke am Dorftor klingelt fröhlich.',
+      'Ein Stück Lakritzzauber bröckelt vom Dach.',
+      'Auf dem Marktplatz tanzen die ersten Funken.',
+      'Ein Lebkuchenmann winkt dir aus dem Fenster zu.',
+      'Die Blumen am Wegrand richten sich wieder auf.',
+      'Kandishain atmet ein kleines bisschen freier.',
+      'Ein Kind lacht, weil die Bonbons wieder bunt sind.',
+      'Der Mond lächelt über den Dächern.',
+      'Ein Zuckerstern fällt funkelnd vom Himmel.',
+      'Annika dreht vor Freude eine Pirouette.'
+    ],
     // Fröhlich, Dur, Glockenspiel über gezupftem Bass, mittleres Tempo.
     music: {
       tempo: 112, root: 72, scale: [0, 2, 4, 5, 7, 9, 11], lead: 'bell',

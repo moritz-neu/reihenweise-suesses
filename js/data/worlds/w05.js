@@ -26,6 +26,24 @@
       'Dann lässt sie einen Sternsplitter fallen, der rot wie eine reife Kirsche funkelt!'
     ],
     gateLocked: 'Besiege die Krähe Krawalla, um das Tor zu öffnen.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Die Kirschbäume rauschen sanft im Wind.',
+      'Ein Korb füllt sich mit glänzenden Kirschen.',
+      'Die Blüten rieseln wie rosa Schnee.',
+      'Ein Vogel pfeift fröhlich im Geäst.',
+      'Die Gartenwege glänzen im Morgentau.',
+      'Eine Biene summt zufrieden von Blüte zu Blüte.',
+      'Der Gärtner zieht ehrfürchtig seinen Hut.',
+      'Ein Kirschkern hüpft lustig über den Weg.',
+      'Die Laternen im Garten glühen rot.',
+      'Der Duft von Kirschkuchen liegt in der Luft.',
+      'Ein Igel schnuppert neugierig an einer Kirsche.',
+      'Die Äste biegen sich unter süßen Früchten.',
+      'Die Gartenbank lädt zum Ausruhen ein.',
+      'Ein rotes Leuchten zieht über die Wiese.',
+      'Annika steckt sich eine Kirsche hinter das Ohr.'
+    ],
     // Dorisch, gezupfte Melodie, wiegender Gartenrhythmus.
     music: {
       tempo: 104, root: 62, scale: [0, 2, 3, 5, 7, 9, 10], lead: 'pluck',

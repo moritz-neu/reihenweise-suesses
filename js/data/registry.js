@@ -2,6 +2,10 @@
   'use strict';
 
   var worlds = [];
+  // Zwischenlevel je Welt (RS.Worlds.insert): { worldId: [def, ...] }, Kennung <altes Level>-SS.
+  var extras = {};
+  var cache = null;   // { list, byId, byWorld } - die augmentierte Levelliste, bis sich etwas ändert
+  var EXTRA_ID = /^(w\d+-\d{2}[a-z]?)-(\d{2})$/;
   // Boss entries of the old data files must survive: never reassign RS.BOSSES.
   RS.BOSSES = RS.BOSSES || {};
 
@@ -53,6 +57,7 @@
     need(n, isLines(def.intro), 'intro fehlt');
     need(n, isLines(def.chapterEnd), 'chapterEnd fehlt');
     need(n, typeof def.gateLocked === 'string' && def.gateLocked, 'gateLocked fehlt');
+    need(n, def.winLines === undefined || isLines(def.winLines), 'winLines ungültig');
     // Testwelten dürfen ohne Musik auskommen; ein vorhandenes Motiv muss gültig sein.
     need(n, def.music === undefined || validMusic(def.music), 'music ungültig');
     var b = def.boss;
@@ -95,12 +100,17 @@
     return worlds.slice().sort(function (a, b) { return a.id - b.id; });
   }
 
-  function augment(def, w, pos, num) {
+  // slot: Platz des alten Levels (1..slots), step: 0 = altes Level, 1..10 = Zwischenlevel danach.
+  function augment(def, w, pos, num, slot, step, slots) {
     var out = {};
     Object.keys(def).forEach(function (k) { out[k] = def[k]; });
     out.world = w.id;
     out.pos = pos;
     out.num = num;
+    out.slot = slot;
+    out.step = step;
+    out.slots = slots;
+    out.label = w.id + '-' + pos;
     out.isBoss = def.boss === true;
     out.seed = def.seed !== undefined ? def.seed : hashSeed(def.id);
     if (out.isBoss) {
@@ -110,13 +120,67 @@
     return out;
   }
 
+  function build() {
+    var list = [];
+    var byId = {};
+    var byWorld = {};
+    sorted().forEach(function (w) {
+      var mine = byWorld[w.id] = [];
+      var ext = extras[w.id] || [];
+      var slots = w.levels.length;
+      w.levels.forEach(function (l, i) {
+        var row = [l];
+        ext.forEach(function (e) { if (EXTRA_ID.exec(e.id)[1] === l.id) { row.push(e); } });
+        row.forEach(function (d, k) {
+          var a = augment(d, w, mine.length + 1, list.length + 1, i + 1, k, slots);
+          mine.push(a);
+          list.push(a);
+          byId[a.id] = a;
+        });
+      });
+    });
+    return { list: list, byId: byId, byWorld: byWorld };
+  }
+
+  function levelsCache() {
+    if (!cache) { cache = build(); }
+    return cache;
+  }
+
+  function validateExtra(w, l, oldIds) {
+    var n = w.id;
+    var m = EXTRA_ID.exec(l && l.id || '');
+    need(n, m, 'Zwischenlevel-Kennung ungültig: ' + (l && l.id));
+    need(n, oldIds[m[1]] && !oldIds[m[1]].boss, 'Zwischenlevel ' + l.id + ' ohne passendes altes Level');
+    need(n, l.layout && l.colors && l.moves && isLines(l.goals) && l.intro && l.win, 'Zwischenlevel ' + l.id + ' unvollständig');
+    need(n, !l.boss, 'Zwischenlevel ' + l.id + ' darf kein Boss sein');
+  }
+
   RS.Worlds = {
     FINAL_WORLD: 10,
+    hashSeed: hashSeed,
+    // Fügt die Zwischenlevel einer registrierten Welt ein (ersetzt frühere Zwischenlevel).
+    // Reihenfolge je altem Level nach der Kennung (…-01 bis …-10).
+    insert: function (worldId, levels) {
+      var w = RS.Worlds.get(worldId);
+      need(worldId, w, 'Welt nicht registriert');
+      var oldIds = {};
+      w.levels.forEach(function (l) { oldIds[l.id] = l; });
+      var seen = {};
+      levels.forEach(function (l) {
+        validateExtra(w, l, oldIds);
+        need(worldId, !seen[l.id], 'Zwischenlevel doppelt: ' + l.id);
+        seen[l.id] = true;
+      });
+      extras[worldId] = levels.slice().sort(function (a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
+      cache = null;
+    },
     validMusic: validMusic,
     register: function (def) {
       validate(def);
       RS.Worlds._unregister(def.id);
       worlds.push(def);
+      cache = null;
       var b = def.boss;
       RS.BOSSES[b.key] = { name: b.name, hp: b.hp, weak: b.weak, thresholds: b.thresholds, attacks: b.attacks };
     },
@@ -127,23 +191,16 @@
         delete RS.BOSSES[w.boss.key];
         return false;
       });
+      delete extras[id];
+      cache = null;
     },
     list: function () { return sorted(); },
     get: function (id) {
       return worlds.filter(function (w) { return w.id === id; })[0];
     },
-    levels: function () {
-      var out = [];
-      sorted().forEach(function (w) {
-        w.levels.forEach(function (l, i) { out.push(augment(l, w, i + 1, out.length + 1)); });
-      });
-      return out;
-    },
-    level: function (id) {
-      return RS.Worlds.levels().filter(function (l) { return l.id === id; })[0];
-    },
-    inWorld: function (id) {
-      return RS.Worlds.levels().filter(function (l) { return l.world === id; });
-    }
+    // Alle Level in Spielreihenfolge (zwischengespeichert; die Objekte nicht verändern).
+    levels: function () { return levelsCache().list; },
+    level: function (id) { return levelsCache().byId[id]; },
+    inWorld: function (id) { return levelsCache().byWorld[id] || []; }
   };
 })(window.RS = window.RS || {});

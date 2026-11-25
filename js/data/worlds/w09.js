@@ -29,6 +29,24 @@
       'Annika fügt die neun Sternsplitter zur Sternenkrone zusammen, und am Horizont fällt der Schatten von Amarus auf das Meer.'
     ],
     gateLocked: 'Besiege die Seeschlange Schillerzahn, um das Tor zu öffnen.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Die Wellen schillern in allen Farben.',
+      'Eine Muschel öffnet sich und zeigt eine Perle.',
+      'Die Bucht glitzert wie ein Regenbogen.',
+      'Ein Seestern winkt mit allen fünf Armen.',
+      'Die Gischt sprüht süße Tropfen in die Luft.',
+      'Ein Delfin springt fröhlich aus dem Wasser.',
+      'Der Strand leuchtet in sanften Farben.',
+      'Eine Krabbe tanzt seitwärts über den Sand.',
+      'Die Korallen glühen unter den Wellen.',
+      'Ein Chamäleon blinzelt dir zu und wird golden.',
+      'Das Meer rauscht ein leises Lied.',
+      'Eine Flaschenpost treibt an den Strand.',
+      'Die Sonne versinkt bunt hinter den Wellen.',
+      'Ein Schwarm kleiner Fische glitzert vorbei.',
+      'Annika baut lachend eine Sandburg aus Zucker.'
+    ],
     // Fröhlicher Calypso am Strand, mixolydisch, mit Marimba und Steeldrum-Rhythmus.
     music: {
       tempo: 116, root: 60, scale: [0, 2, 4, 5, 7, 9, 10], lead: 'marimba',

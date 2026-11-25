@@ -335,7 +335,7 @@
   // joker kind, music off, the final boss won, the credits seen. 5.1.0 must load it unchanged.
   RS.test('save: 5.0.0 save with all jokers, settings off and completed loads unchanged', function () {
     var stars = {};
-    RS.Worlds.levels().forEach(function (l, i) { stars[l.id] = (i % 3) + 1; });
+    RS.Worlds.levels().filter(function (l) { return !l.step; }).forEach(function (l, i) { stars[l.id] = (i % 3) + 1; });
     var seen = ['prolog', 'laden', 'tor:1', 'intro:2', 'geschenk:besen', 'geschenk:feentausch', 'abspann'];
     for (var w = 1; w <= 10; w++) { seen.push('kapitel:' + w); }
     var fixture = {

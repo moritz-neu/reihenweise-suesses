@@ -5,7 +5,7 @@
 // ASSETS muss jede Datei enthalten, die index.html lädt: python tools/check_store.py prüft das.
 'use strict';
 
-var VERSION = '5.2.0';
+var VERSION = '6.0.0';
 var CACHE = 'rs-' + VERSION;
 var ASSETS = [
   './',
@@ -41,15 +41,25 @@ var ASSETS = [
   'js/data/curve.js',
   'js/data/registry.js',
   'js/data/worlds/w01.js',
+  'js/data/worlds/w01-extra.js',
   'js/data/worlds/w02.js',
+  'js/data/worlds/w02-extra.js',
   'js/data/worlds/w03.js',
+  'js/data/worlds/w03-extra.js',
   'js/data/worlds/w04.js',
+  'js/data/worlds/w04-extra.js',
   'js/data/worlds/w05.js',
+  'js/data/worlds/w05-extra.js',
   'js/data/worlds/w06.js',
+  'js/data/worlds/w06-extra.js',
   'js/data/worlds/w07.js',
+  'js/data/worlds/w07-extra.js',
   'js/data/worlds/w08.js',
+  'js/data/worlds/w08-extra.js',
   'js/data/worlds/w09.js',
+  'js/data/worlds/w09-extra.js',
   'js/data/worlds/w10.js',
+  'js/data/worlds/w10-extra.js',
   'js/data/story.js',
   'js/audio.js',
   'js/audio-sfx.js',

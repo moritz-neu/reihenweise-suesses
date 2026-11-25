@@ -1,0 +1,1262 @@
+[
+ {
+  "id": "w7-01-01",
+  "target": 53,
+  "measured": 54,
+  "moves": 12,
+  "attempts": 2,
+  "trail": "1.00/20:40 0.75/12:54",
+  "pattern": "frame",
+  "goals": "collect",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-01-02",
+  "target": 52,
+  "measured": 100,
+  "moves": 13,
+  "attempts": 1,
+  "trail": "1.00/13:100 1.15/13:100 1.23/13:100 1.26/13:100 1.28/13:100",
+  "pattern": "diamond",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-01-03",
+  "target": 52,
+  "measured": 58,
+  "moves": 13,
+  "attempts": 2,
+  "trail": "1.00/23:35 0.75/13:58",
+  "pattern": "frame",
+  "goals": "collect",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-01-04",
+  "target": 52,
+  "measured": 98,
+  "moves": 13,
+  "attempts": 1,
+  "trail": "1.00/13:98 1.15/13:98 1.23/13:98 1.26/13:98 1.28/13:98",
+  "pattern": "checker",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-01-05",
+  "target": 51,
+  "measured": 100,
+  "moves": 13,
+  "attempts": 1,
+  "trail": "1.00/13:100 1.15/13:100 1.23/13:100 1.26/13:100 1.28/13:100",
+  "pattern": "center",
+  "goals": "glaze",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-01-06",
+  "target": 51,
+  "measured": 51,
+  "moves": 22,
+  "attempts": 1,
+  "trail": "1.00/22:51",
+  "pattern": "ring",
+  "goals": "collect",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-01-07",
+  "target": 50,
+  "measured": 82,
+  "moves": 14,
+  "attempts": 1,
+  "trail": "1.00/14:82 1.15/14:82 1.23/14:82 1.26/14:82 1.28/14:82",
+  "pattern": "diamond",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-01-08",
+  "target": 50,
+  "measured": 49,
+  "moves": 14,
+  "attempts": 1,
+  "trail": "1.00/14:49",
+  "pattern": "pillars",
+  "goals": "glaze",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-01-09",
+  "target": 50,
+  "measured": 46,
+  "moves": 26,
+  "attempts": 1,
+  "trail": "1.00/26:46",
+  "pattern": "rowsMiddle",
+  "goals": "collect",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-01-10",
+  "target": 49,
+  "measured": 88,
+  "moves": 15,
+  "attempts": 2,
+  "trail": "1.00/15:90 1.15/15:88 1.23/15:88 1.26/15:88 1.28/15:88",
+  "pattern": "diamond",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-01:53%/15",
+   "w7-02:49%/19"
+  ]
+ },
+ {
+  "id": "w7-02-01",
+  "target": 49,
+  "measured": 94,
+  "moves": 15,
+  "attempts": 2,
+  "trail": "1.00/15:99 1.15/15:94 1.23/15:94 1.26/15:94 1.28/15:94",
+  "pattern": "rowsMiddle",
+  "goals": "glaze",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-02-02",
+  "target": 48,
+  "measured": 53,
+  "moves": 16,
+  "attempts": 2,
+  "trail": "1.00/27:31 0.75/16:53",
+  "pattern": "diagonals",
+  "goals": "collect",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-02-03",
+  "target": 48,
+  "measured": 45,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:45",
+  "pattern": "bandBottom",
+  "goals": "collect",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-02-04",
+  "target": 48,
+  "measured": 56,
+  "moves": 16,
+  "attempts": 1,
+  "trail": "1.00/16:56",
+  "pattern": "bandBottom",
+  "goals": "glaze+fuse",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-02-05",
+  "target": 48,
+  "measured": 47,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:47",
+  "pattern": "rowsMiddle",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-02-06",
+  "target": 47,
+  "measured": 46,
+  "moves": 22,
+  "attempts": 1,
+  "trail": "1.00/22:46",
+  "pattern": "pillars",
+  "goals": "glaze+fuse",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-02-07",
+  "target": 47,
+  "measured": 60,
+  "moves": 17,
+  "attempts": 2,
+  "trail": "1.00/17:79 1.15/17:60 1.23/17:68 1.26/17:68 1.28/17:68",
+  "pattern": "stripes",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-02-08",
+  "target": 47,
+  "measured": 52,
+  "moves": 17,
+  "attempts": 4,
+  "trail": "1.00/38:31 0.65/37:38 0.47/35:41 0.39/17:52",
+  "pattern": "corners",
+  "goals": "collect+glaze",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-02-09",
+  "target": 47,
+  "measured": 47,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:47",
+  "pattern": "ring",
+  "goals": "glaze+fuse",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-02-10",
+  "target": 46,
+  "measured": 43,
+  "moves": 30,
+  "attempts": 1,
+  "trail": "1.00/30:43",
+  "pattern": "frame",
+  "goals": "fuse+collect",
+  "neighbours": [
+   "w7-02:49%/19",
+   "w7-03:46%/22"
+  ]
+ },
+ {
+  "id": "w7-03-01",
+  "target": 46,
+  "measured": 46,
+  "moves": 28,
+  "attempts": 3,
+  "trail": "1.00/29:33 0.75/25:37 0.63/28:46",
+  "pattern": "bandTop",
+  "goals": "fuse+crate",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-03-02",
+  "target": 47,
+  "measured": 79,
+  "moves": 18,
+  "attempts": 2,
+  "trail": "1.00/18:90 1.15/18:79 1.23/18:79 1.26/18:79 1.28/18:92",
+  "pattern": "rowsMiddle",
+  "goals": "crate",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-03-03",
+  "target": 47,
+  "measured": 43,
+  "moves": 32,
+  "attempts": 3,
+  "trail": "1.00/32:18 0.75/32:17 0.63/32:43",
+  "pattern": "bandBottom",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-03-04",
+  "target": 48,
+  "measured": 53,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:53",
+  "pattern": "pillars",
+  "goals": "fuse+crate",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-03-05",
+  "target": 48,
+  "measured": 49,
+  "moves": 20,
+  "attempts": 1,
+  "trail": "1.00/20:49",
+  "pattern": "ring",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-03-06",
+  "target": 49,
+  "measured": 86,
+  "moves": 20,
+  "attempts": 5,
+  "trail": "1.00/20:98 1.15/20:89 1.23/20:89 1.26/20:89 1.28/20:86",
+  "pattern": "checker",
+  "goals": "crate",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-03-07",
+  "target": 49,
+  "measured": 72,
+  "moves": 21,
+  "attempts": 2,
+  "trail": "1.00/21:77 1.15/21:72 1.23/21:72 1.26/21:74 1.28/21:74",
+  "pattern": "corners",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-03-08",
+  "target": 50,
+  "measured": 55,
+  "moves": 21,
+  "attempts": 4,
+  "trail": "1.00/32:28 0.75/26:32 0.63/26:32 0.56/21:55",
+  "pattern": "center",
+  "goals": "fuse+crate",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-03-09",
+  "target": 50,
+  "measured": 69,
+  "moves": 22,
+  "attempts": 4,
+  "trail": "1.00/22:70 1.15/22:83 1.23/22:83 1.26/22:69 1.28/22:69",
+  "pattern": "corners",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-03-10",
+  "target": 51,
+  "measured": 51,
+  "moves": 24,
+  "attempts": 1,
+  "trail": "1.00/24:51",
+  "pattern": "bandTop",
+  "goals": "crate",
+  "neighbours": [
+   "w7-03:46%/22",
+   "w7-04:51%/28"
+  ]
+ },
+ {
+  "id": "w7-04-01",
+  "target": 51,
+  "measured": 33,
+  "moves": 45,
+  "attempts": 1,
+  "trail": "1.00/45:33 0.65/42:27 0.47/48:26 0.39/42:28 0.34/42:28",
+  "pattern": "rowsMiddle",
+  "goals": "cherry",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-04-02",
+  "target": 51,
+  "measured": 81,
+  "moves": 21,
+  "attempts": 3,
+  "trail": "1.00/21:92 1.15/21:89 1.23/21:81 1.26/21:81 1.28/21:81",
+  "pattern": "pillars",
+  "goals": "glaze",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-04-03",
+  "target": 52,
+  "measured": 95,
+  "moves": 20,
+  "attempts": 3,
+  "trail": "1.00/20:96 1.15/20:96 1.23/20:95 1.26/20:95 1.28/20:95",
+  "pattern": "bandTop",
+  "goals": "crate",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-04-04",
+  "target": 52,
+  "measured": 69,
+  "moves": 19,
+  "attempts": 3,
+  "trail": "1.00/19:73 1.15/19:77 1.23/19:69 1.26/19:69 1.28/19:69",
+  "pattern": "rowsMiddle",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-04-05",
+  "target": 52,
+  "measured": 64,
+  "moves": 18,
+  "attempts": 2,
+  "trail": "1.00/18:66 1.15/18:64 1.23/18:64 1.26/18:46 1.24/18:64",
+  "pattern": "bandTop",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-04-06",
+  "target": 52,
+  "measured": 89,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:89 1.15/17:89 1.23/17:89 1.26/17:94 1.28/17:94",
+  "pattern": "bandTop",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-04-07",
+  "target": 52,
+  "measured": 57,
+  "moves": 16,
+  "attempts": 1,
+  "trail": "1.00/16:57",
+  "pattern": "columns",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-04-08",
+  "target": 52,
+  "measured": 51,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:51",
+  "pattern": "diamond",
+  "goals": "glaze+cherry",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-04-09",
+  "target": 53,
+  "measured": 53,
+  "moves": 22,
+  "attempts": 1,
+  "trail": "1.00/22:53",
+  "pattern": "pillars",
+  "goals": "fuse+crate",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-04-10",
+  "target": 53,
+  "measured": 83,
+  "moves": 14,
+  "attempts": 2,
+  "trail": "1.00/14:90 1.15/14:83 1.23/14:83 1.26/14:83 1.28/14:83",
+  "pattern": "checker",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-04:51%/28",
+   "w7-05:53%/16"
+  ]
+ },
+ {
+  "id": "w7-05-01",
+  "target": 53,
+  "measured": 80,
+  "moves": 13,
+  "attempts": 4,
+  "trail": "1.00/13:82 1.15/13:82 1.23/13:82 1.26/13:80 1.28/13:80",
+  "pattern": "columns",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-05-02",
+  "target": 52,
+  "measured": 88,
+  "moves": 13,
+  "attempts": 2,
+  "trail": "1.00/13:91 1.15/13:88 1.23/13:88 1.26/13:88 1.28/13:88",
+  "pattern": "bandTop",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-05-03",
+  "target": 52,
+  "measured": 52,
+  "moves": 18,
+  "attempts": 1,
+  "trail": "1.00/18:52",
+  "pattern": "columns",
+  "goals": "crate+cherry",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-05-04",
+  "target": 52,
+  "measured": 49,
+  "moves": 18,
+  "attempts": 1,
+  "trail": "1.00/18:49",
+  "pattern": "stripes",
+  "goals": "cherry+fuse",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-05-05",
+  "target": 52,
+  "measured": 50,
+  "moves": 22,
+  "attempts": 1,
+  "trail": "1.00/22:50",
+  "pattern": "ring",
+  "goals": "glaze+cherry",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-05-06",
+  "target": 51,
+  "measured": 51,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:51",
+  "pattern": "rowsMiddle",
+  "goals": "choco+fuse",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-05-07",
+  "target": 51,
+  "measured": 50,
+  "moves": 13,
+  "attempts": 1,
+  "trail": "1.00/13:50",
+  "pattern": "corners",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-05-08",
+  "target": 51,
+  "measured": 53,
+  "moves": 13,
+  "attempts": 1,
+  "trail": "1.00/13:53",
+  "pattern": "frame",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-05-09",
+  "target": 51,
+  "measured": 82,
+  "moves": 13,
+  "attempts": 1,
+  "trail": "1.00/13:82 1.15/13:82 1.23/13:82 1.26/13:82 1.28/13:82",
+  "pattern": "stripes",
+  "goals": "choco",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-05-10",
+  "target": 50,
+  "measured": 87,
+  "moves": 13,
+  "attempts": 1,
+  "trail": "1.00/13:87 1.15/13:87 1.23/13:87 1.26/13:87 1.28/13:87",
+  "pattern": "ring",
+  "goals": "choco",
+  "neighbours": [
+   "w7-05:53%/16",
+   "w7-06:50%/16"
+  ]
+ },
+ {
+  "id": "w7-06-01",
+  "target": 50,
+  "measured": 45,
+  "moves": 16,
+  "attempts": 5,
+  "trail": "1.00/19:19 0.75/14:32 0.63/21:41 0.56/17:44 0.53/16:45",
+  "pattern": "checker",
+  "goals": "score+fuse",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-06-02",
+  "target": 49,
+  "measured": 64,
+  "moves": 13,
+  "attempts": 1,
+  "trail": "1.00/13:64 1.15/13:64 1.23/13:64 1.26/13:64 1.28/13:64",
+  "pattern": "center",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-06-03",
+  "target": 49,
+  "measured": 43,
+  "moves": 21,
+  "attempts": 4,
+  "trail": "1.00/30:36 0.65/30:36 0.47/30:36 0.39/21:43 0.34/21:43",
+  "pattern": "columns",
+  "goals": "choco",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-06-04",
+  "target": 49,
+  "measured": 54,
+  "moves": 14,
+  "attempts": 2,
+  "trail": "1.00/22:13 0.65/14:54",
+  "pattern": "rowsMiddle",
+  "goals": "score",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-06-05",
+  "target": 48,
+  "measured": 58,
+  "moves": 14,
+  "attempts": 2,
+  "trail": "1.00/14:61 1.15/14:58 1.23/14:58 1.26/14:58 1.28/14:58",
+  "pattern": "stripes",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-06-06",
+  "target": 48,
+  "measured": 54,
+  "moves": 14,
+  "attempts": 2,
+  "trail": "1.00/24:29 0.65/14:54",
+  "pattern": "bandTop",
+  "goals": "score",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-06-07",
+  "target": 47,
+  "measured": 51,
+  "moves": 14,
+  "attempts": 1,
+  "trail": "1.00/14:51",
+  "pattern": "stripes",
+  "goals": "fuse+choco",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-06-08",
+  "target": 47,
+  "measured": 45,
+  "moves": 18,
+  "attempts": 2,
+  "trail": "1.00/21:29 0.75/18:45",
+  "pattern": "diagonals",
+  "goals": "score+fuse",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-06-09",
+  "target": 47,
+  "measured": 52,
+  "moves": 15,
+  "attempts": 3,
+  "trail": "1.00/23:40 0.75/15:57 0.88/15:52",
+  "pattern": "bandBottom",
+  "goals": "fuse+score",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-06-10",
+  "target": 46,
+  "measured": 94,
+  "moves": 15,
+  "attempts": 1,
+  "trail": "1.00/15:94 1.15/15:94 1.23/15:94 1.26/15:94 1.28/15:94",
+  "pattern": "diagonals",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-06:50%/16",
+   "w7-07:46%/19"
+  ]
+ },
+ {
+  "id": "w7-07-01",
+  "target": 47,
+  "measured": 44,
+  "moves": 15,
+  "attempts": 1,
+  "trail": "1.00/15:44",
+  "pattern": "pillars",
+  "goals": "fuse+crate",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-07-02",
+  "target": 47,
+  "measured": 29,
+  "moves": 36,
+  "attempts": 2,
+  "trail": "1.00/31:17 0.65/36:29 0.47/36:29 0.39/16:94 0.43/16:88",
+  "pattern": "bandTop",
+  "goals": "glaze",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-07-03",
+  "target": 48,
+  "measured": 44,
+  "moves": 27,
+  "attempts": 1,
+  "trail": "1.00/27:44",
+  "pattern": "diagonals",
+  "goals": "crate+score",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-07-04",
+  "target": 48,
+  "measured": 71,
+  "moves": 16,
+  "attempts": 1,
+  "trail": "1.00/16:71 1.15/16:71 1.23/16:71 1.26/16:71 1.28/16:71",
+  "pattern": "corners",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-07-05",
+  "target": 49,
+  "measured": 48,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:48",
+  "pattern": "bandTop",
+  "goals": "fuse+score",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-07-06",
+  "target": 49,
+  "measured": 49,
+  "moves": 24,
+  "attempts": 1,
+  "trail": "1.00/24:49",
+  "pattern": "diagonals",
+  "goals": "score+fuse",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-07-07",
+  "target": 50,
+  "measured": 61,
+  "moves": 17,
+  "attempts": 2,
+  "trail": "1.00/26:31 0.75/17:61 0.88/17:61 0.94/26:31 0.91/26:31",
+  "pattern": "stripes",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-07-08",
+  "target": 50,
+  "measured": 85,
+  "moves": 18,
+  "attempts": 2,
+  "trail": "1.00/18:90 1.15/18:85 1.23/18:85 1.26/18:85 1.28/18:85",
+  "pattern": "ring",
+  "goals": "glaze",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-07-09",
+  "target": 51,
+  "measured": 49,
+  "moves": 23,
+  "attempts": 2,
+  "trail": "1.00/22:34 0.75/23:49",
+  "pattern": "bandBottom",
+  "goals": "crate+score",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-07-10",
+  "target": 51,
+  "measured": 50,
+  "moves": 18,
+  "attempts": 2,
+  "trail": "1.00/22:44 0.75/18:50",
+  "pattern": "frame",
+  "goals": "score+fuse",
+  "neighbours": [
+   "w7-07:46%/19",
+   "w7-08:52%/23"
+  ]
+ },
+ {
+  "id": "w7-08-01",
+  "target": 52,
+  "measured": 59,
+  "moves": 18,
+  "attempts": 1,
+  "trail": "1.00/18:59",
+  "pattern": "diamond",
+  "goals": "collect+fuse",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-08-02",
+  "target": 51,
+  "measured": 49,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/19:38 0.75/19:49",
+  "pattern": "frame",
+  "goals": "collect+fuse",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-08-03",
+  "target": 51,
+  "measured": 59,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:59",
+  "pattern": "rowsMiddle",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-08-04",
+  "target": 51,
+  "measured": 51,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:51",
+  "pattern": "pillars",
+  "goals": "glaze+crate",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-08-05",
+  "target": 50,
+  "measured": 48,
+  "moves": 31,
+  "attempts": 1,
+  "trail": "1.00/31:48",
+  "pattern": "rowsMiddle",
+  "goals": "fuse+glaze",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-08-06",
+  "target": 50,
+  "measured": 52,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:52",
+  "pattern": "center",
+  "goals": "glaze+crate",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-08-07",
+  "target": 49,
+  "measured": 55,
+  "moves": 19,
+  "attempts": 3,
+  "trail": "1.00/19:61 1.15/19:72 1.23/19:55",
+  "pattern": "diagonals",
+  "goals": "fuse",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-08-08",
+  "target": 49,
+  "measured": 50,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/19:40 0.75/19:50",
+  "pattern": "ring",
+  "goals": "collect+fuse",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-08-09",
+  "target": 49,
+  "measured": 53,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/20:42 0.75/19:53",
+  "pattern": "center",
+  "goals": "collect+fuse",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-08-10",
+  "target": 48,
+  "measured": 53,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:53",
+  "pattern": "checker",
+  "goals": "collect+fuse",
+  "neighbours": [
+   "w7-08:52%/23",
+   "w7-09:48%/24"
+  ]
+ },
+ {
+  "id": "w7-09-01",
+  "target": 48,
+  "measured": 43,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/19:40 0.75/19:43",
+  "pattern": "ring",
+  "goals": "fuse+collect",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w7-09-02",
+  "target": 48,
+  "measured": 47,
+  "moves": 26,
+  "attempts": 2,
+  "trail": "1.00/23:22 0.75/26:47",
+  "pattern": "checker",
+  "goals": "glaze+collect",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w7-09-03",
+  "target": 48,
+  "measured": 51,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/19:41 0.75/19:51",
+  "pattern": "bandBottom",
+  "goals": "fuse+collect",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w7-09-04",
+  "target": 48,
+  "measured": 46,
+  "moves": 19,
+  "attempts": 3,
+  "trail": "1.00/19:36 0.75/19:36 0.63/19:46",
+  "pattern": "diamond",
+  "goals": "collect+fuse",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w7-09-05",
+  "target": 48,
+  "measured": 47,
+  "moves": 19,
+  "attempts": 5,
+  "trail": "1.00/21:34 0.75/19:39 0.63/19:41 0.56/19:41 0.53/19:47",
+  "pattern": "columns",
+  "goals": "fuse+collect",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w7-09-06",
+  "target": 48,
+  "measured": 48,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:48",
+  "pattern": "bandTop",
+  "goals": "collect+fuse",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w7-09-07",
+  "target": 48,
+  "measured": 55,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/19:33 0.75/19:55",
+  "pattern": "pillars",
+  "goals": "fuse+collect",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w7-09-08",
+  "target": 48,
+  "measured": 48,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/19:41 0.75/19:48",
+  "pattern": "rowsMiddle",
+  "goals": "collect+fuse",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w7-09-09",
+  "target": 48,
+  "measured": 49,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/19:31 0.75/19:49",
+  "pattern": "frame",
+  "goals": "fuse+collect",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w7-09-10",
+  "target": 48,
+  "measured": 43,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/20:36 0.75/19:43",
+  "pattern": "pillars",
+  "goals": "collect+fuse",
+  "neighbours": [
+   "w7-09:48%/24",
+   "Boss"
+  ]
+ }
+]

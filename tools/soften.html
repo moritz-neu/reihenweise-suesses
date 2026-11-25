@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Reihenweise Süßes - Zwischenlevel angleichen</title>
+</head>
+<body>
+<h1>Zwischenlevel an die Nachbarn angleichen</h1>
+<p>Macht Zwischenlevel nur leichter, nie schwerer: mindestens so viele Züge wie die alten Nachbarn
+im Mittel (stufenlos zwischen ihnen) und je Zug höchstens 10 % mehr Punkte bzw. Bonbons als der
+Nachbar mit dem höchsten Wert. Grund: Der Bot gewinnt frühe Level fast immer und kann dort nicht
+unterscheiden, ob ein Level für Menschen schwerer ist (Spieltest 25.11.2026).
+Ausgabe: <code>#data</code> (JSON je Welt), Aufruf über <code>python tools/build_levels.py --soften</code>.</p>
+<pre id="summary">läuft …</pre>
+<pre id="data"></pre>
+<script src="../js/logic/rng.js"></script>
+<script src="../js/logic/board.js"></script>
+<script src="../js/logic/specials.js"></script>
+<script src="../js/logic/obstacles.js"></script>
+<script src="../js/logic/cherries.js"></script>
+<script src="../js/logic/fuses.js"></script>
+<script src="../js/logic/chameleons.js"></script>
+<script src="../js/logic/engine.js"></script>
+<script src="../js/logic/goals.js"></script>
+<script src="../js/logic/boss.js"></script>
+<script src="../js/logic/session.js"></script>
+<script src="../js/logic/jokers.js"></script>
+<script src="../js/logic/shop.js"></script>
+<script src="../js/save.js"></script>
+<script src="../js/logic/progress.js"></script>
+<script src="../js/data/curve.js"></script>
+<script src="../js/data/registry.js"></script>
+<script src="../js/data/worlds/w01.js"></script>
+<script src="../js/data/worlds/w01-extra.js"></script>
+<script src="../js/data/worlds/w02.js"></script>
+<script src="../js/data/worlds/w02-extra.js"></script>
+<script src="../js/data/worlds/w03.js"></script>
+<script src="../js/data/worlds/w03-extra.js"></script>
+<script src="../js/data/worlds/w04.js"></script>
+<script src="../js/data/worlds/w04-extra.js"></script>
+<script src="../js/data/worlds/w05.js"></script>
+<script src="../js/data/worlds/w05-extra.js"></script>
+<script src="../js/data/worlds/w06.js"></script>
+<script src="../js/data/worlds/w06-extra.js"></script>
+<script src="../js/data/worlds/w07.js"></script>
+<script src="../js/data/worlds/w07-extra.js"></script>
+<script src="../js/data/worlds/w08.js"></script>
+<script src="../js/data/worlds/w08-extra.js"></script>
+<script src="../js/data/worlds/w09.js"></script>
+<script src="../js/data/worlds/w09-extra.js"></script>
+<script src="../js/data/worlds/w10.js"></script>
+<script src="../js/data/worlds/w10-extra.js"></script>
+<script>
+(function (RS) {
+  'use strict';
+  var FIELDS = ['id', 'colors', 'moves', 'goals', 'layout', 'cherries', 'fuses', 'chameleons', 'intro', 'win'];
+  var STEPS = 10;
+  var SLACK = 1.1;
+
+  function fmt(n) { return n.toLocaleString('de-DE'); }
+
+  var out = {};
+  var changed = 0;
+  RS.Worlds.list().forEach(function (w) {
+    var lv = RS.Worlds.inWorld(w.id);
+    var list = [];
+    lv.filter(function (l) { return l.step > 0; }).forEach(function (l) {
+      var a = lv[(l.slot - 1) * 11];
+      var b = lv[l.slot * 11];
+      var near = b.isBoss ? [a] : [a, b];
+      var bMoves = b.isBoss ? a.moves : b.moves;
+      var movesNear = Math.round(a.moves + (bMoves - a.moves) * l.step / (STEPS + 1));
+      var def = {};
+      FIELDS.forEach(function (k) { if (l[k] !== undefined) { def[k] = JSON.parse(JSON.stringify(l[k])); } });
+      var before = JSON.stringify(def);
+      def.moves = Math.max(def.moves, movesNear);
+      def.goals.forEach(function (g) {
+        if (g.type !== 'score' && g.type !== 'collect') { return; }
+        var rates = [];
+        near.forEach(function (n) {
+          n.goals.forEach(function (h) { if (h.type === g.type) { rates.push(h.target / n.moves); } });
+        });
+        if (!rates.length) { return; }
+        var cap = Math.max.apply(null, rates) * def.moves * SLACK;
+        cap = g.type === 'score' ? Math.max(100, Math.floor(cap / 100) * 100) : Math.max(1, Math.floor(cap));
+        if (g.target > cap) {
+          var old = g.target;
+          g.target = cap;
+          if (g.type === 'score') { def.intro = def.intro.replace(fmt(old) + ' Punkte', fmt(cap) + ' Punkte'); }
+          else { def.intro = def.intro.replace(old + ' Bonbons', cap + ' Bonbons'); }
+        }
+      });
+      if (JSON.stringify(def) !== before) { changed++; }
+      list.push(def);
+    });
+    out[w.id] = list;
+  });
+  document.getElementById('data').textContent = JSON.stringify(out);
+  document.getElementById('summary').textContent = 'SOFTEN: DONE ' + changed + ' Level geändert';
+})(window.RS);
+</script>
+</body>
+</html>

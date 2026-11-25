@@ -28,6 +28,24 @@
       'Von Kandishain bis zur Schillerbucht leuchten alle Welten wieder süß und hell!'
     ],
     gateLocked: 'Besiege Bitterkönig Amarus, um das Spiel zu vollenden.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Ein bitterer Stein bröckelt aus der Mauer.',
+      'Ein Lichtstrahl dringt in die dunklen Gänge.',
+      'Die schwarzen Fahnen werden ein wenig bunter.',
+      'Ein Gitter in der Burg springt klirrend auf.',
+      'Die Fackeln brennen auf einmal hell und warm.',
+      'Ein Hauch von Süße weht durch die Hallen.',
+      'Ein Burggespenst kichert und verschwindet.',
+      'Die Treppe zum nächsten Turm wird sichtbar.',
+      'Der Sternsplitter in deiner Tasche pulsiert.',
+      'Ein Fenster zerspringt und lässt Sternenlicht herein.',
+      'Die Bitterkeit weicht Schritt für Schritt zurück.',
+      'Ein Wandteppich zeigt plötzlich ein Lächeln.',
+      'Die Kerzen im Gang flackern hoffnungsvoll.',
+      'Ein Echo von Lachen hallt durch die Burg.',
+      'Annika ballt entschlossen die Faust.'
+    ],
     // Düsterer Burgmarsch, phrygisch mit kleiner Sekunde, Chip-Melodie über dem Akkord-Pad.
     // Die Bossfassung (dunkler, schneller) ist die Musik des Finales.
     music: {

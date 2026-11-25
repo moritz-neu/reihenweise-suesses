@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Reihenweise Süßes - Fairness der Zwischenlevel</title>
+</head>
+<body>
+<h1>Fairness der Zwischenlevel</h1>
+<p>Listet Zwischenlevel, die weniger als 0,8-mal so viele Züge haben wie ihr kürzerer alter Nachbar
+oder je Zug mehr als doppelt so viele Punkte bzw. Bonbons verlangen wie ihre alten Nachbarn
+(dieselbe Regel wie der Test „extras: moves and demand per move …“). Ausgabe in <code>#ids</code>.</p>
+<pre id="summary">läuft …</pre>
+<pre id="ids"></pre>
+<script src="../js/logic/rng.js"></script>
+<script src="../js/logic/board.js"></script>
+<script src="../js/logic/specials.js"></script>
+<script src="../js/logic/obstacles.js"></script>
+<script src="../js/logic/cherries.js"></script>
+<script src="../js/logic/fuses.js"></script>
+<script src="../js/logic/chameleons.js"></script>
+<script src="../js/logic/engine.js"></script>
+<script src="../js/logic/goals.js"></script>
+<script src="../js/logic/boss.js"></script>
+<script src="../js/logic/session.js"></script>
+<script src="../js/logic/jokers.js"></script>
+<script src="../js/logic/shop.js"></script>
+<script src="../js/save.js"></script>
+<script src="../js/logic/progress.js"></script>
+<script src="../js/data/curve.js"></script>
+<script src="../js/data/registry.js"></script>
+<script src="../js/data/worlds/w01.js"></script>
+<script src="../js/data/worlds/w01-extra.js"></script>
+<script src="../js/data/worlds/w02.js"></script>
+<script src="../js/data/worlds/w02-extra.js"></script>
+<script src="../js/data/worlds/w03.js"></script>
+<script src="../js/data/worlds/w03-extra.js"></script>
+<script src="../js/data/worlds/w04.js"></script>
+<script src="../js/data/worlds/w04-extra.js"></script>
+<script src="../js/data/worlds/w05.js"></script>
+<script src="../js/data/worlds/w05-extra.js"></script>
+<script src="../js/data/worlds/w06.js"></script>
+<script src="../js/data/worlds/w06-extra.js"></script>
+<script src="../js/data/worlds/w07.js"></script>
+<script src="../js/data/worlds/w07-extra.js"></script>
+<script src="../js/data/worlds/w08.js"></script>
+<script src="../js/data/worlds/w08-extra.js"></script>
+<script src="../js/data/worlds/w09.js"></script>
+<script src="../js/data/worlds/w09-extra.js"></script>
+<script src="../js/data/worlds/w10.js"></script>
+<script src="../js/data/worlds/w10-extra.js"></script>
+<script>
+(function (RS) {
+  'use strict';
+  var bad = [];
+  RS.Worlds.levels().filter(function (l) { return l.step > 0; }).forEach(function (l) {
+    var lv = RS.Worlds.inWorld(l.world);
+    var a = lv[(l.slot - 1) * 11];
+    var b = lv[l.slot * 11];
+    var near = b.isBoss ? [a] : [a, b];
+    var minMoves = Math.min.apply(null, near.map(function (n) { return n.moves; }));
+    var unfair = l.moves < Math.floor(minMoves * 0.8);
+    l.goals.forEach(function (g) {
+      if (g.type !== 'score' && g.type !== 'collect') { return; }
+      var rates = [];
+      near.forEach(function (n) {
+        n.goals.forEach(function (h) { if (h.type === g.type) { rates.push(h.target / n.moves); } });
+      });
+      if (rates.length && g.target / l.moves > Math.max.apply(null, rates) * 2) { unfair = true; }
+    });
+    if (unfair) { bad.push(l.id); }
+  });
+  document.getElementById('ids').textContent = bad.join(',');
+  document.getElementById('summary').textContent = 'FAIRNESS: ' + bad.length + ' Level';
+})(window.RS);
+</script>
+</body>
+</html>

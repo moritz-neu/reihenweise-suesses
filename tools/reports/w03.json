@@ -1,0 +1,1262 @@
+[
+ {
+  "id": "w3-01-01",
+  "target": 85,
+  "measured": 83,
+  "moves": 16,
+  "attempts": 2,
+  "trail": "1.00/21:73 0.75/16:83",
+  "pattern": "diamond",
+  "goals": "collect",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-01-02",
+  "target": 84,
+  "measured": 82,
+  "moves": 28,
+  "attempts": 3,
+  "trail": "1.00/28:77 0.65/27:76 0.47/28:82",
+  "pattern": "columns",
+  "goals": "crate",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-01-03",
+  "target": 84,
+  "measured": 82,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:82",
+  "pattern": "diamond",
+  "goals": "collect",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-01-04",
+  "target": 83,
+  "measured": 82,
+  "moves": 15,
+  "attempts": 1,
+  "trail": "1.00/15:82",
+  "pattern": "rowsMiddle",
+  "goals": "crate",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-01-05",
+  "target": 83,
+  "measured": 81,
+  "moves": 16,
+  "attempts": 1,
+  "trail": "1.00/16:81",
+  "pattern": "corners",
+  "goals": "collect",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-01-06",
+  "target": 82,
+  "measured": 83,
+  "moves": 20,
+  "attempts": 1,
+  "trail": "1.00/20:83",
+  "pattern": "pillars",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-01-07",
+  "target": 82,
+  "measured": 81,
+  "moves": 18,
+  "attempts": 1,
+  "trail": "1.00/18:81",
+  "pattern": "frame",
+  "goals": "collect",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-01-08",
+  "target": 81,
+  "measured": 77,
+  "moves": 16,
+  "attempts": 1,
+  "trail": "1.00/16:77",
+  "pattern": "bandTop",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-01-09",
+  "target": 81,
+  "measured": 80,
+  "moves": 16,
+  "attempts": 1,
+  "trail": "1.00/16:80",
+  "pattern": "diamond",
+  "goals": "collect+crate",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-01-10",
+  "target": 80,
+  "measured": 76,
+  "moves": 25,
+  "attempts": 3,
+  "trail": "1.00/25:73 0.75/24:64 0.63/25:76",
+  "pattern": "frame",
+  "goals": "crate",
+  "neighbours": [
+   "w3-01:85%/15",
+   "w3-02:80%/18"
+  ]
+ },
+ {
+  "id": "w3-02-01",
+  "target": 80,
+  "measured": 82,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:82",
+  "pattern": "bandBottom",
+  "goals": "collect+score",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-02-02",
+  "target": 80,
+  "measured": 81,
+  "moves": 21,
+  "attempts": 1,
+  "trail": "1.00/21:81",
+  "pattern": "pillars",
+  "goals": "score+crate",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-02-03",
+  "target": 79,
+  "measured": 75,
+  "moves": 26,
+  "attempts": 4,
+  "trail": "1.00/25:70 0.75/26:71 0.63/26:72 0.56/26:75",
+  "pattern": "frame",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-02-04",
+  "target": 79,
+  "measured": 78,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:78",
+  "pattern": "bandBottom",
+  "goals": "collect+score",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-02-05",
+  "target": 79,
+  "measured": 83,
+  "moves": 15,
+  "attempts": 1,
+  "trail": "1.00/15:83",
+  "pattern": "center",
+  "goals": "score+crate",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-02-06",
+  "target": 79,
+  "measured": 78,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:78",
+  "pattern": "ring",
+  "goals": "crate+score",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-02-07",
+  "target": 79,
+  "measured": 78,
+  "moves": 23,
+  "attempts": 1,
+  "trail": "1.00/23:78",
+  "pattern": "center",
+  "goals": "score+collect",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-02-08",
+  "target": 79,
+  "measured": 74,
+  "moves": 26,
+  "attempts": 2,
+  "trail": "1.00/26:69 0.75/26:74",
+  "pattern": "bandBottom",
+  "goals": "collect+crate",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-02-09",
+  "target": 78,
+  "measured": 78,
+  "moves": 30,
+  "attempts": 1,
+  "trail": "1.00/30:78",
+  "pattern": "columns",
+  "goals": "crate+score",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-02-10",
+  "target": 78,
+  "measured": 77,
+  "moves": 16,
+  "attempts": 1,
+  "trail": "1.00/16:77",
+  "pattern": "stripes",
+  "goals": "score+collect",
+  "neighbours": [
+   "w3-02:80%/18",
+   "w3-03:78%/19"
+  ]
+ },
+ {
+  "id": "w3-03-01",
+  "target": 78,
+  "measured": 78,
+  "moves": 18,
+  "attempts": 1,
+  "trail": "1.00/18:78",
+  "pattern": "pillars",
+  "goals": "score+glaze",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-03-02",
+  "target": 78,
+  "measured": 79,
+  "moves": 15,
+  "attempts": 1,
+  "trail": "1.00/15:79",
+  "pattern": "ring",
+  "goals": "glaze+crate",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-03-03",
+  "target": 78,
+  "measured": 78,
+  "moves": 15,
+  "attempts": 2,
+  "trail": "1.00/15:88 1.15/15:78",
+  "pattern": "stripes",
+  "goals": "crate+score",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-03-04",
+  "target": 78,
+  "measured": 77,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:77",
+  "pattern": "frame",
+  "goals": "score+glaze",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-03-05",
+  "target": 78,
+  "measured": 79,
+  "moves": 26,
+  "attempts": 2,
+  "trail": "1.00/35:72 0.65/26:79",
+  "pattern": "checker",
+  "goals": "score+crate",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-03-06",
+  "target": 79,
+  "measured": 82,
+  "moves": 16,
+  "attempts": 4,
+  "trail": "1.00/16:93 1.15/16:89 1.23/16:89 1.26/16:82",
+  "pattern": "diamond",
+  "goals": "glaze+crate",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-03-07",
+  "target": 79,
+  "measured": 74,
+  "moves": 33,
+  "attempts": 5,
+  "trail": "1.00/34:50 0.65/35:58 0.47/35:53 0.39/35:56 0.34/33:74",
+  "pattern": "rowsMiddle",
+  "goals": "crate+score",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-03-08",
+  "target": 79,
+  "measured": 78,
+  "moves": 35,
+  "attempts": 4,
+  "trail": "1.00/35:40 0.65/36:66 0.47/36:73 0.39/35:78",
+  "pattern": "pillars",
+  "goals": "score+glaze",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-03-09",
+  "target": 79,
+  "measured": 79,
+  "moves": 27,
+  "attempts": 3,
+  "trail": "1.00/36:41 0.65/36:72 0.47/27:79",
+  "pattern": "stripes",
+  "goals": "glaze+crate",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-03-10",
+  "target": 79,
+  "measured": 81,
+  "moves": 17,
+  "attempts": 2,
+  "trail": "1.00/16:92 1.15/17:81",
+  "pattern": "pillars",
+  "goals": "crate+score",
+  "neighbours": [
+   "w3-03:78%/19",
+   "w3-04:79%/20"
+  ]
+ },
+ {
+  "id": "w3-04-01",
+  "target": 79,
+  "measured": 78,
+  "moves": 35,
+  "attempts": 2,
+  "trail": "1.00/36:67 0.65/35:78",
+  "pattern": "columns",
+  "goals": "collect+crate",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-04-02",
+  "target": 79,
+  "measured": 76,
+  "moves": 27,
+  "attempts": 2,
+  "trail": "1.00/27:63 0.75/27:76",
+  "pattern": "pillars",
+  "goals": "collect+glaze",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-04-03",
+  "target": 78,
+  "measured": 56,
+  "moves": 35,
+  "attempts": 4,
+  "trail": "1.00/35:24 0.65/35:22 0.47/34:24 0.39/35:56 0.34/35:56",
+  "pattern": "bandBottom",
+  "goals": "glaze+crate",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-04-04",
+  "target": 78,
+  "measured": 78,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:78",
+  "pattern": "bandBottom",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-04-05",
+  "target": 78,
+  "measured": 77,
+  "moves": 27,
+  "attempts": 4,
+  "trail": "1.00/27:39 0.75/27:29 0.63/27:71 0.56/27:77",
+  "pattern": "rowsMiddle",
+  "goals": "collect+glaze",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-04-06",
+  "target": 78,
+  "measured": 78,
+  "moves": 20,
+  "attempts": 1,
+  "trail": "1.00/20:78",
+  "pattern": "stripes",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-04-07",
+  "target": 78,
+  "measured": 75,
+  "moves": 26,
+  "attempts": 1,
+  "trail": "1.00/26:75",
+  "pattern": "diamond",
+  "goals": "collect+glaze",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-04-08",
+  "target": 78,
+  "measured": 79,
+  "moves": 26,
+  "attempts": 1,
+  "trail": "1.00/26:79",
+  "pattern": "ring",
+  "goals": "glaze+crate",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-04-09",
+  "target": 77,
+  "measured": 79,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:79",
+  "pattern": "bandTop",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-04-10",
+  "target": 77,
+  "measured": 75,
+  "moves": 20,
+  "attempts": 1,
+  "trail": "1.00/20:75",
+  "pattern": "bandBottom",
+  "goals": "collect+glaze",
+  "neighbours": [
+   "w3-04:79%/20",
+   "w3-05:77%/18"
+  ]
+ },
+ {
+  "id": "w3-05-01",
+  "target": 77,
+  "measured": 80,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:80",
+  "pattern": "rowsMiddle",
+  "goals": "collect",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-05-02",
+  "target": 77,
+  "measured": 80,
+  "moves": 18,
+  "attempts": 1,
+  "trail": "1.00/18:80",
+  "pattern": "diamond",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-05-03",
+  "target": 77,
+  "measured": 77,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:77",
+  "pattern": "bandTop",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-05-04",
+  "target": 77,
+  "measured": 79,
+  "moves": 24,
+  "attempts": 1,
+  "trail": "1.00/24:79",
+  "pattern": "corners",
+  "goals": "collect+glaze",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-05-05",
+  "target": 77,
+  "measured": 76,
+  "moves": 21,
+  "attempts": 1,
+  "trail": "1.00/21:76",
+  "pattern": "rowsMiddle",
+  "goals": "glaze",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-05-06",
+  "target": 76,
+  "measured": 76,
+  "moves": 30,
+  "attempts": 1,
+  "trail": "1.00/30:76",
+  "pattern": "rowsMiddle",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-05-07",
+  "target": 76,
+  "measured": 77,
+  "moves": 24,
+  "attempts": 1,
+  "trail": "1.00/24:77",
+  "pattern": "checker",
+  "goals": "collect+glaze",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-05-08",
+  "target": 76,
+  "measured": 77,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:77",
+  "pattern": "corners",
+  "goals": "glaze",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-05-09",
+  "target": 76,
+  "measured": 83,
+  "moves": 20,
+  "attempts": 1,
+  "trail": "1.00/20:83",
+  "pattern": "stripes",
+  "goals": "collect+crate",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-05-10",
+  "target": 76,
+  "measured": 89,
+  "moves": 20,
+  "attempts": 3,
+  "trail": "1.00/20:97 1.15/20:95 1.23/20:89 1.26/20:89 1.28/20:91",
+  "pattern": "center",
+  "goals": "crate",
+  "neighbours": [
+   "w3-05:77%/18",
+   "w3-06:76%/26"
+  ]
+ },
+ {
+  "id": "w3-06-01",
+  "target": 76,
+  "measured": 77,
+  "moves": 23,
+  "attempts": 1,
+  "trail": "1.00/23:77",
+  "pattern": "diamond",
+  "goals": "choco+crate",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-06-02",
+  "target": 76,
+  "measured": 76,
+  "moves": 45,
+  "attempts": 4,
+  "trail": "1.00/45:47 0.65/45:46 0.47/44:56 0.39/45:76",
+  "pattern": "stripes",
+  "goals": "crate",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-06-03",
+  "target": 76,
+  "measured": 75,
+  "moves": 19,
+  "attempts": 3,
+  "trail": "1.00/19:88 1.15/19:88 1.23/19:75",
+  "pattern": "ring",
+  "goals": "glaze",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-06-04",
+  "target": 76,
+  "measured": 74,
+  "moves": 23,
+  "attempts": 3,
+  "trail": "1.00/19:98 1.15/19:93 1.23/23:74",
+  "pattern": "diamond",
+  "goals": "crate",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-06-05",
+  "target": 76,
+  "measured": 72,
+  "moves": 42,
+  "attempts": 2,
+  "trail": "1.00/40:65 0.65/42:72",
+  "pattern": "checker",
+  "goals": "choco+crate",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-06-06",
+  "target": 76,
+  "measured": 77,
+  "moves": 40,
+  "attempts": 1,
+  "trail": "1.00/40:77",
+  "pattern": "diagonals",
+  "goals": "choco+crate",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-06-07",
+  "target": 76,
+  "measured": 98,
+  "moves": 18,
+  "attempts": 1,
+  "trail": "1.00/18:98 1.15/18:98 1.23/18:98 1.26/18:98 1.28/18:98",
+  "pattern": "bandBottom",
+  "goals": "crate+glaze",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-06-08",
+  "target": 76,
+  "measured": 96,
+  "moves": 17,
+  "attempts": 1,
+  "trail": "1.00/17:96 1.15/17:96 1.23/17:96 1.26/17:96 1.28/17:96",
+  "pattern": "bandTop",
+  "goals": "choco+crate",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-06-09",
+  "target": 76,
+  "measured": 75,
+  "moves": 28,
+  "attempts": 1,
+  "trail": "1.00/28:75",
+  "pattern": "pillars",
+  "goals": "glaze+choco",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-06-10",
+  "target": 76,
+  "measured": 74,
+  "moves": 37,
+  "attempts": 2,
+  "trail": "1.00/37:66 0.65/37:74",
+  "pattern": "bandTop",
+  "goals": "choco+crate",
+  "neighbours": [
+   "w3-06:76%/26",
+   "w3-07:76%/20"
+  ]
+ },
+ {
+  "id": "w3-07-01",
+  "target": 76,
+  "measured": 76,
+  "moves": 21,
+  "attempts": 1,
+  "trail": "1.00/21:76",
+  "pattern": "ring",
+  "goals": "glaze+collect",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-07-02",
+  "target": 76,
+  "measured": 76,
+  "moves": 28,
+  "attempts": 2,
+  "trail": "1.00/30:69 0.75/28:76",
+  "pattern": "bandBottom",
+  "goals": "collect+crate",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-07-03",
+  "target": 75,
+  "measured": 75,
+  "moves": 40,
+  "attempts": 3,
+  "trail": "1.00/39:66 0.65/40:65 0.47/40:75",
+  "pattern": "corners",
+  "goals": "collect+choco",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-07-04",
+  "target": 75,
+  "measured": 92,
+  "moves": 18,
+  "attempts": 1,
+  "trail": "1.00/18:92 1.15/18:92 1.23/18:92 1.26/18:92 1.28/18:92",
+  "pattern": "center",
+  "goals": "choco+crate",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-07-05",
+  "target": 75,
+  "measured": 89,
+  "moves": 19,
+  "attempts": 1,
+  "trail": "1.00/19:89 1.15/19:89 1.23/19:89 1.26/19:89 1.28/19:89",
+  "pattern": "pillars",
+  "goals": "crate+glaze",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-07-06",
+  "target": 75,
+  "measured": 83,
+  "moves": 19,
+  "attempts": 2,
+  "trail": "1.00/19:91 1.15/19:83",
+  "pattern": "bandTop",
+  "goals": "glaze+collect",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-07-07",
+  "target": 75,
+  "measured": 85,
+  "moves": 20,
+  "attempts": 5,
+  "trail": "1.00/20:96 1.15/20:92 1.23/20:91 1.26/20:91 1.28/20:85",
+  "pattern": "ring",
+  "goals": "collect+glaze",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-07-08",
+  "target": 75,
+  "measured": 75,
+  "moves": 44,
+  "attempts": 1,
+  "trail": "1.00/44:75",
+  "pattern": "diagonals",
+  "goals": "crate+glaze",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-07-09",
+  "target": 74,
+  "measured": 82,
+  "moves": 21,
+  "attempts": 3,
+  "trail": "1.00/21:97 1.15/21:86 1.23/21:82",
+  "pattern": "center",
+  "goals": "glaze+collect",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-07-10",
+  "target": 74,
+  "measured": 96,
+  "moves": 22,
+  "attempts": 1,
+  "trail": "1.00/22:96 1.15/22:97 1.23/22:97 1.26/22:97 1.28/22:96",
+  "pattern": "bandTop",
+  "goals": "collect+crate",
+  "neighbours": [
+   "w3-07:76%/20",
+   "w3-08:74%/28"
+  ]
+ },
+ {
+  "id": "w3-08-01",
+  "target": 74,
+  "measured": 74,
+  "moves": 30,
+  "attempts": 1,
+  "trail": "1.00/30:74",
+  "pattern": "diamond",
+  "goals": "collect+crate",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-08-02",
+  "target": 73,
+  "measured": 73,
+  "moves": 38,
+  "attempts": 1,
+  "trail": "1.00/38:73",
+  "pattern": "columns",
+  "goals": "collect+crate",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-08-03",
+  "target": 73,
+  "measured": 73,
+  "moves": 31,
+  "attempts": 1,
+  "trail": "1.00/31:73",
+  "pattern": "frame",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-08-04",
+  "target": 73,
+  "measured": 91,
+  "moves": 26,
+  "attempts": 3,
+  "trail": "1.00/26:97 1.15/26:92 1.23/26:91 1.26/26:96 1.28/26:96",
+  "pattern": "diamond",
+  "goals": "glaze+collect",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-08-05",
+  "target": 72,
+  "measured": 80,
+  "moves": 26,
+  "attempts": 2,
+  "trail": "1.00/26:100 1.15/26:80",
+  "pattern": "rowsMiddle",
+  "goals": "crate+collect",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-08-06",
+  "target": 72,
+  "measured": 67,
+  "moves": 61,
+  "attempts": 3,
+  "trail": "1.00/60:59 0.65/59:59 0.47/61:67",
+  "pattern": "columns",
+  "goals": "glaze+collect",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-08-07",
+  "target": 71,
+  "measured": 97,
+  "moves": 28,
+  "attempts": 1,
+  "trail": "1.00/28:97 1.15/28:97 1.23/28:97 1.26/28:97 1.28/28:97",
+  "pattern": "center",
+  "goals": "glaze+collect",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-08-08",
+  "target": 71,
+  "measured": 71,
+  "moves": 65,
+  "attempts": 2,
+  "trail": "1.00/65:55 0.65/65:71",
+  "pattern": "corners",
+  "goals": "glaze+collect",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-08-09",
+  "target": 71,
+  "measured": 72,
+  "moves": 51,
+  "attempts": 1,
+  "trail": "1.00/51:72",
+  "pattern": "columns",
+  "goals": "collect+glaze",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-08-10",
+  "target": 70,
+  "measured": 76,
+  "moves": 30,
+  "attempts": 2,
+  "trail": "1.00/30:91 1.15/30:76",
+  "pattern": "rowsMiddle",
+  "goals": "glaze+collect",
+  "neighbours": [
+   "w3-08:74%/28",
+   "w3-09:70%/39"
+  ]
+ },
+ {
+  "id": "w3-09-01",
+  "target": 70,
+  "measured": 70,
+  "moves": 39,
+  "attempts": 1,
+  "trail": "1.00/39:70",
+  "pattern": "stripes",
+  "goals": "crate",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w3-09-02",
+  "target": 70,
+  "measured": 77,
+  "moves": 31,
+  "attempts": 1,
+  "trail": "1.00/31:77",
+  "pattern": "checker",
+  "goals": "glaze",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w3-09-03",
+  "target": 70,
+  "measured": 100,
+  "moves": 31,
+  "attempts": 1,
+  "trail": "1.00/31:100 1.15/31:100 1.23/31:100 1.26/31:100 1.28/31:100",
+  "pattern": "corners",
+  "goals": "crate",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w3-09-04",
+  "target": 70,
+  "measured": 76,
+  "moves": 31,
+  "attempts": 1,
+  "trail": "1.00/31:76",
+  "pattern": "checker",
+  "goals": "crate+glaze",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w3-09-05",
+  "target": 70,
+  "measured": 98,
+  "moves": 31,
+  "attempts": 1,
+  "trail": "1.00/31:98 1.15/31:98 1.23/31:98 1.26/31:98 1.28/31:98",
+  "pattern": "ring",
+  "goals": "glaze+crate",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w3-09-06",
+  "target": 70,
+  "measured": 70,
+  "moves": 33,
+  "attempts": 1,
+  "trail": "1.00/33:70",
+  "pattern": "checker",
+  "goals": "glaze",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w3-09-07",
+  "target": 70,
+  "measured": 66,
+  "moves": 70,
+  "attempts": 1,
+  "trail": "1.00/70:66",
+  "pattern": "frame",
+  "goals": "glaze",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w3-09-08",
+  "target": 70,
+  "measured": 98,
+  "moves": 31,
+  "attempts": 1,
+  "trail": "1.00/31:98 1.15/31:98 1.23/31:98 1.26/31:98 1.28/31:98",
+  "pattern": "bandBottom",
+  "goals": "crate",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w3-09-09",
+  "target": 70,
+  "measured": 98,
+  "moves": 31,
+  "attempts": 3,
+  "trail": "1.00/31:100 1.15/31:99 1.23/31:98 1.26/31:98 1.28/31:98",
+  "pattern": "bandTop",
+  "goals": "collect",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ },
+ {
+  "id": "w3-09-10",
+  "target": 70,
+  "measured": 69,
+  "moves": 31,
+  "attempts": 1,
+  "trail": "1.00/31:69",
+  "pattern": "rowsMiddle",
+  "goals": "crate+glaze",
+  "neighbours": [
+   "w3-09:70%/39",
+   "Boss"
+  ]
+ }
+]

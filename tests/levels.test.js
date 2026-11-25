@@ -26,8 +26,17 @@
     return out;
   }
 
+  // Nur die handgebauten Level (step 0); die Zwischenlevel prüft extras.test.js.
+  function oldLevels() {
+    return RS.Worlds.levels().filter(function (l) { return !l.step; });
+  }
+
+  function oldIn(worldId) {
+    return RS.Worlds.inWorld(worldId).filter(function (l) { return !l.step; });
+  }
+
   function first20() {
-    return RS.Worlds.levels().filter(function (l) { return l.world <= 2; });
+    return oldLevels().filter(function (l) { return l.world <= 2; });
   }
 
   t('levels: worlds 1 and 2 hold w1-01..w2-10 with the old seeds', function () {
@@ -36,7 +45,7 @@
     lv.forEach(function (l, i) {
       var n = i + 1;
       eq(l.id, RS.Save.legacyId(n));
-      eq(l.num, n);
+      eq((l.world - 1) * 10 + l.slot, n);
       eq(l.seed, 1000 + n);
       eq(l.world, n <= 10 ? 1 : 2, 'world of ' + l.id);
     });
@@ -59,13 +68,13 @@
     });
     ok(!/[12KLIJC]/.test(ten.layout.join('')), 'w1-10 has no obstacles');
     ok(/[12]/.test(twenty.layout.join('')), 'w2-10 starts with some glaze');
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       if (!l.isBoss) { ok(l.boss === undefined, 'no boss in ' + l.id); }
     });
   });
 
   t('levels: every layout is 8x8 and only uses known characters', function () {
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       eq(l.layout.length, 8, 'rows of ' + l.id);
       l.layout.forEach(function (row) {
         eq(row.length, 8, 'cols of ' + l.id);
@@ -82,7 +91,7 @@
   });
 
   t('levels: ice and chocolate only from world 2, choco goals have chocolate', function () {
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       var text = l.layout.join('');
       if (l.world === 1) { ok(!/[IJC]/.test(text), 'no world-2 obstacles in ' + l.id); }
       if (l.goals.some(function (g) { return g.type === 'choco'; })) { ok(/C/.test(text), 'chocolate in ' + l.id); }
@@ -90,7 +99,7 @@
   });
 
   t('levels: each level has at least one goal and moves, no score star thresholds', function () {
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       ok(l.goals.length >= 1, 'goals of ' + l.id);
       ok(l.moves > 0);
       ok(l.stars === undefined, l.id + ' must not define score star thresholds');
@@ -98,20 +107,20 @@
   });
 
   t('levels: glaze-goal levels contain glaze', function () {
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       var hasGoal = l.goals.some(function (g) { return g.type === 'glaze'; });
       if (hasGoal) { ok(/[12K]/.test(l.layout.join('')), 'glaze in ' + l.id); }
     });
   });
 
   t('levels: collect colors are below the color count', function () {
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       l.goals.forEach(function (g) { if (g.type === 'collect') { ok(g.color < l.colors, l.id); } });
     });
   });
 
   t('levels: each level starts without match and with a possible move', function () {
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       var s = RS.Session.startLevel(l);
       eq(RS.Board.findMatches(s.board).length, 0, 'matches in ' + l.id);
       ok(RS.Board.findPossibleMoves(s.board).length > 0, 'moves in ' + l.id);
@@ -159,7 +168,7 @@
       single = single.concat(w.chapterEnd, [w.gateLocked]);
       bossLines(w).forEach(function (l) { single.push(l.text); });
     });
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       if (l.world >= 2 || l.isBoss) { single.push(l.intro, l.win); }
     });
     single.push(RS.STORY.toBeContinued);
@@ -169,13 +178,13 @@
   t('story: every line has at most 2 sentences', function () {
     var lines = [];
     RS.Worlds.list().forEach(function (w) { lines = lines.concat(w.intro); });
-    RS.Worlds.levels().forEach(function (l) { lines.push(l.intro, l.win); });
+    oldLevels().forEach(function (l) { lines.push(l.intro, l.win); });
     lines.forEach(function (l) { ok(sentences(l) <= 2, 'too long: ' + l); });
   });
 
   t('story: collect levels name their color in the intro', function () {
     var names = ['Rot', 'Gelb', 'Grün', 'Blau', 'Violett', 'Orange'];
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       l.goals.forEach(function (g) {
         if (g.type === 'collect') { ok(l.intro.indexOf(names[g.color]) >= 0, l.id); }
       });
@@ -221,10 +230,10 @@
     eq(w.name, 'Karamellwüste');
     RS.assert.deepEqual(w.novelty, { kind: 'mechanic', key: 'crate' });
     eq(w.gateLocked, 'Besiege den Karamellkoloss, um das Tor zu öffnen.');
-    var lv = RS.Worlds.inWorld(3);
+    var lv = oldIn(3);
     eq(lv.length, 10);
     lv.forEach(function (l, i) { eq(l.id, 'w3-' + (i < 9 ? '0' : '') + (i + 1)); });
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       if (l.world < 3) { ok(!/[XYZ]/.test(l.layout.join('')), 'no crates in ' + l.id); }
     });
   });
@@ -238,19 +247,19 @@
 
   t('levels: every w3 level has crates, level 2 from w3-03, level 3 from w3-06', function () {
     var kinds = {};
-    RS.Worlds.inWorld(3).forEach(function (l) {
+    oldIn(3).forEach(function (l) {
       if (l.isBoss) { return; }
       var c = crateLevels(l);
       ok(c[0] || c[1] || c[2], 'crates in ' + l.id);
-      if (l.pos < 3) { ok(!c[1], 'no level-2 crates in ' + l.id); }
-      if (l.pos < 6) { ok(!c[2], 'no level-3 crates in ' + l.id); }
+      if (l.slot < 3) { ok(!c[1], 'no level-2 crates in ' + l.id); }
+      if (l.slot < 6) { ok(!c[2], 'no level-3 crates in ' + l.id); }
       l.goals.forEach(function (g) { kinds[g.type] = true; });
       if (/C/.test(l.layout.join(''))) { kinds.chocoCells = true; }
       if (/[LK]/.test(l.layout.join(''))) { kinds.lockCells = true; }
       if (/[IJ]/.test(l.layout.join(''))) { kinds.iceCells = true; }
     });
-    ok(RS.Worlds.inWorld(3).some(function (l) { return !l.isBoss && crateLevels(l)[1]; }), 'level-2 crates used');
-    ok(RS.Worlds.inWorld(3).some(function (l) { return !l.isBoss && crateLevels(l)[2]; }), 'level-3 crates used');
+    ok(oldIn(3).some(function (l) { return !l.isBoss && crateLevels(l)[1]; }), 'level-2 crates used');
+    ok(oldIn(3).some(function (l) { return !l.isBoss && crateLevels(l)[2]; }), 'level-3 crates used');
     ['crate', 'collect', 'score', 'glaze', 'choco'].forEach(function (k) { ok(kinds[k], 'goal ' + k + ' in world 3'); });
     ['chocoCells', 'lockCells', 'iceCells'].forEach(function (k) { ok(kinds[k], k + ' in world 3'); });
   });
@@ -258,13 +267,13 @@
   t('levels: introduction levels of worlds 3+ give at least 15 moves', function () {
     RS.Worlds.list().forEach(function (w) {
       if (w.id < 3) { return; }
-      var first = RS.Worlds.inWorld(w.id)[0];
+      var first = oldIn(w.id)[0];
       ok(first.moves >= 15, first.id + ' has ' + first.moves + ' moves');
     });
   });
 
   t('levels: crate goals have crates', function () {
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       if (l.goals.some(function (g) { return g.type === 'crate'; })) { ok(/[XYZ]/.test(l.layout.join('')), 'crates in ' + l.id); }
     });
   });
@@ -317,7 +326,7 @@
     eq(w.name, 'Kaugummi-Dschungel');
     RS.assert.deepEqual(w.novelty, { kind: 'joker', key: 'besen' });
     eq(w.gateLocked, 'Besiege die Kaugummi-Krake Blubba, um das Tor zu öffnen.');
-    var lv = RS.Worlds.inWorld(4);
+    var lv = oldIn(4);
     eq(lv.length, 10);
     lv.forEach(function (l, i) { eq(l.id, 'w4-' + (i < 9 ? '0' : '') + (i + 1)); });
     lv.forEach(function (l) { eq(l.colors, 6, 'colors of ' + l.id); });
@@ -332,8 +341,8 @@
 
   t('levels: w4-02..w4-09 use every known obstacle', function () {
     var kinds = {};
-    RS.Worlds.inWorld(4).forEach(function (l) {
-      if (l.isBoss || l.pos < 2) { return; }
+    oldIn(4).forEach(function (l) {
+      if (l.isBoss || l.slot < 2) { return; }
       var text = l.layout.join('');
       ok(/[12KLIJCXYZ]/.test(text), 'obstacles in ' + l.id);
       if (/[12K]/.test(text)) { kinds.glaze = true; }
@@ -394,7 +403,7 @@
     eq(w.name, 'Kirschgarten Morellia');
     RS.assert.deepEqual(w.novelty, { kind: 'mechanic', key: 'cherry' });
     eq(w.gateLocked, 'Besiege die Krähe Krawalla, um das Tor zu öffnen.');
-    var lv = RS.Worlds.inWorld(5);
+    var lv = oldIn(5);
     eq(lv.length, 10);
     lv.forEach(function (l, i) { eq(l.id, 'w5-' + (i < 9 ? '0' : '') + (i + 1)); });
     // Fünf Farben lassen Kirschen öfter fallen; der Boss kämpft wie überall mit sechs.
@@ -402,12 +411,12 @@
   });
 
   t('levels: cherries only from world 5, every w5 level holds 2 to 4', function () {
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       if (l.world < 5) {
         ok(!/R/.test(l.layout.join('')) && l.cherries === undefined, 'no cherries in ' + l.id);
       }
     });
-    RS.Worlds.inWorld(5).forEach(function (l) {
+    oldIn(5).forEach(function (l) {
       var placed = count(l.layout.join(''), 'R');
       var total = cherryTotal(l);
       ok(total >= 2 && total <= 4, l.id + ' has ' + total + ' cherries');
@@ -425,7 +434,7 @@
   });
 
   t('levels: cherry goals never ask for more cherries than the level holds', function () {
-    RS.Worlds.levels().forEach(function (l) {
+    oldLevels().forEach(function (l) {
       l.goals.forEach(function (g) {
         if (g.type === 'cherry') { ok(g.target >= 1 && g.target <= cherryTotal(l), 'cherries for ' + l.id); }
       });
@@ -440,8 +449,8 @@
 
   t('levels: w5-02..w5-09 mix every known obstacle and goal', function () {
     var kinds = {};
-    RS.Worlds.inWorld(5).forEach(function (l) {
-      if (l.isBoss || l.pos < 2) { return; }
+    oldIn(5).forEach(function (l) {
+      if (l.isBoss || l.slot < 2) { return; }
       var text = l.layout.join('');
       ok(l.goals.length >= 2, 'a second goal in ' + l.id);
       ok(/[12KLIJCXYZ]/.test(text), 'obstacles in ' + l.id);
@@ -457,7 +466,7 @@
   });
 
   t('levels: w5 layout cherries stay on the board at the start', function () {
-    RS.Worlds.inWorld(5).forEach(function (l) {
+    oldIn(5).forEach(function (l) {
       var s = RS.Session.startLevel(l);
       eq(s.board.cherryOnBoard, count(l.layout.join(''), 'R'), 'layout cherries stay on the board in ' + l.id);
     });
@@ -512,7 +521,7 @@
     eq(w.name, 'Zuckerwattenwolken');
     RS.assert.deepEqual(w.novelty, { kind: 'joker', key: 'feentausch' });
     eq(w.gateLocked, 'Besiege die Gewitterhexe Wolkira, um das Tor zu öffnen.');
-    var lv = RS.Worlds.inWorld(6);
+    var lv = oldIn(6);
     eq(lv.length, 10);
     lv.forEach(function (l, i) { eq(l.id, 'w6-' + (i < 9 ? '0' : '') + (i + 1)); });
     lv.forEach(function (l) { ok(l.colors === 5 || l.colors === 6, 'colors of ' + l.id); });
@@ -538,8 +547,8 @@
 
   t('levels: w6-02..w6-09 use every known obstacle, cherries and goal', function () {
     var kinds = {};
-    RS.Worlds.inWorld(6).forEach(function (l) {
-      if (l.isBoss || l.pos < 2) { return; }
+    oldIn(6).forEach(function (l) {
+      if (l.isBoss || l.slot < 2) { return; }
       var text = l.layout.join('');
       ok(/[12KLIJCXYZ]/.test(text), 'obstacles in ' + l.id);
       if (/[12K]/.test(text)) { kinds.glaze = true; }
@@ -595,7 +604,7 @@
     eq(w.name, 'Knallhafen');
     RS.assert.deepEqual(w.novelty, { kind: 'mechanic', key: 'fuse' });
     eq(w.gateLocked, 'Besiege Kapitän Knallfrosch, um das Tor zu öffnen.');
-    var lv = RS.Worlds.inWorld(7);
+    var lv = oldIn(7);
     eq(lv.length, 10);
     lv.forEach(function (l, i) { eq(l.id, 'w7-' + (i < 9 ? '0' : '') + (i + 1)); });
     lv.forEach(function (l) { ok(l.colors === 5 || l.colors === 6, 'colors of ' + l.id); });
@@ -604,7 +613,7 @@
 
   t('levels: every w7 level has Knallbonbons, early ones with more time', function () {
     var lastStart = 99;
-    RS.Worlds.inWorld(7).forEach(function (l) {
+    oldIn(7).forEach(function (l) {
       if (l.isBoss) { return; }
       var placed = count(l.layout.join(''), 'F');
       ok(l.fuses, 'fuse rule in ' + l.id);
@@ -613,7 +622,7 @@
       ok(l.fuses.start <= lastStart, 'start does not rise in ' + l.id);
       lastStart = l.fuses.start;
       var spawnOk = l.fuses.spawnEvery >= 3 && l.fuses.spawnEvery <= 6;
-      ok(spawnOk || (l.pos === 1 && l.fuses.spawnEvery === 0), 'spawnEvery 3..6 in ' + l.id);
+      ok(spawnOk || (l.slot === 1 && l.fuses.spawnEvery === 0), 'spawnEvery 3..6 in ' + l.id);
       var s = RS.Session.startLevel(l);
       var onBoard = 0;
       s.board.candies.forEach(function (row) {
@@ -634,14 +643,14 @@
 
   t('levels: w7 fuse goals fit the supply, other levels carry the fuses as a threat', function () {
     var kinds = {};
-    RS.Worlds.inWorld(7).forEach(function (l) {
+    oldIn(7).forEach(function (l) {
       if (l.isBoss) { return; }
       var fuse = l.goals.filter(function (g) { return g.type === 'fuse'; })[0];
       if (fuse) {
         kinds.goal = true;
         var spawned = l.fuses.spawnEvery ? Math.floor((l.moves - 1) / l.fuses.spawnEvery) : 0;
         ok(fuse.target > 0 && fuse.target <= count(l.layout.join(''), 'F') + spawned, 'fuse goal fits in ' + l.id);
-        if (l.pos >= 2) { ok(l.goals.length >= 2, 'a goal beside the fuse goal in ' + l.id); }
+        if (l.slot >= 2) { ok(l.goals.length >= 2, 'a goal beside the fuse goal in ' + l.id); }
       } else {
         kinds.threat = true;
       }
@@ -652,8 +661,8 @@
 
   t('levels: w7-02..w7-09 mix Knallbonbons with every known obstacle and goal', function () {
     var kinds = {};
-    RS.Worlds.inWorld(7).forEach(function (l) {
-      if (l.isBoss || l.pos < 2) { return; }
+    oldIn(7).forEach(function (l) {
+      if (l.isBoss || l.slot < 2) { return; }
       var text = l.layout.join('');
       ok(/[12KLIJCXYZR]/.test(text), 'obstacles in ' + l.id);
       if (/[12K]/.test(text)) { kinds.glaze = true; }
@@ -710,7 +719,7 @@
     eq(w.name, 'Marzipanschloss');
     RS.assert.deepEqual(w.novelty, { kind: 'joker', key: 'regenbogen' });
     eq(w.gateLocked, 'Besiege Ritter Mandelbart, um das Tor zu öffnen.');
-    var lv = RS.Worlds.inWorld(8);
+    var lv = oldIn(8);
     eq(lv.length, 10);
     lv.forEach(function (l, i) { eq(l.id, 'w8-' + (i < 9 ? '0' : '') + (i + 1)); });
     lv.forEach(function (l) { ok(l.colors === 5 || l.colors === 6, 'colors of ' + l.id); });
@@ -728,8 +737,8 @@
 
   t('levels: w8-02..w8-09 mix every known mechanic and goal', function () {
     var kinds = {};
-    RS.Worlds.inWorld(8).forEach(function (l) {
-      if (l.isBoss || l.pos < 2) { return; }
+    oldIn(8).forEach(function (l) {
+      if (l.isBoss || l.slot < 2) { return; }
       var text = l.layout.join('');
       ok(/[12KLIJCXYZRF]/.test(text), 'obstacles in ' + l.id);
       if (/[12K]/.test(text)) { kinds.glaze = true; }
@@ -788,7 +797,7 @@
     eq(w.name, 'Schillerbucht');
     RS.assert.deepEqual(w.novelty, { kind: 'mechanic', key: 'chameleon' });
     eq(w.gateLocked, 'Besiege die Seeschlange Schillerzahn, um das Tor zu öffnen.');
-    var lv = RS.Worlds.inWorld(9);
+    var lv = oldIn(9);
     eq(lv.length, 10);
     lv.forEach(function (l, i) { eq(l.id, 'w9-' + (i < 9 ? '0' : '') + (i + 1)); });
     lv.forEach(function (l) { ok(l.colors === 5 || l.colors === 6, 'colors of ' + l.id); });
@@ -796,7 +805,7 @@
   });
 
   t('levels: every w9 level has chameleons together with a collect goal', function () {
-    RS.Worlds.inWorld(9).forEach(function (l) {
+    oldIn(9).forEach(function (l) {
       if (l.isBoss) { return; }
       var placed = count(l.layout.join(''), 'H');
       var rule = l.chameleons;
@@ -819,8 +828,8 @@
 
   t('levels: w9-02..w9-09 mix chameleons with every known mechanic and goal', function () {
     var kinds = {};
-    RS.Worlds.inWorld(9).forEach(function (l) {
-      if (l.isBoss || l.pos < 2) { return; }
+    oldIn(9).forEach(function (l) {
+      if (l.isBoss || l.slot < 2) { return; }
       var text = l.layout.join('');
       ok(/[12KLIJCXYZRF]/.test(text), 'obstacles in ' + l.id);
       if (/[12K]/.test(text)) { kinds.glaze = true; }
@@ -882,7 +891,7 @@
     RS.assert.deepEqual(w.novelty, { kind: 'joker', key: 'zauberbombe' });
     eq(w.gateLocked, 'Besiege Bitterkönig Amarus, um das Spiel zu vollenden.');
     eq(w.id, RS.Worlds.FINAL_WORLD, 'the Bitterburg is the final world');
-    var lv = RS.Worlds.inWorld(10);
+    var lv = oldIn(10);
     eq(lv.length, 10);
     lv.forEach(function (l, i) { eq(l.id, 'w10-' + (i < 9 ? '0' : '') + (i + 1)); });
     lv.forEach(function (l) { ok(l.colors === 5 || l.colors === 6, 'colors of ' + l.id); });
@@ -913,8 +922,8 @@
 
   t('levels: w10-02..w10-09 combine every mechanic and goal of the game', function () {
     var kinds = {};
-    RS.Worlds.inWorld(10).forEach(function (l) {
-      if (l.isBoss || l.pos < 2) { return; }
+    oldIn(10).forEach(function (l) {
+      if (l.isBoss || l.slot < 2) { return; }
       var text = l.layout.join('');
       ok(/[12KLIJCXYZRF]/.test(text), 'obstacles in ' + l.id);
       ok(densestBlock(l.layout) >= 4, 'an obstacle cluster for the Zauberbombe in ' + l.id);

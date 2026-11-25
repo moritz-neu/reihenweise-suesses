@@ -22,6 +22,24 @@
       'Zum Dank schenkt er mir einen Sternsplitter, der so warm wie Karamell leuchtet!'
     ],
     gateLocked: 'Besiege den Karamellkoloss, um das Tor zu öffnen.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Die Dünen glitzern golden im Mondlicht.',
+      'Ein Lutscherkaktus blüht in allen Farben auf.',
+      'Der Wüstenwind singt ein fröhliches Lied.',
+      'Eine Karamellquelle sprudelt wieder.',
+      'Die Pyramiden werfen lange, süße Schatten.',
+      'Ein Sandkäfer rollt eine Zuckerperle davon.',
+      'Die Spur durch den Sand ist wieder deutlich zu sehen.',
+      'Ein Kamel aus Lebkuchen nickt dir zu.',
+      'Die Hitze flimmert wie geschmolzener Zucker.',
+      'Eine Oase schimmert am Horizont.',
+      'Der Sand unter deinen Füßen knirscht süß.',
+      'Ein Sternbild leuchtet über der Wüste auf.',
+      'Die Karamellkuppeln glänzen wie poliert.',
+      'Eine Brise trägt den Duft von Toffee heran.',
+      'Annika schüttelt fröhlich den Sand aus ihren Flügeln.'
+    ],
     // Warm, Hijaz-artige Skala mit übermäßiger Sekunde, Zupfklang, Handtrommel.
     music: {
       tempo: 100, root: 62, scale: [0, 1, 4, 5, 7, 8, 10], lead: 'pluck',

@@ -22,6 +22,24 @@
       'In beiden Welten leuchten jetzt alle Häuser, doch ich ahne, dass unsere Reise erst beginnt!'
     ],
     gateLocked: 'Besiege Eiskönigin Kandara, um das Tor zu öffnen.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Der Frost knistert und glitzert in der Sonne.',
+      'Ein Eiszapfen klingt wie ein kleines Glöckchen.',
+      'Die Schneeflocken tanzen wieder im Wind.',
+      'Ein Pfad über den Gletscher wird frei.',
+      'Die Berggipfel funkeln wie Kandiszucker.',
+      'Ein Schneehase hoppelt fröhlich davon.',
+      'Das Eis auf dem Bergsee schimmert blau.',
+      'Ein warmer Lichtstrahl fällt durch die Wolken.',
+      'Die Zuckerkristalle an den Felsen leuchten.',
+      'Ein Murmeltier pfeift dir anerkennend zu.',
+      'Die Hütte am Hang bläst wieder Rauch aus dem Schornstein.',
+      'Die Kälte weicht ein Stückchen zurück.',
+      'Ein Schlitten saust lachend den Hang hinab.',
+      'Die Sterne über den Gipfeln funkeln hell.',
+      'Annika pustet sich warme Luft in die Hände und strahlt.'
+    ],
     // Ruhig und glitzernd, Lydisch, weiche Flächen mit hohen Glöckchen, langsamer.
     music: {
       tempo: 84, root: 62, scale: [0, 2, 4, 6, 7, 9, 11], lead: 'pad',

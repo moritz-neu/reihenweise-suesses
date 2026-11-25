@@ -26,6 +26,24 @@
       'Dann regnet aus ihrer Wolke ein Sternsplitter, der himmelblau wie ein Sommermorgen glitzert!'
     ],
     gateLocked: 'Besiege die Gewitterhexe Wolkira, um das Tor zu öffnen.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Die Zuckerwatte bauscht sich weich und rosa.',
+      'Ein Regenbogen spannt sich über die Wolken.',
+      'Die Wolken tragen dich ein Stück höher.',
+      'Ein Wolkenschaf blökt freundlich.',
+      'Die Sonne kitzelt die Wolkenränder golden.',
+      'Ein sanfter Windhauch kribbelt in der Nase.',
+      'Die Wolkenbrücke wird wieder fest.',
+      'Ein Sternschnuppenregen zieht vorbei.',
+      'Ein Luftschiff winkt mit seinen Fähnchen.',
+      'Die Wolken duften nach Vanille.',
+      'Ein kleines Wölkchen hüpft vor Freude.',
+      'Der Himmel färbt sich zart lila.',
+      'Die Gewitterwolken ziehen sich zurück.',
+      'Ein Federwölkchen zeichnet ein Herz in die Luft.',
+      'Annika lässt sich lachend in eine Wolke fallen.'
+    ],
     // Schwebend und ruhig, Dur-Pentatonik, weiche Fläche mit hohen Glöckchen.
     music: {
       tempo: 76, root: 67, scale: [0, 2, 4, 7, 9], lead: 'pad',

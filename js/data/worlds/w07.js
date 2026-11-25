@@ -28,6 +28,24 @@
       'In der Kartenrolle steckt ein Sternsplitter, der orange wie ein Leuchtfeuer glüht!'
     ],
     gateLocked: 'Besiege Kapitän Knallfrosch, um das Tor zu öffnen.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Ein Schiff läutet zum Dank die Glocke.',
+      'Die Möwen kreisen kreischend über dem Hafen.',
+      'Ein Feuerwerk aus Zucker funkelt über dem Meer.',
+      'Die Wellen klatschen fröhlich an die Kaimauer.',
+      'Ein Matrose schwenkt seine Mütze.',
+      'Die Laternen am Pier leuchten bunt.',
+      'Ein Fass Brause rollt sicher an Land.',
+      'Der Leuchtturm schickt einen Lichtgruß.',
+      'Die Segel blähen sich im frischen Wind.',
+      'Ein Krebs klappert anerkennend mit den Scheren.',
+      'Das Hafenbecken glitzert wie flüssiger Zucker.',
+      'Ein Fischerboot tuckert zufrieden hinaus.',
+      'Die Taue knarzen ein Seemannslied.',
+      'Der Duft von gebrannten Mandeln zieht über den Kai.',
+      'Annika salutiert lachend wie ein echter Kapitän.'
+    ],
     // Seemannslied im wiegenden Sechsachteltakt, äolisch, mit hellem Chiptune-Lead.
     music: {
       tempo: 126, root: 57, scale: [0, 2, 3, 5, 7, 8, 10], lead: 'chip',

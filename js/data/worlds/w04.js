@@ -23,6 +23,24 @@
       'Aus ihrer geplatzten Blase fällt ein Sternsplitter, der rosa wie Kaugummi schimmert!'
     ],
     gateLocked: 'Besiege die Kaugummi-Krake Blubba, um das Tor zu öffnen.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Die Lianen schwingen fröhlich hin und her.',
+      'Ein Papagei krächzt dir ein Lob zu.',
+      'Eine Kaugummiblase platzt mit einem lauten Plopp.',
+      'Die Blätter im Dschungel rascheln zufrieden.',
+      'Ein Äffchen klatscht in die Hände.',
+      'Der Wasserfall glitzert in allen Farben.',
+      'Eine riesige Blüte öffnet sich langsam.',
+      'Die Baumhäuser leuchten im grünen Dämmerlicht.',
+      'Ein Frosch quakt im Takt der Trommeln.',
+      'Der Pfad durch das Dickicht wird wieder frei.',
+      'Ein Schmetterling setzt sich auf deine Schulter.',
+      'Die Glühwürmchen tanzen zwischen den Bäumen.',
+      'Ein Tukan pickt eine Beere und nickt dir zu.',
+      'Der Dschungel summt eine süße Melodie.',
+      'Annika wischt sich lachend einen Kaugummifaden vom Kleid.'
+    ],
     // Verspielt und federnd, Dur-Pentatonik, Marimba, synkopierte Trommeln.
     music: {
       tempo: 120, root: 65, scale: [0, 2, 4, 7, 9], lead: 'marimba',

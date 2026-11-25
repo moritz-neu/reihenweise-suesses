@@ -28,6 +28,24 @@
       'Dann löst sich aus seinem Wappenschild ein Sternsplitter, der violett wie Veilchenmarzipan funkelt!'
     ],
     gateLocked: 'Besiege Ritter Mandelbart, um das Tor zu öffnen.',
+    // Siegsätze der Zwischenlevel (in wNN-extra.js), abwechselnd verwendet.
+    winLines: [
+      'Eine Fahne weht stolz vom Schlossturm.',
+      'Die Marzipanmauern glänzen im Fackelschein.',
+      'Ein Wachposten verbeugt sich höflich.',
+      'Die Zugbrücke knarrt und senkt sich ein Stück.',
+      'Ein Wappen aus Zuckerguss leuchtet auf.',
+      'Im Burggraben schwimmen die Zuckerschwäne.',
+      'Die Fanfaren spielen eine kurze Melodie.',
+      'Ein Kronleuchter funkelt hinter den Fenstern.',
+      'Der Schlossgarten duftet nach Mandeln.',
+      'Ein Hofnarr schlägt vor Freude ein Rad.',
+      'Die Ritterrüstungen salutieren klirrend.',
+      'Ein Turmfenster öffnet sich mit einem Quietschen.',
+      'Die Treppe zum Thronsaal wird frei.',
+      'Das Schloss summt wie ein großes Fest.',
+      'Annika knickst wie eine echte Prinzessin.'
+    ],
     // Feierlicher Schlossreigen, harmonisch Moll mit Leitton, helle Glocken.
     music: {
       tempo: 92, root: 64, scale: [0, 2, 3, 5, 7, 8, 11], lead: 'bell',

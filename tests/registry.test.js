@@ -32,18 +32,18 @@
   t('registry: ids unique and well-formed', function () {
     var seen = {};
     RS.Worlds.levels().forEach(function (l) {
-      ok(/^w\d+-\d{2}[a-z]?$/.test(l.id), 'format ' + l.id);
+      ok(/^w\d+-\d{2}[a-z]?(-\d{2})?$/.test(l.id), 'format ' + l.id);
       ok(!seen[l.id], 'duplicate ' + l.id);
       seen[l.id] = true;
     });
   });
 
-  t('registry: all 100 ids follow w<world>-<two digit position> and the boss is wN-10', function () {
+  t('registry: the 100 old ids follow w<world>-<two digit position> and the boss is wN-10', function () {
     var expected = [];
     for (var w = 1; w <= 10; w++) {
       for (var p = 1; p <= 10; p++) { expected.push('w' + w + '-' + (p < 10 ? '0' : '') + p); }
     }
-    RS.assert.deepEqual(RS.Worlds.levels().map(function (l) { return l.id; }), expected);
+    RS.assert.deepEqual(RS.Worlds.levels().filter(function (l) { return !l.step; }).map(function (l) { return l.id; }), expected);
     for (var n = 1; n <= 10; n++) {
       var lv = RS.Worlds.inWorld(n);
       eq(lv[lv.length - 1].id, 'w' + n + '-10', 'last level of world ' + n);
@@ -73,7 +73,7 @@
   });
 
   t('registry: num and pos', function () {
-    eq(RS.Worlds.level('w2-01').num, 11);
+    eq(RS.Worlds.level('w2-01').num, RS.Worlds.inWorld(1).length + 1);
     eq(RS.Worlds.level('w2-01').pos, 1);
     eq(RS.Worlds.level('w2-01').world, 2);
     eq(RS.Worlds.level('nope'), undefined);
@@ -113,6 +113,59 @@
     var second = RS.Worlds.inWorld(99).map(function (l) { return [l.pos, l.seed]; });
     RS.Worlds._unregister(99);
     RS.assert.deepEqual(second, first);
+  });
+
+  function extra(id) {
+    return { id: id, colors: 5, moves: 18, goals: [{ type: 'score', target: 900 }], layout: ALL, intro: 'Zwischen!', win: 'Gut!' };
+  }
+
+  t99('registry: insert places intermediate levels after their old level, the boss stays last', function () {
+    RS.Worlds.register(testWorld(['w99-01', 'w99-02']));
+    RS.Worlds.insert(99, [extra('w99-01-02'), extra('w99-02-01'), extra('w99-01-01')]);
+    var lv = RS.Worlds.inWorld(99);
+    RS.assert.deepEqual(lv.map(function (l) { return l.id; }), ['w99-01', 'w99-01-01', 'w99-01-02', 'w99-02', 'w99-02-01', 'w99-boss']);
+    RS.assert.deepEqual(lv.map(function (l) { return l.pos; }), [1, 2, 3, 4, 5, 6]);
+    RS.assert.deepEqual(lv.map(function (l) { return l.slot + '/' + l.step; }), ['1/0', '1/1', '1/2', '2/0', '2/1', '3/0']);
+    eq(lv[2].label, '99-3');
+    eq(lv[5].isBoss, true);
+    eq(lv[5].slots, 3);
+    eq(RS.Worlds.level('w99-01-02').world, 99);
+    ok(RS.Worlds.level('w99-01-02').seed > 1000);
+    eq(RS.Worlds.level('w99-01-02').num, RS.Worlds.level('w99-01').num + 2);
+  });
+
+  t99('registry: insert rejects bad ids, a boss parent, duplicates and an unknown world', function () {
+    RS.Worlds.register(testWorld(['w99-01', 'w99-02']));
+    RS.assert.throws(function () { RS.Worlds.insert(99, [extra('w99-01x')]); });
+    RS.assert.throws(function () { RS.Worlds.insert(99, [extra('w99-07-01')]); });
+    RS.assert.throws(function () { RS.Worlds.insert(99, [extra('w99-boss-01')]); });
+    RS.assert.throws(function () { RS.Worlds.insert(99, [extra('w99-01-01'), extra('w99-01-01')]); });
+    RS.assert.throws(function () { RS.Worlds.insert(98, [extra('w98-01-01')]); });
+    var bad = extra('w99-01-01');
+    delete bad.intro;
+    RS.assert.throws(function () { RS.Worlds.insert(99, [bad]); });
+    eq(RS.Worlds.inWorld(99).length, 3, 'nothing inserted');
+  });
+
+  t99('registry: unregister drops the intermediate levels and the list is rebuilt', function () {
+    RS.Worlds.register(testWorld(['w99-01']));
+    RS.Worlds.insert(99, [extra('w99-01-01')]);
+    eq(RS.Worlds.inWorld(99).length, 3);
+    RS.Worlds._unregister(99);
+    eq(RS.Worlds.level('w99-01-01'), undefined);
+    RS.Worlds.register(testWorld(['w99-01']));
+    eq(RS.Worlds.inWorld(99).length, 2);
+  });
+
+  t('registry: the level list is cached between calls', function () {
+    ok(RS.Worlds.levels() === RS.Worlds.levels());
+  });
+
+  t('curve: intermediate levels lie between their old neighbours', function () {
+    eq(RS.Curve.target({ world: 3, slot: 1, step: 5, slots: 10, pos: 6 }), 79.5);
+    eq(RS.Curve.target({ world: 1, slot: 9, step: 10, slots: 10, pos: 99 }), 78.5);
+    eq(RS.Curve.target({ world: 1, slot: 9, step: 0, slots: 10, pos: 89 }), 86);
+    eq(RS.Curve.target({ world: 10, slot: 10, step: 0, slots: 10, pos: 100, isBoss: true }), 22);
   });
 
   t('registry: world 5 follows world 4 and opens after w4-10', function () {
@@ -181,7 +234,7 @@
     ok(ids.indexOf(9) >= 0 && ids.indexOf(10) === ids.indexOf(9) + 1, 'world 10 right after world 9');
     eq(ids[ids.length - 1], RS.Worlds.FINAL_WORLD, 'no world after the final one');
     eq(RS.Worlds.level('w10-01').num, RS.Worlds.level('w9-10').num + 1);
-    eq(RS.Worlds.levels().length, 100, 'ten worlds of ten levels');
+    eq(RS.Worlds.levels().length, 1000, 'ten worlds of 100 levels');
     var s = RS.Save.fresh();
     RS.Worlds.levels().forEach(function (l) { if (l.world <= 9 && l.id !== 'w9-10') { s.stars[l.id] = 1; } });
     eq(RS.Progress.isWorldOpen(s, 10), false, 'world 10 waits for w9-10');

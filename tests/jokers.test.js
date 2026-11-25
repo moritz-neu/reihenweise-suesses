@@ -38,14 +38,14 @@
     deep(J.KINDS, ['moves', 'hammer', 'besen', 'feentausch', 'regenbogen', 'zauberbombe']);
     var b = J.get('besen');
     eq(b.name, 'Zuckerbesen');
-    eq(b.price, 25);
+    eq(b.price, 125);
     eq(b.world, 4);
     eq(b.target, 'cell');
     eq(b.text, 'Räumt eine ganze Reihe ab.');
     eq(J.get('moves').target, 'none');
     eq(J.get('moves').text, 'Fünf Züge mehr im laufenden Level.');
     eq(J.get('hammer').text, 'Zerschlägt ein Bonbon deiner Wahl – samt Glasur und Gitter.');
-    eq(J.get('hammer').price, 20);
+    eq(J.get('hammer').price, 100);
     eq(J.get('bomb'), undefined);
   });
 
@@ -123,13 +123,13 @@
 
   t('jokers: table of feentausch, regenbogen, zauberbombe', function () {
     var f = J.get('feentausch');
-    eq(f.name, 'Feentausch'); eq(f.price, 15); eq(f.world, 6); eq(f.target, 'pair');
+    eq(f.name, 'Feentausch'); eq(f.price, 75); eq(f.world, 6); eq(f.target, 'pair');
     eq(f.text, 'Tauscht zwei Nachbarn, auch ohne Reihe.');
     var r = J.get('regenbogen');
-    eq(r.name, 'Regenbogenstaub'); eq(r.price, 35); eq(r.world, 8); eq(r.target, 'cell');
+    eq(r.name, 'Regenbogenstaub'); eq(r.price, 175); eq(r.world, 8); eq(r.target, 'cell');
     eq(r.text, 'Entfernt alle Bonbons einer Farbe.');
     var z = J.get('zauberbombe');
-    eq(z.name, 'Zauberbombe'); eq(z.price, 30); eq(z.world, 10); eq(z.target, 'cell');
+    eq(z.name, 'Zauberbombe'); eq(z.price, 150); eq(z.world, 10); eq(z.target, 'cell');
     eq(z.text, 'Sprengt ein Feld von drei mal drei.');
   });
 

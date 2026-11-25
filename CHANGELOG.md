@@ -2,9 +2,25 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
-## [5.2.0] – 2026-11-24
+## [6.0.0] – 2026-11-25
 
-Version 5.2.0 ist auf GitHub (Pages) veröffentlicht.
+Version 6.0.0 ist auf GitHub (Pages) veröffentlicht.
+
+Jede Welt hat 100 statt 10 Level. Spielstand-Format bleibt Version 4; Stände aus 5.x laden mit allen Sternen.
+
+### Neu
+- 900 Zwischenlevel: je 10 zwischen zwei bisherigen Leveln, die alten stehen auf den Plätzen 1, 12, 23 … 89, der Boss auf Platz 100. Die Zwischenlevel nutzen nur Mechaniken, die ihre Welt kennt, sind mit dem Bot so schwer wie ihre beiden Nachbarn ausgemessen und haben mindestens so viele Züge wie diese, bei höchstens 10 % mehr Punkten oder Bonbons je Zug.
+- Lange Levelkarte von unten nach oben mit 100 Stationen: alte Level als Häuser, Zwischenlevel als Bonbon-Steine, Sprungknöpfe zum Boss und zum Anfang; die Karte öffnet beim nächsten Level.
+- Einleitungen der Zwischenlevel nennen die Aufgabe, 15 Siegsätze je Welt.
+- Generator `tools/generate.html` und Bauskript `tools/build_levels.py`; Messwerte in `docs/balancing.md`.
+- Die Joker-Leiste bleibt beim Spielen immer sichtbar am unteren Rand (PC und Handy); das Feld passt sich auch an spätere Höhenänderungen an (Adressleiste, Zoom).
+
+### Geändert
+- Levelnummern zählen innerhalb der Welt („Level 3-34“).
+- Ladenpreise etwa das Fünffache: Feentausch 75, Zuckerhammer 100, Zuckerbesen 125, +5 Züge 150, Zauberbombe 150, Regenbogenstaub 175.
+- Die Karte ist auf allen Geräten senkrecht; die quer liegende Desktop-Karte entfällt.
+
+## [5.2.0] – 2026-11-24
 
 Vorbereitung für den Google Play Store. Spielstand-Format bleibt Version 4.
 

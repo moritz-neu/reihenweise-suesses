@@ -135,25 +135,41 @@
 
     var view = RS.UI.BoardView.create(holder, session.board);
 
-    // Das Feld passt immer ganz auf den Bildschirm: Ragt die Seite unten hinaus (kleines
-    // Handy, Bossleiste, Joker-Leiste), wird das quadratische Feld um genau so viel schmaler,
-    // höchstens bis 240 px. Läuft nach dem Aufbau und bei jeder Größenänderung.
+    // Das Feld passt immer ganz auf den Bildschirm: Ragt der Inhalt unten über das sichtbare
+    // Fenster (kleines Handy, Adressleiste, Zoom, Bossleiste, Joker-Leiste), wird das quadratische
+    // Feld um genau so viel schmaler, höchstens bis 200 px. Läuft nach dem Aufbau, kurz danach
+    // noch einmal und bei jeder Änderung der Fenstergröße oder der Anzeigen über dem Feld.
     var fitFrame = 0;
+    function viewportHeight() {
+      return window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    }
     function fitBoard() {
       fitFrame = 0;
       var b = holder.querySelector('.bv-board');
       if (!b || dead) { return; }
       b.style.width = '';
-      var over = document.documentElement.scrollHeight - window.innerHeight;
+      var last = section.lastElementChild;
+      var pad = parseFloat(getComputedStyle(section).paddingBottom) || 0;
+      var bottom = last.getBoundingClientRect().bottom + window.scrollY + pad;
+      var over = Math.ceil(bottom - viewportHeight());
       if (over > 0) {
         var w = b.getBoundingClientRect().width;
-        b.style.width = Math.max(240, Math.floor(w - over)) + 'px';
+        b.style.width = Math.max(200, Math.floor(w - over)) + 'px';
       }
     }
     function scheduleFit() {
       if (!fitFrame) { fitFrame = requestAnimationFrame(fitBoard); }
     }
     window.addEventListener('resize', scheduleFit);
+    if (window.visualViewport) { window.visualViewport.addEventListener('resize', scheduleFit); }
+    var fitObserver = window.ResizeObserver ? new ResizeObserver(scheduleFit) : null;
+    if (fitObserver) {
+      fitObserver.observe(head);
+      if (opts.hud) { fitObserver.observe(opts.hud); }
+      if (opts.top) { fitObserver.observe(opts.top); }
+      if (opts.footer) { fitObserver.observe(opts.footer); }
+    }
+    var fitLater = setTimeout(scheduleFit, 300);
     scheduleFit();
     function playing() { return !dead && session.status === 'playing'; }
     var hint = createHint(view, function () { return session.board; }, function () {
@@ -192,6 +208,9 @@
       dead = true;
       hint.stop();
       window.removeEventListener('resize', scheduleFit);
+      if (window.visualViewport) { window.visualViewport.removeEventListener('resize', scheduleFit); }
+      if (fitObserver) { fitObserver.disconnect(); }
+      clearTimeout(fitLater);
       if (fitFrame) { cancelAnimationFrame(fitFrame); fitFrame = 0; }
       section.removeEventListener('pointerdown', onInput, true);
       document.removeEventListener('keydown', onInput, true);
@@ -374,7 +393,7 @@
     if (won.bonus > 0) { lines.push(scoreLine('davon Zugbonus:', '+' + formatNumber(won.bonus))); }
     if (reward > 0) { lines.push(rewardLine(reward)); }
     RS.UI.dialog({
-      title: 'Level ' + level.num + ' geschafft!',
+      title: 'Level ' + level.label + ' geschafft!',
       className: 'dialog--result dialog--annika',
       body: resultBody(lines, level.win || ''),
       // Nach dem Bosssieg spielt die Karte das Kapitelende und öffnet das Tor.
@@ -673,7 +692,7 @@
     bar = createJokerBar(RS.Jokers.available(save), { canUse: canUse, useMoves: useMoves, toggle: toggle });
 
     active = mountBoard(root, {
-      title: 'Level ' + level.num,
+      title: 'Level ' + level.label,
       hud: hud.el,
       session: session,
       back: {

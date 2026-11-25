@@ -35,8 +35,11 @@
     var s = RS.Save.fresh();
     s.stars['w1-01'] = 1;
     eq(RS.Progress.isWon(s, 'w1-01'), true);
+    eq(RS.Progress.isPlayable(s, 'w1-01-01'), true, 'the first intermediate level follows w1-01');
+    eq(RS.Progress.nextLevel(s), 'w1-01-01');
+    eq(RS.Progress.isPlayable(s, 'w1-02'), false, 'w1-02 waits for w1-01-10');
+    s.stars['w1-01-10'] = 1;
     eq(RS.Progress.isPlayable(s, 'w1-02'), true);
-    eq(RS.Progress.nextLevel(s), 'w1-02');
     s.stars['w1-02'] = 0;
     eq(RS.Progress.isWon(s, 'w1-02'), false, '0 stars is no win');
   });
@@ -91,8 +94,10 @@
     s.stars['w1-01'] = 3;
     s.stars['w1-03'] = 1;
     eq(RS.Progress.isPlayable(s, 'w1-02'), true, 'skipped level with a later win');
-    eq(RS.Progress.isPlayable(s, 'w1-04'), true, 'after w1-03');
-    eq(RS.Progress.isPlayable(s, 'w1-05'), false);
+    eq(RS.Progress.isPlayable(s, 'w1-01-05'), true, 'skipped intermediate level with a later win');
+    eq(RS.Progress.isPlayable(s, 'w1-03-01'), true, 'after w1-03');
+    eq(RS.Progress.isPlayable(s, 'w1-03-02'), false);
+    eq(RS.Progress.isPlayable(s, 'w1-04'), false);
   });
 
   t('progress: startWorld', function () {
@@ -114,8 +119,8 @@
     s.stars['w1-01'] = 3;
     s.stars['w1-02'] = 2;
     s.stars['w2-01'] = 1;
-    RS.assert.deepEqual(RS.Progress.worldStars(s, 1), { stars: 5, max: 30 });
-    RS.assert.deepEqual(RS.Progress.worldStars(s, 2), { stars: 1, max: 30 });
+    RS.assert.deepEqual(RS.Progress.worldStars(s, 1), { stars: 5, max: 300 });
+    RS.assert.deepEqual(RS.Progress.worldStars(s, 2), { stars: 1, max: 300 });
   });
 
   t('progress: isComplete false while world 10 is not registered', function () {
@@ -153,7 +158,9 @@
     eq(RS.Save.hasSeen(d, 'kapitel:1'), true);
     eq(RS.Save.hasSeen(d, 'kapitel:2'), false);
     eq(RS.Progress.startWorld(d), 2);
-    eq(RS.Progress.isPlayable(d, 'w2-02'), true);
+    eq(RS.Progress.isPlayable(d, 'w2-01-01'), true);
+    eq(RS.Progress.isPlayable(d, 'w1-05-03'), true, 'intermediate levels before a won level are open');
+    eq(RS.Progress.isWon(d, 'w1-05-03'), false);
   });
   function memStorage() {
     var m = {};

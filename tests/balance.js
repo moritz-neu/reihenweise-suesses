@@ -340,6 +340,11 @@
     document.getElementById('summary').textContent = 'BALANCE: DONE';
   }
 
+  // Als Bibliothek für tools/generate.js: Bot und Zufallsgenerator ohne eigenen Lauf.
+  RS.Balance = { playLevel: playLevel, cloneableRng: cloneableRng, originalRng: originalRng, checkRng: checkRng,
+    verdictFor: verdictFor };
+  if (window.RS_BALANCE_LIB) { return; }
+
   document.addEventListener('DOMContentLoaded', function () {
     try { run(); }
     catch (e) { document.getElementById('summary').textContent = 'BALANCE: ERROR ' + (e && e.message ? e.message : e); }

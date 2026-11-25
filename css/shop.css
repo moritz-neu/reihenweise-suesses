@@ -215,3 +215,17 @@
     white-space: nowrap;
   }
 }
+
+/* Die Joker-Leiste bleibt beim Spielen immer sichtbar: Sie klebt am unteren Fensterrand,
+   auch wenn die Seite einmal länger ist als das Fenster (PC und Handy). */
+.screen.game > .joker-bar {
+  position: sticky;
+  bottom: calc(0.4rem + var(--safe-bottom));
+  z-index: 6;
+  padding: 0.35rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(20, 12, 46, 0.88);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 0 1px var(--gold-line), 0 6px 18px rgba(8, 4, 22, 0.5);
+}

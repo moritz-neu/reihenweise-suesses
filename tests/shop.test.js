@@ -8,7 +8,7 @@
   function d(sticks, moves, hammer) { return { sticks: sticks, jokers: { moves: moves, hammer: hammer } }; }
 
   t('shop: constants', function () {
-    deep(S.PRICES, { moves: 30, hammer: 20, besen: 25, feentausch: 15, regenbogen: 35, zauberbombe: 30 });
+    deep(S.PRICES, { moves: 150, hammer: 100, besen: 125, feentausch: 75, regenbogen: 175, zauberbombe: 150 });
     deep(S.JOKERS, ['moves', 'hammer', 'besen', 'feentausch', 'regenbogen', 'zauberbombe']);
     eq(S.MAX_STOCK, 10);
     eq(S.EXTRA_MOVES, 5);
@@ -42,8 +42,8 @@
     eq(S.winReward(0, 1, 1), 5);
   });
 
-  t('shop: buy besen costs 25', function () {
-    var x = { sticks: 30, jokers: { moves: 0, hammer: 0, besen: 0 } };
+  t('shop: buy besen costs 125', function () {
+    var x = { sticks: 130, jokers: { moves: 0, hammer: 0, besen: 0 } };
     eq(S.buy(x, 'besen'), true);
     eq(x.sticks, 5);
     eq(x.jokers.besen, 1);
@@ -60,28 +60,28 @@
   });
 
   t('shop: buy with enough money', function () {
-    var x = d(50, 1, 1);
+    var x = d(250, 1, 1);
     eq(S.buy(x, 'hammer'), true);
-    eq(x.sticks, 30);
+    eq(x.sticks, 150);
     eq(x.jokers.hammer, 2);
   });
 
   t('shop: buy without money changes nothing', function () {
-    var x = d(29, 1, 1);
+    var x = d(149, 1, 1);
     eq(S.buyProblem(x, 'moves'), 'money');
     eq(S.buy(x, 'moves'), false);
-    deep(x, d(29, 1, 1));
+    deep(x, d(149, 1, 1));
   });
 
   t('shop: buy with full stock changes nothing', function () {
-    var x = d(100, 10, 0);
+    var x = d(500, 10, 0);
     eq(S.buyProblem(x, 'moves'), 'full');
     eq(S.buy(x, 'moves'), false);
-    eq(x.sticks, 100);
+    eq(x.sticks, 500);
   });
 
   t('shop: buy twice with money for one', function () {
-    var x = d(20, 0, 0);
+    var x = d(100, 0, 0);
     eq(S.buy(x, 'hammer'), true);
     eq(S.buy(x, 'hammer'), false);
     deep(x, d(0, 0, 1));
