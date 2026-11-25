@@ -1,0 +1,12 @@
+{
+  "appId": "de.reihenweisesuesses.app",
+  "appName": "Reihenweise Süßes",
+  "webDir": "www",
+  "backgroundColor": "#140c2e",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "never"
+  }
+}

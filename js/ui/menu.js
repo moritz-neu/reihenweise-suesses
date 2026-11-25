@@ -366,6 +366,7 @@
     extras.appendChild(button('Neuigkeiten', 'btn--ghost', showAllNews));
     extras.appendChild(button('Datenschutz', 'btn--ghost', showPrivacy));
     actions.appendChild(extras);
+    actions.appendChild(el('p', 'menu-version', 'Version ' + RS.News.latest));
     actions.appendChild(notice);
     section.appendChild(actions);
 

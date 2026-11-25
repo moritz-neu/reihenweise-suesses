@@ -1,0 +1,24 @@
+{
+  "name": "reihenweise-suesses",
+  "version": "6.7.0",
+  "private": true,
+  "description": "App-Hülle (Capacitor) für das Spiel Reihenweise Süßes. Das Spiel selbst braucht kein Node; dieses Paket dient nur dem Bau der Android- und iOS-App.",
+  "scripts": {
+    "www": "python tools/build_www.py",
+    "sync": "python tools/build_www.py && npx cap sync",
+    "android": "python tools/build_www.py && npx cap sync android && npx cap open android",
+    "ios": "python tools/build_www.py && npx cap sync ios && npx cap open ios",
+    "assets": "npx @capacitor/assets generate --android --iconBackgroundColor #140c2e --iconBackgroundColorDark #140c2e --splashBackgroundColor #140c2e --splashBackgroundColorDark #140c2e"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "@capacitor/preferences": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.0.0"
+  }
+}

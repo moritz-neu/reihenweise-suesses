@@ -5,7 +5,7 @@
 // ASSETS muss jede Datei enthalten, die index.html lädt: python tools/check_store.py prüft das.
 'use strict';
 
-var VERSION = '6.6.0';
+var VERSION = '6.7.0';
 var CACHE = 'rs-' + VERSION;
 var ASSETS = [
   './',
@@ -38,6 +38,7 @@ var ASSETS = [
   'js/logic/shop.js',
   'js/save.js',
   'js/save-mirror.js',
+  'js/native.js',
   'js/logic/progress.js',
   'js/data/curve.js',
   'js/data/registry.js',

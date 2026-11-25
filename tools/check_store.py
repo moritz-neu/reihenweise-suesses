@@ -38,6 +38,9 @@ def main():
     news = re.search(r"version: '([^']+)'", read('js/data/news.js')).group(1)
     if news != version:
         errors.append('oberste Version in js/data/news.js (%s) passt nicht zu sw.js VERSION %s' % (news, version))
+    pkg = json.loads(read('package.json')).get('version')
+    if pkg != version:
+        errors.append('package.json version %s passt nicht zu sw.js VERSION %s' % (pkg, version))
     if top != version:
         errors.append('sw.js VERSION %s passt nicht zur obersten CHANGELOG-Version %s' % (version, top))
     try:

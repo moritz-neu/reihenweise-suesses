@@ -1,8 +1,9 @@
 (function (RS) {
   'use strict';
 
-  // Spielstand-Spiegel (IndexedDB): Zweitkopie, falls nur der localStorage gelöscht wird.
-  RS.Save.setMirror(RS.SaveMirror.indexedDb());
+  // Spielstand-Spiegel: Zweitkopie, falls nur der localStorage gelöscht wird. In der App-Hülle
+  // der Speicher der App (RS.Native), sonst IndexedDB.
+  RS.Save.setMirror(RS.Native.mirror() || RS.SaveMirror.indexedDb());
   if (RS.Platform && RS.Platform.isStandalone()) { RS.SaveMirror.requestPersistence(); }
 
   RS.App = {
@@ -70,7 +71,7 @@
       RS.App.applyMotion();
     }
     RS.UI.init(document.getElementById('app'));
-    RS.UI.Back.install(window);
+    if (!RS.Native.installBack()) { RS.UI.Back.install(window); }
     if (RS.App.reloadWhenIdle) { RS.UI.onChange(RS.App.reloadWhenIdle); }
     RS.UI.show('menu');
     RS.UI.News.showIfDue();

@@ -6,6 +6,10 @@
   // (tools/check_store.py prüft das). Nach einem Update zeigt das Hauptmenü einmal die noch
   // ungelesenen Versionen (höchstens zwei); gelesen ist eine Version mit dem Merker news:<version>.
   var NEWS = [
+    { version: '6.7.0', date: '25.11.2026', items: [
+      'Vorbereitung für die App in den Stores: Das Spiel läuft jetzt auch in einer echten App-Hülle.',
+      'Im Hauptmenü steht die Versionsnummer.'
+    ] },
     { version: '6.6.0', date: '25.11.2026', items: [
       'Besiegte Bosse bleiben als Freunde auf der Karte und schicken dir Herzen.',
       'Level mit drei Sternen glänzen golden, so siehst du sofort, wo noch Sterne fehlen.'

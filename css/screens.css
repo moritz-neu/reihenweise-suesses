@@ -792,3 +792,10 @@ button.atlas-card:hover {
 .news-list li + li {
   margin-top: 0.25rem;
 }
+
+.menu-version {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  opacity: 0.75;
+}

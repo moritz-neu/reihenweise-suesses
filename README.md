@@ -43,7 +43,12 @@ Das Spiel ist als installierbare Web-App vorbereitet und kann so in eine App-Hü
 - **Zurück-Taste (Android und Browser):** schließt erst einen offenen Dialog, drückt sonst den Zurück-Knopf des Bildschirms (mit dessen Rückfrage, etwa „Level verlassen?“) und schließt im Hauptmenü die App (`js/ui/backnav.js`). Neue Bildschirme markieren ihren Zurück-Knopf mit `RS.UI.Back.mark(button)`, Dialogknöpfe mit `back: true`.
 - **Datenschutz:** `datenschutz.html` und ein Knopf im Hauptmenü. Vor der Veröffentlichung die Platzhalter `[NAME]`, `[ANSCHRIFT]`, `[E-MAIL]` und `[HOSTER …]` ausfüllen und den Text rechtlich prüfen lassen. Die Seite muss öffentlich erreichbar sein, der Play Store verlangt ihren Link.
 - **Store-Grafiken in `store/`:** Symbol 512 × 512 für den Play Store (`play-icon-512.png`), Titelgrafik 1024 × 500 (`feature-graphic-1024x500.png`), sechs Handy-Fotos 1080 × 2160 (`screenshots/`), dazu `icon-1024.png` und `splash-2732.png` als Vorlagen für eine App-Hülle. Die App-Symbole liegen in `icons/` (Quellen `icon.svg` und `icon-maskable.svg`).
-- **App-Hülle (noch offen):** Empfohlen ist Capacitor. Es packt die Dateien in die App, braucht keine eigene Domain und taugt später auch für iOS. Ein Spiegel für dessen Speicher (`@capacitor/preferences`) lässt sich mit `RS.Save.setMirror` einsetzen. Eine Trusted Web Activity bräuchte `/.well-known/assetlinks.json` im Hauptverzeichnis der Domain, das geht unter `moritz-neu.github.io/reihenweise-suesses/` nicht.
+- **App-Hülle (Capacitor 7):** Das Android-Projekt liegt in `android/` (App-Kennung `de.reihenweisesuesses.app`, Hochformat, Symbol und Startbildschirm aus `assets/`). Nötig sind Node.js und für den Bau Android Studio; für iOS ein Mac mit Xcode (`npx cap add ios`).
+  1. `npm install` (einmalig)
+  2. `npm run android` stellt `www/` zusammen (`tools/build_www.py`), gleicht das Android-Projekt ab und öffnet Android Studio; dort signieren und das App-Bundle (`.aab`) bauen.
+  3. Bei jeder neuen Version `versionName` und `versionCode` in `android/app/build.gradle` erhöhen (`versionCode` zählt je Hochladen um eins).
+  4. Neues Symbol oder neuer Startbildschirm: Dateien in `assets/` ersetzen, dann `npm run assets`.
+  `js/native.js` nutzt in der Hülle `@capacitor/preferences` (Zweitkopie des Spielstands) und `@capacitor/app` (Zurück-Taste). Das Paket wurde noch nicht gebaut und auf keinem Gerät getestet. Texte und Angaben für die Stores: `store/eintrag-de.md`.
 
 ## Musik und Effekte
 

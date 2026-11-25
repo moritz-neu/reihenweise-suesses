@@ -2065,8 +2065,8 @@
 }
 
 .station--stone {
-  width: max(44px, calc(var(--station) * 0.62));
-  height: max(44px, calc(var(--station) * 0.62));
+  width: max(48px, calc(var(--station) * 0.62));
+  height: max(48px, calc(var(--station) * 0.62));
   transform: translate(-50%, -50%);
 }
 
