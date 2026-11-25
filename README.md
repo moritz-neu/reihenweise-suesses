@@ -48,7 +48,7 @@ Das Spiel ist als installierbare Web-App vorbereitet und kann so in eine App-Hü
   2. `npm run android` stellt `www/` zusammen (`tools/build_www.py`), gleicht das Android-Projekt ab und öffnet Android Studio; dort signieren und das App-Bundle (`.aab`) bauen.
   3. Bei jeder neuen Version `versionName` und `versionCode` in `android/app/build.gradle` erhöhen (`versionCode` zählt je Hochladen um eins).
   4. Neues Symbol oder neuer Startbildschirm: Dateien in `assets/` ersetzen, dann `npm run assets`.
-  `js/native.js` nutzt in der Hülle `@capacitor/preferences` (Zweitkopie des Spielstands) und `@capacitor/app` (Zurück-Taste). Das Paket wurde noch nicht gebaut und auf keinem Gerät getestet. Texte und Angaben für die Stores: `store/eintrag-de.md`.
+  `js/native.js` nutzt in der Hülle `@capacitor/preferences` (Zweitkopie des Spielstands) und `@capacitor/app` (Zurück-Taste). Gebaut wird mit dem Java aus Android Studio (`JAVA_HOME` auf dessen `jbr`-Ordner, Gradle 9.1.0): `gradlew assembleDebug` für eine Test-App, `gradlew bundleRelease` für das Store-Paket. Die App lief im Emulator (Start, Karte, Zurück-Taste, Spielstand-Speicher), auf einem echten Gerät noch nicht; das Store-Paket muss noch signiert werden. Texte und Angaben für die Stores: `store/eintrag-de.md`.
 
 ## Musik und Effekte
 

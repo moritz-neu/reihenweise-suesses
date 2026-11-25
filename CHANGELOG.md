@@ -11,7 +11,7 @@ Technische Vorbereitung für Google Play und den Apple App Store.
 ### Neu
 - Brücke zur App-Hülle (`js/native.js`): In einer Capacitor-App liegt die Zweitkopie des Spielstands im Speicher der App (Preferences), und die Zurück-Taste von Android läuft über das App-Plugin (im Hauptmenü schließt sie die App). Im Browser ändert sich nichts.
 - In der App-Hülle gibt es keinen Service Worker und kein automatisches Neuladen (`RS.Platform.isNative`); alle Dateien liegen in der App.
-- App-Hülle mit Capacitor 7: `package.json`, `capacitor.config.json` (App-Kennung `de.reihenweisesuesses.app`), `tools/build_www.py` (stellt `www/` zusammen) und das Android-Projekt in `android/` (Hochformat, Version 6.7.0, Symbol und Startbildschirm aus `assets/`). Das App-Paket ist noch nicht gebaut: Dafür fehlt Android Studio.
+- App-Hülle mit Capacitor 7: `package.json`, `capacitor.config.json` (App-Kennung `de.reihenweisesuesses.app`), `tools/build_www.py` (stellt `www/` zusammen) und das Android-Projekt in `android/` (Hochformat, Version 6.7.0, Symbol und Startbildschirm aus `assets/`). Gebaut mit Gradle 9.1.0 und Android-Gradle-Plugin 8.13.0 (Java 25 aus Android Studio) und im Emulator gestartet; das Paket für den Store ist noch nicht signiert.
 - Store-Eintrag als Entwurf in `store/eintrag-de.md` (Texte, Angaben zu Datenschutz und Altersfreigabe, Liste der Grafiken); Store-Fotos neu in drei Größen (Google Play, iPhone, iPad).
 - Startwächter: Startet das Spiel nicht binnen 8 s, erscheint ein Hinweis mit „Neu laden“ statt einer leeren Seite.
 - Versionsnummer im Hauptmenü.
