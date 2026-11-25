@@ -2,9 +2,15 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
-## [6.5.0] – 2026-11-25
+## [6.6.0] – 2026-11-25
 
-Version 6.5.0 ist auf GitHub (Pages) veröffentlicht.
+Version 6.6.0 ist auf GitHub (Pages) veröffentlicht.
+
+### Neu
+- Besiegte Bosse bleiben als Freunde neben ihrer Station (sanftes Wiegen, aufsteigende Herzen); wartende und besiegte Bosse stehen auf der dem Tor abgewandten Seite.
+- Bonbon-Steine mit drei Sternen haben einen goldenen Ring mit Schimmer.
+
+## [6.5.0] – 2026-11-25
 
 ### Neu
 - Schalter „Kulisse: lebendig/ruhig“ im Hauptmenü: Ruhig zeigt stehende Bilder ohne Szenen, Teilchen, Konfetti und Lichtblitz; das Spiel selbst bleibt unverändert. Die Wahl steht im Spielstand (`settings.motion`, Standard lebendig); ältere Stände bekommen den Standard.

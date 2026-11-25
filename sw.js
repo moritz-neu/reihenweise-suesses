@@ -5,7 +5,7 @@
 // ASSETS muss jede Datei enthalten, die index.html lädt: python tools/check_store.py prüft das.
 'use strict';
 
-var VERSION = '6.5.0';
+var VERSION = '6.6.0';
 var CACHE = 'rs-' + VERSION;
 var ASSETS = [
   './',

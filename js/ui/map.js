@@ -276,6 +276,7 @@
       place(b, pts[i], full);
       b.appendChild(el('span', 'station-num', String(level.pos)));
       if (state === 'done') { b.appendChild(starRow(stars)); }
+      if (stars >= 3) { b.classList.add('is-perfect'); }
       b.setAttribute('aria-label', 'Level ' + level.label + ', ' + (state === 'done'
         ? stars + ' von 3 Sternen' : (open[i] ? 'spielbar' : 'gesperrt')));
       if (open[i]) {
@@ -311,14 +312,22 @@
         }, 650);
       }
     }
-    // Der Boss wartet neben seiner Station, bis er besiegt ist.
+    // Der Boss wartet neben seiner Station; nach seiner Niederlage bleibt er als Freund dort
+    // (Herzen statt Drohen), wie es die Geschichte erzählt.
     var bossLevel = levels[levels.length - 1];
-    if (bossLevel && bossLevel.isBoss && !RS.Progress.isWon(save, bossLevel.id) && view.art.bossFigure) {
+    if (bossLevel && bossLevel.isBoss && view.art.bossFigure) {
       var bp = pts[levels.length - 1];
-      var waiting = el('div', 'map-boss');
+      var friendly = RS.Progress.isWon(save, bossLevel.id);
+      var waiting = el('div', 'map-boss' + (friendly ? ' is-friend' : ''));
+      if (friendly) {
+        waiting.insertAdjacentHTML('beforeend', '<span class="map-hearts"><i>❤</i><i>❤</i><i>❤</i></span>');
+      }
       waiting.setAttribute('aria-hidden', 'true');
-      waiting.innerHTML = view.art.bossFigure();
-      place(waiting, [bp[0] < layout.w / 2 ? bp[0] + 95 : bp[0] - 95, bp[1] + 10], full);
+      waiting.insertAdjacentHTML('afterbegin', view.art.bossFigure());
+      // Auf die Seite, die dem Tor abgewandt ist, damit Tor und Beschriftung frei bleiben.
+      var side = exitPt ? (exitPt[0] > bp[0] ? -1 : 1) : (bp[0] < layout.w / 2 ? 1 : -1);
+      var bx = Math.max(45, Math.min(layout.w - 45, bp[0] + side * 95));
+      place(waiting, [bx, bp[1] + 10], full);
       holder.appendChild(waiting);
     }
 
