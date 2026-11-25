@@ -357,8 +357,11 @@
     flyer.setAttribute('aria-hidden', 'true');
     flyer.appendChild(RS.UI.Dialog.figure());
     section.appendChild(flyer);
-    // Bewohner von Kandishain: der Lebkuchenmann winkt, die Katze schaut zu.
+    // Bewohner von Kandishain: der Lebkuchenmann winkt, die Katze schaut zu, und ab und zu
+    // spaziert ein Lebkuchenmann durchs Dorf.
     if (RS.UI.Ambient) {
+      var walk = RS.UI.Ambient.scene(1, -40);
+      if (walk) { walk.classList.add('menu-scene'); section.appendChild(walk); }
       section.insertAdjacentHTML('beforeend', RS.UI.Ambient.figure(1, 0, 'menu-fig menu-fig--left') +
         RS.UI.Ambient.figure(1, 1, 'menu-fig menu-fig--right'));
     }

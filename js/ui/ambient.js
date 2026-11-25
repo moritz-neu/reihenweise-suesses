@@ -98,6 +98,13 @@
       '<circle cx="50" cy="50" r="30" fill="#ff8fc4" opacity="0.75"/><circle cx="50" cy="50" r="30" fill="none" stroke="#ffd3ea" stroke-width="3"/>' +
       '<ellipse cx="40" cy="38" rx="8" ry="5" fill="#fff" opacity="0.7" transform="rotate(-30 40 38)"/>'),
 
+    parrotfly: svg(
+      '<g class="amb-wing"><path d="M44 46 Q30 18 12 22 Q24 34 30 50 Z" fill="#13b371"/><path d="M56 46 Q70 18 88 22 Q76 34 70 50 Z" fill="#1384d6"/></g>' +
+      '<ellipse cx="50" cy="56" rx="14" ry="12" fill="#e0204f"/>' +
+      '<circle cx="66" cy="48" r="9" fill="#e0204f"/><path d="M73 47 Q82 48 76 55 Z" fill="#ffd24d"/>' +
+      '<circle cx="68" cy="46" r="3" fill="#fff"/><circle class="amb-eye" cx="69" cy="46" r="1.5" fill="' + EYE + '"/>' +
+      '<path d="M36 60 L18 72 L22 62 Z" fill="#1384d6"/>'),
+
     // Welt 5: Kirschgarten
     bee: svg(
       '<g class="amb-wing"><ellipse cx="42" cy="34" rx="12" ry="8" fill="#e6f6ff" opacity="0.85"/><ellipse cx="58" cy="32" rx="12" ry="8" fill="#e6f6ff" opacity="0.85"/></g>' +
@@ -219,6 +226,23 @@
       { f: 'bat', anim: 'flutter' }, { f: 'ghost', anim: 'haunt' }, { f: 'torch', anim: 'still' }] }
   };
 
+  // Kleine Szenen: ab und zu zieht ein Bewohner quer durchs Bild (etwa einmal je Minute).
+  // f: Figur, move: Eigenbewegung unterwegs, at: Höhe ('bottom' oder 'top' in Prozent),
+  // size: Größe in vmin, dur: Dauer eines Durchlaufs in Sekunden, rev: von rechts nach links,
+  // flock: mehrere hintereinander.
+  var SCENES = {
+    1: { f: 'gingerbread', move: 'bob', bottom: 6, size: 9, dur: 64 },
+    2: { f: 'hare', move: 'hop', bottom: 5, size: 8, dur: 58 },
+    3: { f: 'camel', move: 'bob', bottom: 6, size: 13, dur: 80 },
+    4: { f: 'parrotfly', move: 'float', top: 16, size: 9, dur: 56 },
+    5: { f: 'bee', move: 'buzz', top: 30, size: 6, dur: 52 },
+    6: { f: 'balloon', move: 'float', top: 10, size: 12, dur: 96 },
+    7: { f: 'boat', move: 'rock', bottom: 9, size: 10, dur: 84 },
+    8: { f: 'knight', move: 'bob', bottom: 5, size: 9, dur: 72 },
+    9: { f: 'fish', move: 'bob', bottom: 7, size: 6, dur: 60, rev: true, flock: 3 },
+    10: { f: 'bat', move: 'flutter', top: 14, size: 7, dur: 54, flock: 3 }
+  };
+
   // Horizont-Silhouetten (Feld 0 0 400 100, unten bündig).
   var HORIZON = {
     1: '<path d="M0 100 V70 L20 70 L20 56 L36 44 L52 56 L52 70 L70 70 L70 50 L92 34 L114 50 L114 70 L140 70 L140 60 L156 48 L172 60 L172 70 L200 70 L200 46 L222 30 L244 46 L244 70 L270 70 L270 58 L288 44 L306 58 L306 70 L330 70 L330 52 L350 38 L370 52 L370 70 L400 70 V100 Z" fill="#241544"/>' +
@@ -281,6 +305,25 @@
     return n;
   }
 
+  // Eine kleine Szene: Bewohner, die ab und zu quer durchs Bild ziehen.
+  function sceneNode(worldId, delay) {
+    var sc = SCENES[worldId];
+    if (!sc) { return null; }
+    var n = el('div', 'amb-scene' + (sc.rev ? ' amb-scene--rev' : ''));
+    if (sc.top !== undefined) { n.style.top = sc.top + '%'; } else { n.style.bottom = sc.bottom + '%'; }
+    n.style.animationDuration = sc.dur + 's';
+    n.style.animationDelay = (delay !== undefined ? delay : -sc.dur * 0.42) + 's';
+    var count = sc.flock || 1;
+    for (var i = 0; i < count; i++) {
+      var f = el('div', 'amb-fig amb-' + sc.f + ' amb-anim-' + sc.move);
+      f.style.width = 'clamp(26px, ' + (count > 1 ? sc.size * (1 - i * 0.18) : sc.size) + 'vmin, 120px)';
+      f.style.animationDelay = (-i * 0.6) + 's';
+      f.innerHTML = F[sc.f];
+      n.appendChild(f);
+    }
+    return n;
+  }
+
   // Hintergrund des Spielbildschirms einer Welt.
   function gameLayer(worldId) {
     var w = WORLDS[worldId] || WORLDS[1];
@@ -304,6 +347,8 @@
         layer.appendChild(p);
       }
     }
+    var scene = sceneNode(worldId);
+    if (scene) { layer.appendChild(scene); }
     WIDE_SPOTS.forEach(function (spot, i) {
       var extra = figureNode(w.figures[(i + 1) % w.figures.length], spot, -2.1 - i * 1.9);
       extra.classList.add('amb-wide');
@@ -375,5 +420,5 @@
   }
 
   RS.UI.Ambient = { gameLayer: gameLayer, mapLayer: mapLayer, figure: figure, confetti: confetti, flash: flash,
-    WORLDS: WORLDS, FIGURES: F };
+    scene: sceneNode, WORLDS: WORLDS, SCENES: SCENES, FIGURES: F };
 })(window.RS = window.RS || {});

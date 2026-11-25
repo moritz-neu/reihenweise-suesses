@@ -6,6 +6,10 @@
   // (tools/check_store.py prüft das). Nach einem Update zeigt das Hauptmenü einmal die noch
   // ungelesenen Versionen (höchstens zwei); gelesen ist eine Version mit dem Merker news:<version>.
   var NEWS = [
+    { version: '6.2.0', date: '25.11.2026', items: [
+      'Ab und zu ziehen Bewohner durchs Bild: Lebkuchenmann, Schneehase, Kamel, Ballon, Segelboot und mehr.',
+      'Im Hauptmenü spaziert ein Lebkuchenmann durchs Dorf.'
+    ] },
     { version: '6.1.0', date: '25.11.2026', items: [
       'Jede Welt hat jetzt eigene Kulissen mit Himmel, Horizont und kleinen Bewohnern.',
       'Vom winkenden Lebkuchenmann über den hoppelnden Schneehasen bis zur Fledermaus.',

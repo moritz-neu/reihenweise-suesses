@@ -2,9 +2,17 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
-## [6.1.0] – 2026-11-25
+## [6.2.0] – 2026-11-25
 
-Version 6.1.0 ist auf GitHub (Pages) veröffentlicht.
+Version 6.2.0 ist auf GitHub (Pages) veröffentlicht.
+
+### Neu
+- Kleine Szenen: In jeder Welt zieht etwa einmal pro Minute ein Bewohner quer durchs Bild (Lebkuchenmann, Schneehase, Kamel, Papagei, Biene, Heißluftballon, Segelboot, Ritter, Fischschwarm, Fledermäuse); im Hauptmenü spaziert ein Lebkuchenmann durchs Dorf.
+
+### Verbessert
+- Der Bildschirmwechsel blendet ab halber Deckkraft ein, damit ein angehaltener Übergang den Bildschirm nie fast unsichtbar lässt.
+
+## [6.1.0] – 2026-11-25
 
 ### Neu
 - Lebendige Kulissen je Welt (`js/ui/ambient.js`, `css/ambient.css`): eigener Himmel, eine Horizont-Silhouette (Dächer, Berge, Dünen, Dschungel, Kirschbäume, Wolken, Hafen mit Leuchtturm, Burg, Wellen, Bitterburg) und drei kleine animierte Figuren je Welt, im Spiel, hinter der Karte und auf breiten Fenstern zwei mehr. Schnee, Blüten und Kaugummiblasen ziehen langsam durchs Bild.

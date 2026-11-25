@@ -39,4 +39,14 @@
     ok(/aria-hidden="true"/.test(html));
     ok(/amb-parrot/.test(html));
   });
+  t('ambient: every world has a small scene with a known figure that crosses the screen now and then', function () {
+    RS.Worlds.list().forEach(function (w) {
+      var sc = RS.UI.Ambient.SCENES[w.id];
+      ok(sc && RS.UI.Ambient.FIGURES[sc.f], 'scene of world ' + w.id);
+      ok(sc.dur >= 45, 'calm pace in world ' + w.id);
+      var n = RS.UI.Ambient.scene(w.id);
+      eq(n.querySelectorAll('.amb-fig').length, sc.flock || 1);
+    });
+    ok(RS.UI.Ambient.gameLayer(9).querySelector('.amb-scene--rev'), 'fish swim the other way');
+  });
 })(window.RS = window.RS || {});

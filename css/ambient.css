@@ -449,8 +449,10 @@
   animation: amb-screen-in 0.28s ease-out;
 }
 
+/* Start bei halber Deckkraft: Bleibt eine Animation einmal stehen (Hintergrund-Tab, Stromsparen),
+   ist der Bildschirm trotzdem gut zu sehen. */
 @keyframes amb-screen-in {
-  from { opacity: 0; }
+  from { opacity: 0.5; }
   to { opacity: 1; }
 }
 
@@ -619,4 +621,50 @@
   0% { opacity: 0; }
   15% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+/* ---------- Kleine Szenen: Bewohner ziehen ab und zu quer durchs Bild ---------- */
+
+.amb-scene {
+  position: absolute;
+  left: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  opacity: 0;
+  pointer-events: none;
+  animation-name: amb-cross;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.amb-scene .amb-fig {
+  position: relative;
+}
+
+.amb-scene--rev {
+  animation-name: amb-cross-rev;
+}
+
+.amb-scene--rev .amb-fig svg {
+  transform: scaleX(-1);
+}
+
+@keyframes amb-cross {
+  0%, 48% { transform: translateX(-30vw); opacity: 0; }
+  50% { opacity: 1; }
+  96% { opacity: 1; }
+  98%, 100% { transform: translateX(110vw); opacity: 0; }
+}
+
+@keyframes amb-cross-rev {
+  0%, 48% { transform: translateX(110vw); opacity: 0; }
+  50% { opacity: 1; }
+  96% { opacity: 1; }
+  98%, 100% { transform: translateX(-30vw); opacity: 0; }
+}
+
+.menu-scene {
+  bottom: 3%;
+  z-index: 3;
 }
