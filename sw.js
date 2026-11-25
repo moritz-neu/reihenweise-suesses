@@ -5,7 +5,7 @@
 // ASSETS muss jede Datei enthalten, die index.html lädt: python tools/check_store.py prüft das.
 'use strict';
 
-var VERSION = '6.2.0';
+var VERSION = '6.3.0';
 var CACHE = 'rs-' + VERSION;
 var ASSETS = [
   './',
@@ -100,11 +100,30 @@ var ASSETS = [
 
 self.RS_SW = { VERSION: VERSION, CACHE: CACHE, ASSETS: ASSETS };
 
+// Eine Datei laden und speichern, mit bis zu drei Versuchen (kurz nach einer Veröffentlichung
+// liefert der Webhoster neue Dateien manchmal noch nicht überall aus). cache: 'reload' umgeht
+// den HTTP-Cache, damit keine alte Datei in die neue Version rutscht.
+function store(cache, url, tries) {
+  return fetch(new Request(url, { cache: 'reload' })).then(function (res) {
+    if (!res.ok) { throw new Error(res.status + ' ' + url); }
+    return cache.put(url, res);
+  }).catch(function (err) {
+    if (tries <= 1) { throw err; }
+    return new Promise(function (r) { setTimeout(r, 1500); }).then(function () { return store(cache, url, tries - 1); });
+  });
+}
+
+// Installieren scheitert nicht an einzelnen Dateien: Was nicht kommt, holt der fetch-Handler
+// später aus dem Netz nach. Nur ohne index.html wäre die Version unbrauchbar.
 self.addEventListener('install', function (event) {
   event.waitUntil(caches.open(CACHE).then(function (cache) {
-    // cache: 'reload' umgeht den HTTP-Cache, damit keine alte Datei in die neue Version rutscht.
-    return cache.addAll(ASSETS.map(function (url) { return new Request(url, { cache: 'reload' }); }));
-  }).then(function () { return self.skipWaiting(); }));
+    return Promise.all(ASSETS.map(function (url) {
+      return store(cache, url, 3).then(function () { return true; }, function () { return url !== 'index.html'; });
+    }));
+  }).then(function (results) {
+    if (results.indexOf(false) >= 0) { throw new Error('index.html fehlt'); }
+    return self.skipWaiting();
+  }));
 });
 
 self.addEventListener('activate', function (event) {

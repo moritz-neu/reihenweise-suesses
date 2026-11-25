@@ -305,6 +305,12 @@
     return n;
   }
 
+  // Horizont-Silhouette einer Welt als SVG (Weltenübersicht).
+  function horizonSvg(worldId) {
+    return '<svg viewBox="0 0 400 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">' +
+      (HORIZON[worldId] || HORIZON[1]) + '</svg>';
+  }
+
   // Eine kleine Szene: Bewohner, die ab und zu quer durchs Bild ziehen.
   function sceneNode(worldId, delay) {
     var sc = SCENES[worldId];
@@ -420,5 +426,5 @@
   }
 
   RS.UI.Ambient = { gameLayer: gameLayer, mapLayer: mapLayer, figure: figure, confetti: confetti, flash: flash,
-    scene: sceneNode, WORLDS: WORLDS, SCENES: SCENES, FIGURES: F };
+    scene: sceneNode, horizon: horizonSvg, WORLDS: WORLDS, SCENES: SCENES, FIGURES: F };
 })(window.RS = window.RS || {});

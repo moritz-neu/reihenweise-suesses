@@ -2,9 +2,19 @@
 
 Alle nennenswerten Änderungen an „Reihenweise Süßes". Format nach [Keep a Changelog](https://keepachangelog.com/de/1.1.0/), Versionen nach [Semantic Versioning](https://semver.org/lang/de/).
 
-## [6.2.0] – 2026-11-25
+## [6.3.0] – 2026-11-25
 
-Version 6.2.0 ist auf GitHub (Pages) veröffentlicht.
+Version 6.3.0 ist auf GitHub (Pages) veröffentlicht.
+
+### Neu
+- Weltenübersicht: unten auf jeder Weltkarte der Horizont der Welt.
+- Karte: Nach einem Sieg fliegt Annika sichtbar zum nächsten Level; ein Tipp auf ein gesperrtes Level lässt es wackeln und sagt, welches Level vorher dran ist.
+- Siegfenster: Der Bewohner der Welt hüpft vor Freude.
+
+### Behoben
+- Updates scheiterten direkt nach einer Veröffentlichung oft beim ersten Versuch, weil der Webhoster neue Dateien noch nicht überall auslieferte; der Service Worker lädt jetzt jede Datei einzeln mit bis zu drei Versuchen und installiert die neue Version auch, wenn einzelne Dateien fehlen (sie kommen bei Bedarf aus dem Netz).
+
+## [6.2.0] – 2026-11-25
 
 ### Neu
 - Kleine Szenen: In jeder Welt zieht etwa einmal pro Minute ein Bewohner quer durchs Bild (Lebkuchenmann, Schneehase, Kamel, Papagei, Biene, Heißluftballon, Segelboot, Ritter, Fischschwarm, Fledermäuse); im Hauptmenü spaziert ein Lebkuchenmann durchs Dorf.

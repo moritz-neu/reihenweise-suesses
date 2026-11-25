@@ -282,18 +282,31 @@
         });
         lastOpen = b;
       } else {
-        b.disabled = true;
+        // Gesperrt: kurz wackeln und sagen, welches Level vorher dran ist.
+        b.setAttribute('aria-disabled', 'true');
+        b.addEventListener('click', function () { lockedHint(b, levels, open, i); });
       }
       if (state === 'next' && !nextBtn) { nextBtn = b; }
       holder.appendChild(b);
     });
     // Annika schwebt über dem nächsten spielbaren Level („Du bist hier“).
+    // Nach einem Sieg fliegt sie sichtbar vom letzten Platz zum neuen (Merker nur für diese Sitzung).
     if (nextBtn) {
       var here = el('div', 'map-here');
       here.setAttribute('aria-hidden', 'true');
       here.appendChild(RS.UI.Dialog.figure());
-      place(here, pts[levels.indexOf(levels.filter(function (l, i) { return open[i] && !(save.stars[l.id] > 0); })[0])], full);
+      var hereIndex = levels.indexOf(levels.filter(function (l, i) { return open[i] && !(save.stars[l.id] > 0); })[0]);
+      var seenHere = (RS.App.mapHere = RS.App.mapHere || {})[world.id];
+      var travel = seenHere !== undefined && seenHere !== hereIndex && pts[seenHere];
+      place(here, travel ? pts[seenHere] : pts[hereIndex], full);
       holder.appendChild(here);
+      RS.App.mapHere[world.id] = hereIndex;
+      if (travel) {
+        setTimeout(function () {
+          here.classList.add('is-travel');
+          place(here, pts[hereIndex], full);
+        }, 650);
+      }
     }
     // Der Boss wartet neben seiner Station, bis er besiegt ist.
     var bossLevel = levels[levels.length - 1];
@@ -315,6 +328,27 @@
     });
     if (view.exit && view.exit.state === 'opening') { return exitBtn; }
     return nextBtn || lastOpen;
+  }
+
+  // Hinweis an einer gesperrten Station: das erste noch offene, nicht geschaffte Level davor.
+  function lockedHint(btn, levels, open, index) {
+    var before = null;
+    for (var k = index - 1; k >= 0; k--) {
+      if (open[k] && !(RS.App.save.stars[levels[k].id] > 0)) { before = levels[k]; }
+    }
+    var text = before ? 'Schaffe zuerst Level ' + before.label + '.' : 'Dieses Level ist noch gesperrt.';
+    RS.Audio.play({ type: 'click' });
+    btn.classList.remove('is-shake');
+    void btn.offsetWidth;
+    btn.classList.add('is-shake');
+    var old = btn.parentNode.querySelector('.map-locked-tip');
+    if (old) { old.parentNode.removeChild(old); }
+    var tip = el('div', 'map-locked-tip', text);
+    tip.setAttribute('role', 'status');
+    tip.style.left = btn.style.left;
+    tip.style.top = btn.style.top;
+    btn.parentNode.appendChild(tip);
+    setTimeout(function () { if (tip.parentNode) { tip.parentNode.removeChild(tip); } }, 2200);
   }
 
   // Zeigt eine Station oder ein Tor mittig im Fenster.

@@ -372,9 +372,13 @@
 
   // ---------- Ergebnis-Überlagerungen ----------
 
-  function resultBody(lines, annikaText) {
+  function resultBody(lines, annikaText, worldId) {
     var body = el('div', 'result');
     lines.forEach(function (l) { body.appendChild(l); });
+    // Im Siegfenster hüpft der Bewohner der Welt vor Freude.
+    if (worldId && RS.UI.Ambient) {
+      body.insertAdjacentHTML('beforeend', RS.UI.Ambient.figure(worldId, 0, 'result-fig'));
+    }
     body.appendChild(RS.UI.Dialog.annika(annikaText).node);
     return body;
   }
@@ -422,7 +426,7 @@
     RS.UI.dialog({
       title: 'Level ' + level.label + ' geschafft!',
       className: 'dialog--result dialog--annika',
-      body: resultBody(lines, level.win || ''),
+      body: resultBody(lines, level.win || '', level.world),
       // Nach dem Bosssieg spielt die Karte das Kapitelende und öffnet das Tor.
       buttons: [{ label: 'Zur Karte', className: 'btn--gold', back: true, onClick: function () {
         RS.Audio.play({ type: 'click' });
